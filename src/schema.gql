@@ -1,0 +1,19 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Mutation {
+  login(mobile: String!): User!
+  resend(mobile: String!): User!
+  verify(code: String!, mobile: String!): User!
+}
+
+type Query {
+  user: User!
+}
+
+type User {
+  id: Int!
+  isAdmin: Boolean!
+  mobile: String!
+}
