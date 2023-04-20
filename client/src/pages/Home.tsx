@@ -29,7 +29,7 @@ const Home: React.FC = () => {
       router.push('/start', 'forward');
     }
   }, [mobile, isVerified]);
-  
+
   const [deals, setDeals] = useState<Deal[]>([]);
 
   useIonViewWillEnter(() => {
@@ -54,12 +54,17 @@ const Home: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-        <IonRefresher slot="fixed" onIonRefresh={refresh}>
-          <IonRefresherContent></IonRefresherContent>
-        </IonRefresher>
-        <IonList>
-          {deals.map(d => <DealListItem key={d.id} deal={d} />)}
-        </IonList>
+        <div style={{
+          margin: 'auto',
+          maxWidth: 420,
+        }}>
+          <IonRefresher slot="fixed" onIonRefresh={refresh}>
+            <IonRefresherContent></IonRefresherContent>
+          </IonRefresher>
+          <IonList>
+            {deals.map(d => <DealListItem key={d.id} deal={d} />)}
+          </IonList>
+        </div>
       </IonContent>
     </IonPage>
   );

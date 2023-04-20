@@ -1,10 +1,20 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from '@apollo/client';
+import { isPlatform } from '@ionic/react';
+import { DEV_SERVER_URI, PROD_SERVER_URI } from './constants';
+
+const httpLink = createHttpLink({
+  uri: process.env.NODE_ENV === 'production'
+    ? isPlatform('ios') || isPlatform('android')
+      ? `${PROD_SERVER_URI}/graphql`
+      : '/graphql'
+    : `${DEV_SERVER_URI}/graphql`,
+});
 
 const client = new ApolloClient({
-  uri: 'http://localhost:4000/graphql',
+  link: httpLink,
   cache: new InMemoryCache(),
 });
 
