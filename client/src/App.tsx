@@ -1,8 +1,12 @@
 import { Redirect, Route } from 'react-router-dom';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import { createContext, useState } from 'react';
+import Profile from './pages/Profile';
+import AppInitializer from './AppInitializer';
 import Home from './pages/Home';
 import ViewDeal from './pages/ViewDeal';
+import Auth from './pages/Auth';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -22,9 +26,6 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import Login from './pages/Start';
-import { createContext, useState } from 'react';
-import Profile from './pages/Profile';
 
 setupIonicReact();
 
@@ -33,11 +34,14 @@ export const AppContext = createContext({
   setMobile: (mobile: string) => {},
   isVerified: false,
   setIsVerified: (isVerified: boolean) => {},
+  tokenRefreshInterval: null as ReturnType<typeof setInterval> | null,
+  setTokenRefreshInterval: (tokenRefreshInterval: ReturnType<typeof setInterval> | null) => {},
 });
 
 const App: React.FC = () => {
   const [mobile, setMobile] = useState<string>('');
   const [isVerified, setIsVerified] = useState<boolean>(false);
+  const [tokenRefreshInterval, setTokenRefreshInterval] = useState<ReturnType<typeof setInterval> | null>(null);
 
   return (
     <AppContext.Provider value={{ 
@@ -45,15 +49,18 @@ const App: React.FC = () => {
       setMobile,
       isVerified,
       setIsVerified,
+      tokenRefreshInterval,
+      setTokenRefreshInterval,
     }}>
       <IonApp>
         <IonReactRouter>
+          <AppInitializer />
           <IonRouterOutlet>
             <Route path="/" exact={true}>
               <Redirect to="/home" />
             </Route>
-            <Route path="/start" exact={true}>
-              <Login />
+            <Route path="/login" exact={true}>
+              <Auth />
             </Route>
             <Route path="/home" exact={true}>
               <Home />

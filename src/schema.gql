@@ -4,8 +4,10 @@
 
 type Mutation {
   login(mobile: String!): User!
+  logout(mobile: String!): User!
+  refresh(refreshToken: String!): String!
   resend(mobile: String!): User!
-  verify(code: String!, mobile: String!): User!
+  verify(code: String!, mobile: String!): VerifyResult!
 }
 
 type Query {
@@ -16,4 +18,10 @@ type User {
   id: Int!
   isAdmin: Boolean!
   mobile: String!
+}
+
+type VerifyResult {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
 }

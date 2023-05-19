@@ -1,19 +1,31 @@
+import { Preferences } from "@capacitor/preferences";
 import { IonButton, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar } from "@ionic/react";
 import { homeOutline } from "ionicons/icons";
 import { useContext } from "react";
 import { AppContext } from "../App";
+import { MOBILE_KEY, ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../constants";
 
 const Profile: React.FC = () => {
   const { 
     mobile, 
     setMobile, 
-    isVerified,
     setIsVerified,
+    tokenRefreshInterval,
+    setTokenRefreshInterval,
   } = useContext(AppContext);
 
   const onLogout = () => {
+    Preferences.remove({ key: MOBILE_KEY })
+    Preferences.remove({ key: ACCESS_TOKEN_KEY });
+    Preferences.remove({ key: REFRESH_TOKEN_KEY });
+
     setMobile('');
     setIsVerified(false);
+
+    if (tokenRefreshInterval) {
+      clearInterval(tokenRefreshInterval);
+      setTokenRefreshInterval(null);
+    }
   }
   
   return (
@@ -37,7 +49,7 @@ const Profile: React.FC = () => {
             +1 {mobile.slice(0, 3)} {mobile.slice(3, 6)} {mobile.slice(6, 10)}
           </div>
           <div>
-            <IonButton routerLink='/start' onClick={onLogout}>
+            <IonButton routerLink='/login' onClick={onLogout}>
               Logout
             </IonButton>
           </div>

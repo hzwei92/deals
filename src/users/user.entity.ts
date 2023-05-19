@@ -15,6 +15,9 @@ export class User {
   @Column({ nullable: true })
   hashedVerificationCode: string;
 
+  @Column({ nullable: true })
+  hashedRefreshToken: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

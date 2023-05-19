@@ -31,8 +31,35 @@ export class UsersService {
     else {
       user.hashedVerificationCode = await bcrypt.hash(code, 10);
     }
-    
+
     return this.usersRepository.save(user);
   }
-}
 
+  async setRefreshToken(mobile: string, token: string): Promise<User> {
+    const user = await this.findOne(mobile);
+    if (!user) throw new Error('User not found');
+
+    if (token == null) {
+      user.hashedRefreshToken = null;
+    }
+    else {
+      user.hashedRefreshToken = await bcrypt.hash(token, 10);
+    }
+
+    return this.usersRepository.save(user);
+  }
+
+  async getUserIfRefreshTokenMatches(mobile: string, refreshToken: string): Promise<User | null> {
+    const user = await this.findOne(mobile);
+    if (!user) throw new Error('User not found');
+
+    const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.hashedRefreshToken);
+
+    if (isRefreshTokenValid) {
+      return user;
+    }
+    else {
+      return null;
+    }
+  }
+}

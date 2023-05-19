@@ -1,16 +1,24 @@
-import { IonHeader, IonPage, IonTitle, IonToolbar } from "@ionic/react";
-import { useContext } from "react";
+import { IonHeader, IonPage, IonTitle, IonToolbar, useIonRouter } from "@ionic/react";
+import { useContext, useEffect } from "react";
 import { AppContext } from "../App";
 import Login from "../components/Login";
 import Verify from "../components/Verify";
 
-const Start: React.FC = () => {
+const Auth: React.FC = () => {
+  const router = useIonRouter();
+
   const { mobile, isVerified } = useContext(AppContext);
+
+  useEffect(() => {
+    if (mobile && isVerified) {
+      router.push('/home');
+    }
+  }, [mobile, isVerified])
   return (
     <IonPage id="home-page">
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Start</IonTitle>
+          <IonTitle>Login</IonTitle>
         </IonToolbar>
       </IonHeader>
       {
@@ -24,4 +32,4 @@ const Start: React.FC = () => {
   );
 }
 
-export default Start;
+export default Auth;

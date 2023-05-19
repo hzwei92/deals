@@ -1,14 +1,21 @@
 import { gql, useMutation } from "@apollo/client";
+import { Preferences } from "@capacitor/preferences";
 import { IonButton, IonButtons, IonContent, IonInput, useIonRouter } from "@ionic/react"
 import { useContext, useState } from "react";
 import { AppContext } from "../App";
+import { ACCESS_TOKEN_KEY, MOBILE_KEY, REFRESH_TOKEN_KEY } from "../constants";
+import useToken from "../hooks/useToken";
 
 const VERIFY = gql`
   mutation Verify($mobile: String!, $code: String!) {
     verify(mobile: $mobile, code: $code) {
-      id
-      mobile
-      isAdmin
+      user {
+        id
+        mobile
+        isAdmin
+      }
+      accessToken
+      refreshToken
     }
   }
 `;
@@ -37,6 +44,8 @@ const Verify = () => {
 
   const [isCodeInvalid, setIsCodeInvalid] = useState<boolean>(false);
 
+  const { refreshTokenInterval } = useToken()
+
   const [verify] = useMutation(VERIFY, {
     onError: (err) => {
       console.log(err);
@@ -47,11 +56,28 @@ const Verify = () => {
         }, 3000)
       }
     },
-    onCompleted: (data) => {
+    onCompleted: async (data) => {
       console.log(data);
-      if (data.verify.id) {
+      if (data.verify.user.id) {
         setIsVerified(true);
-        router.push('/home', 'forward');
+        router.push('/home');
+
+        await Preferences.set({
+          key: MOBILE_KEY,
+          value: data.verify.user.mobile,
+        });
+
+        await Preferences.set({
+          key: ACCESS_TOKEN_KEY,
+          value: data.verify.accessToken,
+        });
+        
+        await Preferences.set({
+          key: REFRESH_TOKEN_KEY,
+          value: data.verify.refreshToken,
+        })
+
+        refreshTokenInterval();
       }
     }
   });

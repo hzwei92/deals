@@ -18,6 +18,10 @@ import { ServeStaticModule } from '@nestjs/serve-static';
           .valid('development', 'production', 'test', 'provision')
           .default('development'),
         PORT: Joi.number().default(4000),
+        JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
+        JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
+        JWT_REFRESH_TOKEN_SECRET: Joi.string().required(),
+        JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
         TWILIO_ACCOUNT_SID: Joi.string().required(),
         TWILIO_AUTH_TOKEN: Joi.string().required(),
       }))

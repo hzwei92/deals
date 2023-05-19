@@ -2,6 +2,7 @@ import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { User } from 'src/users/user.model';
 import { UsersService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
+import { VerifyResult } from './dto/verify-result.dto';
 
 @Resolver()
 export class AuthResolver {
@@ -24,7 +25,7 @@ export class AuthResolver {
     return user;
   }
 
-  @Mutation(() => User, { name: 'verify' })
+  @Mutation(() => VerifyResult, { name: 'verify' })
   async verify(
     @Args('mobile') mobile: string,
     @Args('code') code: string,
@@ -45,5 +46,19 @@ export class AuthResolver {
     await this.authService.login(mobile);
 
     return user;
+  }
+
+  @Mutation(() => User, { name: 'logout' })
+  async logout(
+    @Args('mobile') mobile: string,
+  ) {
+    await this.usersService.setRefreshToken(mobile, null);
+  }
+
+  @Mutation(() => String, { name: 'refresh' })
+  async refresh(
+    @Args('refreshToken') refreshToken: string,
+  ) {
+    return this.authService.refreshToken(refreshToken);
   }
 }

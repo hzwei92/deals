@@ -1,9 +1,8 @@
 import DealListItem from '../components/DealListItem';
-import { useContext, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Deal, getDeals } from '../data/deals';
 import {
   IonButton,
-  IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
@@ -13,23 +12,12 @@ import {
   IonRefresherContent,
   IonTitle,
   IonToolbar,
-  useIonRouter,
   useIonViewWillEnter
 } from '@ionic/react';
 import './Home.css';
 import { personOutline } from 'ionicons/icons';
-import { AppContext } from '../App';
 
 const Home: React.FC = () => {
-  const router = useIonRouter();
-  const { mobile, isVerified } = useContext(AppContext);
-
-  useEffect(() => {
-    if (!mobile || !isVerified) {
-      router.push('/start', 'forward');
-    }
-  }, [mobile, isVerified]);
-
   const [deals, setDeals] = useState<Deal[]>([]);
 
   useIonViewWillEnter(() => {
