@@ -1,9 +1,11 @@
 import DealListItem from '../components/DealListItem';
-import { useState } from 'react';
-import { Deal, getDeals } from '../data/deals';
+import { useContext, useEffect, useState } from 'react';
+import { Deal } from '../data/deals';
 import {
   IonButton,
   IonContent,
+  IonFab,
+  IonFabButton,
   IonHeader,
   IonIcon,
   IonList,
@@ -12,24 +14,63 @@ import {
   IonRefresherContent,
   IonTitle,
   IonToolbar,
-  useIonViewWillEnter
 } from '@ionic/react';
 import './Home.css';
-import { personOutline } from 'ionicons/icons';
+import { add, personOutline } from 'ionicons/icons';
+import { gql, useMutation } from '@apollo/client';
+import { AppContext } from '../App';
+
+const GET_DEALS = gql`
+  mutation GetDeals($mobile: String!) {
+    getDeals(mobile: $mobile) {
+      id
+      name
+      detail
+      price
+      discountPrice
+      image {
+        data
+      }
+    }
+  }
+`;
+
 
 const Home: React.FC = () => {
-  const [deals, setDeals] = useState<Deal[]>([]);
+  const { 
+    mobile,
+    deals,
+    setDeals,
+    shouldGetDeals,
+    setShouldGetDeals,
+  } = useContext(AppContext);
 
-  useIonViewWillEnter(() => {
-    const msgs = getDeals();
-    setDeals(msgs);
-  });
+  const [getDeals] = useMutation(GET_DEALS, {
+    onError: (err) => {
+      console.log(err);
+    },
+    onCompleted: (data) => {
+      console.log(data);
+
+      setDeals(data.getDeals);
+    }
+  })
 
   const refresh = (e: CustomEvent) => {
     setTimeout(() => {
       e.detail.complete();
     }, 3000);
   };
+
+  useEffect(() => {
+    if (!shouldGetDeals) return;
+    getDeals({
+      variables: {
+        mobile,
+      },
+    }); 
+    setShouldGetDeals(false);
+  }, [shouldGetDeals]);
 
   return (
     <IonPage id="home-page">
@@ -53,6 +94,11 @@ const Home: React.FC = () => {
             {deals.map(d => <DealListItem key={d.id} deal={d} />)}
           </IonList>
         </div>
+        <IonFab vertical="bottom" horizontal="end" slot="fixed">
+          <IonFabButton routerLink='/add-deal'>
+            <IonIcon icon={add}></IonIcon>
+          </IonFabButton>
+        </IonFab>
       </IonContent>
     </IonPage>
   );

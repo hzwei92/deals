@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as Joi from 'joi';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { DealsModule } from './deals/deals.module';
+import { ImagesModule } from './images/images.module';
 
 @Module({
   imports: [
@@ -50,7 +52,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
             'http://localhost:8100'
           ],
           credentials: true,
-        }
+        },
+        uploads: false,
       })
     }),
     ServeStaticModule.forRoot({
@@ -58,6 +61,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     }),
     UsersModule,
     AuthModule,
+    DealsModule,
+    ImagesModule,
   ],
 })
 export class AppModule {}

@@ -14,7 +14,9 @@
   "dependencies": {
     "@apollo/client": "^3.7.12",
     "@capacitor/app": "4.1.1",
+    "@capacitor/camera": "^5.0.2",
     "@capacitor/core": "4.7.3",
+    "@capacitor/filesystem": "^5.0.2",
     "@capacitor/haptics": "4.1.0",
     "@capacitor/ios": "4.7.3",
     "@capacitor/keyboard": "4.1.1",

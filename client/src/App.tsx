@@ -26,6 +26,8 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import AddDeal from './pages/AddDeal';
+import { Deal } from './data/deals';
 
 setupIonicReact();
 
@@ -36,12 +38,19 @@ export const AppContext = createContext({
   setIsVerified: (isVerified: boolean) => {},
   tokenRefreshInterval: null as ReturnType<typeof setInterval> | null,
   setTokenRefreshInterval: (tokenRefreshInterval: ReturnType<typeof setInterval> | null) => {},
+  deals: [] as Deal[],
+  setDeals: (deals: Deal[]) => {},
+  shouldGetDeals: true,
+  setShouldGetDeals: (shouldGetDeals: boolean) => {},
 });
 
 const App: React.FC = () => {
   const [mobile, setMobile] = useState<string>('');
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [tokenRefreshInterval, setTokenRefreshInterval] = useState<ReturnType<typeof setInterval> | null>(null);
+
+  const [deals, setDeals] = useState<Deal[]>([]);
+  const [shouldGetDeals, setShouldGetDeals] = useState<boolean>(true);
 
   return (
     <AppContext.Provider value={{ 
@@ -51,6 +60,10 @@ const App: React.FC = () => {
       setIsVerified,
       tokenRefreshInterval,
       setTokenRefreshInterval,
+      deals,
+      setDeals,
+      shouldGetDeals,
+      setShouldGetDeals,
     }}>
       <IonApp>
         <IonReactRouter>
@@ -65,10 +78,13 @@ const App: React.FC = () => {
             <Route path="/home" exact={true}>
               <Home />
             </Route>
+            <Route path="/add-deal" exact={true}>
+              <AddDeal />
+            </Route>
             <Route path="/profile" exact={true}>
               <Profile />
             </Route>
-            <Route path="/message/:id">
+            <Route path="/deal/:id">
               <ViewDeal />
             </Route>
           </IonRouterOutlet>

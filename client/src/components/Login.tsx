@@ -15,9 +15,7 @@ const LOGIN = gql`
 
 const Login = () => {
   const { 
-    mobile, 
     setMobile, 
-    isVerified, 
     setIsVerified,
   } = useContext(AppContext);
 
