@@ -23,7 +23,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>To take/access photos</string>
+	<string>To upload images for deals and user profiles</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>To upload images for deals and user profiles</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
