@@ -48,7 +48,12 @@ const AddDeal: React.FC = () => {
     body.append('price', price.toString());
     body.append('discountPrice', discountPrice.toString());
 
-    fetch('http://localhost:4000/deals/add-deal', {
+    // if env is dev, use localhost:4000 else, use empty string
+    const url = process.env.NODE_ENV === 'development' 
+    ? 'http://localhost:4000' 
+    : '';
+
+    fetch(url + '/deals/add-deal', {
       method: 'POST',
       body: body,
     }).then(res => {
