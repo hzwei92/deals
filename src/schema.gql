@@ -28,12 +28,12 @@ type Image {
 }
 
 type Mutation {
-  getDeals(mobile: String!): [Deal!]!
-  login(mobile: String!): User!
-  logout(mobile: String!): User!
+  getDeals(phone: String!): [Deal!]!
+  login(phone: String!): User!
+  logout(phone: String!): User!
   refresh(refreshToken: String!): String!
-  resend(mobile: String!): User!
-  verify(code: String!, mobile: String!): VerifyResult!
+  resend(phone: String!): User!
+  verify(code: String!, phone: String!): VerifyResult!
 }
 
 type Query {
@@ -43,7 +43,7 @@ type Query {
 type User {
   id: Int!
   isAdmin: Boolean!
-  mobile: String!
+  phone: String!
 }
 
 type VerifyResult {

@@ -21,23 +21,23 @@ export class AuthService {
     this.client = twilio(accountSid, authToken);
   }
 
-  async login(mobile: string) {
+  async login(phone: string) {
     const code = Math.floor(Math.random() * 1e6).toString().padStart(6, '0');
     console.log(code);
 
-    await this.usersService.setVerificationCode(mobile, code);
+    await this.usersService.setVerificationCode(phone, code);
       
     this.client.messages
       .create({
         from: '+17257264123',
-        to: '+1' + mobile,
+        to: '+1' + phone,
         body: `Your login verification code for JAMN Deals is: ${code}`,
       })
       .then(message => console.log(message.sid));
   }
 
-  async verify(mobile: string, code: string) {
-    const user = await this.usersService.findOne(mobile);
+  async verify(phone: string, code: string) {
+    const user = await this.usersService.findOne(phone);
 
     if (!user) {
       throw new Error('User not found');
@@ -49,10 +49,10 @@ export class AuthService {
       throw new Error('Invalid verification code');
     }
 
-    await this.usersService.setVerificationCode(mobile, null);
+    await this.usersService.setVerificationCode(phone, null);
 
-    const accessToken = this.getAccessToken(mobile);
-    const refreshToken = await this.getRefreshToken(mobile, false);
+    const accessToken = this.getAccessToken(phone);
+    const refreshToken = await this.getRefreshToken(phone, false);
 
     return {
       user,
@@ -66,11 +66,11 @@ export class AuthService {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       });
-      const user = await this.usersService.getUserIfRefreshTokenMatches(payload.mobile, token);
+      const user = await this.usersService.getUserIfRefreshTokenMatches(payload.phone, token);
       if (!user) {
         throw new BadRequestException('Invalid refresh token');
       }
-      return this.getAccessToken(user.mobile);
+      return this.getAccessToken(user.phone);
     } catch (error) {
       if (error.message === 'jwt expired') {
         throw new BadRequestException('Invalid refresh token');
@@ -79,8 +79,8 @@ export class AuthService {
     }
   }
 
-  getAccessToken(mobile: string) {
-    const payload: TokenPayload = { mobile };
+  getAccessToken(phone: string) {
+    const payload: TokenPayload = { phone };
 		const expirationTime = this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
@@ -90,8 +90,8 @@ export class AuthService {
     return token;
   }
 
-  async getRefreshToken(mobile: string, shouldTokenExpire: boolean) {
-    const payload: TokenPayload = { mobile };
+  async getRefreshToken(phone: string, shouldTokenExpire: boolean) {
+    const payload: TokenPayload = { phone };
 		const expirationTime = this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
@@ -99,7 +99,7 @@ export class AuthService {
         ? `${expirationTime}s`
         : '9999 years',
     });
-    await this.usersService.setRefreshToken(mobile, token);
+    await this.usersService.setRefreshToken(phone, token);
 
     return token;
   }

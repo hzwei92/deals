@@ -18,6 +18,8 @@ import { usePhotoGallery } from '../hooks/usePhotoGallery';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Uint8ArrayFromBase64 } from '../utils';
 import { AppContext } from '../App';
+import { ACCESS_TOKEN_KEY } from '../constants';
+import { Preferences } from '@capacitor/preferences';
 
 const AddDeal: React.FC = () => {
   const { setShouldGetDeals } = useContext(AppContext);
@@ -48,14 +50,21 @@ const AddDeal: React.FC = () => {
     body.append('price', price.toString());
     body.append('discountPrice', discountPrice.toString());
 
+    const accessToken = await Preferences.get({
+      key: ACCESS_TOKEN_KEY,
+    })
+
     // if env is dev, use localhost:4000 else, use empty string
     const url = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:4000' 
-    : '';
+      ? import.meta.env.VITE_DEV_API_URL
+      : '';
 
     fetch(url + '/deals/add-deal', {
       method: 'POST',
       body: body,
+      headers: {
+        accesstoken: accessToken.value || '',
+      }
     }).then(res => {
       console.log(res);
       setShouldGetDeals(true);

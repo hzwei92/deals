@@ -4,10 +4,10 @@ import { useContext, useState } from "react";
 import { AppContext } from "../App";
 
 const LOGIN = gql`
-  mutation Login($mobile: String!) {
-    login(mobile: $mobile) {
+  mutation Login($phone: String!) {
+    login(phone: $phone) {
       id
-      mobile
+      phone
       isAdmin
     }
   }
@@ -15,7 +15,7 @@ const LOGIN = gql`
 
 const Login = () => {
   const { 
-    setMobile, 
+    setPhone, 
     setIsVerified,
   } = useContext(AppContext);
 
@@ -37,7 +37,7 @@ const Login = () => {
 
       if (data.login.id) {  
         setTel('');
-        setMobile(data.login.mobile);
+        setPhone(data.login.phone);
         setIsVerified(false);
       }
     }
@@ -62,7 +62,7 @@ const Login = () => {
     setIsLoading(true);
 
     const tel1 = tel.replace(/[^0-9]/g, '');
-    login({ variables: { mobile: tel1 } });
+    login({ variables: { phone: tel1 } });
   }
 
   return (
@@ -70,7 +70,7 @@ const Login = () => {
     <div style={{
       padding: 20,
     }}>
-      Enter your mobile number to login.
+      Enter your phone number to login.
       <div style={{
         marginTop: 5,
       }}>

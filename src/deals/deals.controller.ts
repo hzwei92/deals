@@ -1,5 +1,6 @@
-import { Body, Controller, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { ImagesService } from 'src/images/images.service';
 import { DealsService } from './deals.service';
 
@@ -11,6 +12,7 @@ export class DealsController {
   ) {}
 
   @Post('add-deal')
+  @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('file'))
   async addDeal(
     @Body() body: any,

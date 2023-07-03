@@ -1,3 +1,3 @@
 export default interface TokenPayload {
-  mobile: string;
+  phone: string;
 }

@@ -5,12 +5,19 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index({ unique: true })
+  @Index({ unique: true, where: '"deletedAt" IS NULL'})
   @Column()
-  mobile: string;
+  phone: string;
 
-  @Column({ default: false})
+  @Index({ unique: true, where: '"deletedAt" IS NOT NULL AND name IS NOT NULL' })
+  @Column({ nullable: true })
+  name?: string;
+
+  @Column({ default: false })
   isAdmin: boolean;
+
+  @Column()
+  stripeCustomerId: string;
 
   @Column({ nullable: true })
   hashedVerificationCode: string;

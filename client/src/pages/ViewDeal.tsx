@@ -3,6 +3,7 @@ import { Deal } from '../data/deals';
 import {
   IonBackButton,
   IonButtons,
+  IonCard,
   IonContent,
   IonHeader,
   IonItem,
@@ -14,6 +15,12 @@ import { useParams } from 'react-router';
 import './ViewDeal.css';
 import { AppContext } from '../App';
 import { Uint8ArrayFromBase64 } from '../utils';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import PaymentForm from '../components/PaymentForm';
+
+const apiKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = loadStripe(apiKey!);
 
 function ViewDeal() {
   const { deals } = useContext(AppContext);
@@ -41,7 +48,6 @@ function ViewDeal() {
           </IonButtons>
         </IonToolbar>
       </IonHeader>
-
       <IonContent fullscreen>
         {deal ? (
           <>
@@ -63,6 +69,16 @@ function ViewDeal() {
               <p>
                 { deal.detail }
               </p>
+              <p>
+                Price: ${ deal.price }
+              </p>
+              <IonCard style={{
+                backgroundColor: 'white',
+              }}>
+                <Elements stripe={stripePromise} >
+                  <PaymentForm amountToCharge={deal.price}/>
+                </Elements>
+              </IonCard>
             </div>
           </>
         ) : (

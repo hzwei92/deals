@@ -7,13 +7,13 @@ import Verify from "../components/Verify";
 const Auth: React.FC = () => {
   const router = useIonRouter();
 
-  const { mobile, isVerified } = useContext(AppContext);
+  const { phone, isVerified } = useContext(AppContext);
 
   useEffect(() => {
-    if (mobile && isVerified) {
+    if (phone && isVerified) {
       router.push('/home');
     }
-  }, [mobile, isVerified])
+  }, [phone, isVerified])
   return (
     <IonPage id="home-page">
       <IonHeader>
@@ -22,7 +22,7 @@ const Auth: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       {
-        !mobile 
+        !phone 
           ? <Login />
           : !isVerified
             ? <Verify />

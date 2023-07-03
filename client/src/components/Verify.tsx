@@ -1,17 +1,17 @@
 import { gql, useMutation } from "@apollo/client";
 import { Preferences } from "@capacitor/preferences";
-import { IonButton, IonButtons, IonContent, IonInput, useIonRouter } from "@ionic/react"
+import { IonButton, IonContent, IonInput, useIonRouter } from "@ionic/react"
 import { useContext, useState } from "react";
 import { AppContext } from "../App";
-import { ACCESS_TOKEN_KEY, MOBILE_KEY, REFRESH_TOKEN_KEY } from "../constants";
+import { ACCESS_TOKEN_KEY, PHONE_KEY, REFRESH_TOKEN_KEY } from "../constants";
 import useToken from "../hooks/useToken";
 
 const VERIFY = gql`
-  mutation Verify($mobile: String!, $code: String!) {
-    verify(mobile: $mobile, code: $code) {
+  mutation Verify($phone: String!, $code: String!) {
+    verify(phone: $phone, code: $code) {
       user {
         id
-        mobile
+        phone
         isAdmin
       }
       accessToken
@@ -21,10 +21,10 @@ const VERIFY = gql`
 `;
 
 const RESEND = gql`
-  mutation Resend($mobile: String!) {
-    resend(mobile: $mobile) {
+  mutation Resend($phone: String!) {
+    resend(phone: $phone) {
       id
-      mobile
+      phone
       isAdmin
     }
   }
@@ -34,8 +34,8 @@ const Verify = () => {
   const router = useIonRouter();
 
   const { 
-    mobile, 
-    setMobile, 
+    phone, 
+    setPhone, 
     isVerified, 
     setIsVerified,
   } = useContext(AppContext);
@@ -63,8 +63,8 @@ const Verify = () => {
         router.push('/home');
 
         await Preferences.set({
-          key: MOBILE_KEY,
-          value: data.verify.user.mobile,
+          key: PHONE_KEY,
+          value: data.verify.user.phone,
         });
 
         await Preferences.set({
@@ -107,18 +107,18 @@ const Verify = () => {
     const code1 = code.replace(/[^0-9]/g, '').trim();
     verify({ 
       variables: { 
-        mobile, 
+        phone, 
         code: code1 
       }
     });
   }
 
   const onResend = () => {
-    resend({ variables: { mobile } })
+    resend({ variables: { phone } })
   }
 
   const onBack = () => {
-    setMobile('');
+    setPhone('');
   }
 
   return (
@@ -130,7 +130,7 @@ const Verify = () => {
       <div style={{
         margin: 10,
       }}>
-        +1 {mobile.slice(0, 3)} {mobile.slice(3, 6)} {mobile.slice(6-10)}.
+        +1 {phone.slice(0, 3)} {phone.slice(3, 6)} {phone.slice(6-10)}.
       </div>
       <div style={{
         marginTop: 5,

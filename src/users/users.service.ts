@@ -3,26 +3,34 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
+import { StripeService } from 'src/stripe/stripe.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private stripeService: StripeService,
   ) {}
 
-  async findOne(mobile: string): Promise<User | null> {
-    return this.usersRepository.findOneBy({ mobile })
+  async findOne(phone: string): Promise<User | null> {
+    return this.usersRepository.findOneBy({ phone })
   }
 
-  async createOne(mobile: string): Promise<User> {
-    const user = new User();
-    user.mobile = mobile.trim();
+  async createOne(phone: string): Promise<User> {
+    phone = phone.trim();
+    const stripeCustomer = await this.stripeService.createCustomer(phone);
+ 
+    const user = await this.usersRepository.create({
+      phone,
+      stripeCustomerId: stripeCustomer.id,
+    })
+    
     return this.usersRepository.save(user);
   }
 
-  async setVerificationCode(mobile: string, code: string | null): Promise<User> {
-    const user = await this.findOne(mobile);
+  async setVerificationCode(phone: string, code: string | null): Promise<User> {
+    const user = await this.findOne(phone);
     if (!user) throw new Error('User not found');  
 
     if (code == null) {
@@ -35,8 +43,8 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async setRefreshToken(mobile: string, token: string): Promise<User> {
-    const user = await this.findOne(mobile);
+  async setRefreshToken(phone: string, token: string): Promise<User> {
+    const user = await this.findOne(phone);
     if (!user) throw new Error('User not found');
 
     if (token == null) {
@@ -49,8 +57,8 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async getUserIfRefreshTokenMatches(mobile: string, refreshToken: string): Promise<User | null> {
-    const user = await this.findOne(mobile);
+  async getUserIfRefreshTokenMatches(phone: string, refreshToken: string): Promise<User | null> {
+    const user = await this.findOne(phone);
     if (!user) throw new Error('User not found');
 
     const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.hashedRefreshToken);

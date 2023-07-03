@@ -23,7 +23,7 @@ export class DealsResolver {
 
   @Mutation(() => [Deal], {name: 'getDeals'})
   async getDeals(
-    @Args('mobile') mobile: string,
+    @Args('phone') phone: string,
   ) {
     return this.dealsService.findAll();
   }

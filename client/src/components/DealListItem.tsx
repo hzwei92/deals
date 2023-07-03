@@ -12,12 +12,8 @@ interface DealListItemProps {
 
 const DealListItem: React.FC<DealListItemProps> = ({ deal }) => {
   const byteArray = Uint8ArrayFromBase64(deal.image.data);
-
   const image = new Blob([byteArray], { type: 'image/jpeg' });
-  console.log(image);
-
   const src = URL.createObjectURL(image);
-  console.log(src);
 
   return (
     <IonCard routerLink={`/deal/${deal.id}`} style={{

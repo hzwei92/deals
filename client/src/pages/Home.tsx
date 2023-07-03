@@ -21,8 +21,8 @@ import { gql, useMutation } from '@apollo/client';
 import { AppContext } from '../App';
 
 const GET_DEALS = gql`
-  mutation GetDeals($mobile: String!) {
-    getDeals(mobile: $mobile) {
+  mutation GetDeals($phone: String!) {
+    getDeals(phone: $phone) {
       id
       name
       detail
@@ -38,7 +38,7 @@ const GET_DEALS = gql`
 
 const Home: React.FC = () => {
   const { 
-    mobile,
+    phone,
     deals,
     setDeals,
     shouldGetDeals,
@@ -66,7 +66,7 @@ const Home: React.FC = () => {
     if (!shouldGetDeals) return;
     getDeals({
       variables: {
-        mobile,
+        phone,
       },
     }); 
     setShouldGetDeals(false);

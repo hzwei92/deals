@@ -10,6 +10,8 @@ import * as Joi from 'joi';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { DealsModule } from './deals/deals.module';
 import { ImagesModule } from './images/images.module';
+import { StripeService } from './stripe/stripe.service';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
   imports: [
@@ -26,6 +28,9 @@ import { ImagesModule } from './images/images.module';
         JWT_REFRESH_TOKEN_EXPIRATION_TIME: Joi.string().required(),
         TWILIO_ACCOUNT_SID: Joi.string().required(),
         TWILIO_AUTH_TOKEN: Joi.string().required(),
+        STRIPE_SECRET_KEY: Joi.string().required(),
+        STRIPE_CURRENCY: Joi.string().required(),
+        FRONTEND_URL: Joi.string().required(),
       }))
     }),
     TypeOrmModule.forRootAsync({
@@ -35,7 +40,6 @@ import { ImagesModule } from './images/images.module';
         url: configService.get('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: true,
-
         ssl: configService.get('NODE_ENV') === 'production'
           ? { rejectUnauthorized: false }
           : false,
@@ -63,6 +67,8 @@ import { ImagesModule } from './images/images.module';
     AuthModule,
     DealsModule,
     ImagesModule,
+    StripeModule,
   ],
+  providers: [StripeService],
 })
 export class AppModule {}

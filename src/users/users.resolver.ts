@@ -9,7 +9,7 @@ export class UsersResolver {
   ) {}
 
   @Query(() => User, { name: 'user' })
-  async user(mobile: string): Promise<User | null> {
-    return this.usersService.findOne(mobile);
+  async user(phone: string): Promise<User | null> {
+    return this.usersService.findOne(phone);
   }
 }

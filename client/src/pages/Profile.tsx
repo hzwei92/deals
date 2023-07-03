@@ -3,23 +3,23 @@ import { IonButton, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolba
 import { homeOutline } from "ionicons/icons";
 import { useContext } from "react";
 import { AppContext } from "../App";
-import { MOBILE_KEY, ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../constants";
+import { PHONE_KEY, ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../constants";
 
 const Profile: React.FC = () => {
   const { 
-    mobile, 
-    setMobile, 
+    phone, 
+    setPhone, 
     setIsVerified,
     tokenRefreshInterval,
     setTokenRefreshInterval,
   } = useContext(AppContext);
 
   const onLogout = () => {
-    Preferences.remove({ key: MOBILE_KEY })
+    Preferences.remove({ key: PHONE_KEY })
     Preferences.remove({ key: ACCESS_TOKEN_KEY });
     Preferences.remove({ key: REFRESH_TOKEN_KEY });
 
-    setMobile('');
+    setPhone('');
     setIsVerified(false);
 
     if (tokenRefreshInterval) {
@@ -46,7 +46,7 @@ const Profile: React.FC = () => {
           <div style={{
             padding:10,
           }}>
-            +1 {mobile.slice(0, 3)} {mobile.slice(3, 6)} {mobile.slice(6, 10)}
+            +1 {phone.slice(0, 3)} {phone.slice(3, 6)} {phone.slice(6, 10)}
           </div>
           <div>
             <IonButton routerLink='/login' onClick={onLogout}>

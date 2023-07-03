@@ -32,8 +32,8 @@ import { Deal } from './data/deals';
 setupIonicReact();
 
 export const AppContext = createContext({
-  mobile: '',
-  setMobile: (mobile: string) => {},
+  phone: '',
+  setPhone: (phone: string) => {},
   isVerified: false,
   setIsVerified: (isVerified: boolean) => {},
   tokenRefreshInterval: null as ReturnType<typeof setInterval> | null,
@@ -45,7 +45,7 @@ export const AppContext = createContext({
 });
 
 const App: React.FC = () => {
-  const [mobile, setMobile] = useState<string>('');
+  const [phone, setPhone] = useState<string>('');
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [tokenRefreshInterval, setTokenRefreshInterval] = useState<ReturnType<typeof setInterval> | null>(null);
 
@@ -54,8 +54,8 @@ const App: React.FC = () => {
 
   return (
     <AppContext.Provider value={{ 
-      mobile, 
-      setMobile,
+      phone, 
+      setPhone,
       isVerified,
       setIsVerified,
       tokenRefreshInterval,

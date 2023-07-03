@@ -13,46 +13,46 @@ export class AuthResolver {
 
   @Mutation(() => User, { name: 'login' })
   async login(
-    @Args('mobile') mobile: string,
+    @Args('phone') phone: string,
   ) {
-    let user = await this.usersService.findOne(mobile);
+    let user = await this.usersService.findOne(phone);
     if (!user) {
-      user = await this.usersService.createOne(mobile);
+      user = await this.usersService.createOne(phone);
     }
 
-    await this.authService.login(mobile);
+    await this.authService.login(phone);
 
     return user;
   }
 
   @Mutation(() => VerifyResult, { name: 'verify' })
   async verify(
-    @Args('mobile') mobile: string,
+    @Args('phone') phone: string,
     @Args('code') code: string,
   ) {
-    return this.authService.verify(mobile, code);
+    return this.authService.verify(phone, code);
   }
     
   @Mutation(() => User, { name: 'resend' })
   async resend(
-    @Args('mobile') mobile: string,
+    @Args('phone') phone: string,
   ) {
-    const user = await this.usersService.findOne(mobile);
+    const user = await this.usersService.findOne(phone);
 
     if (!user) {
       throw new Error('User not found');
     }
 
-    await this.authService.login(mobile);
+    await this.authService.login(phone);
 
     return user;
   }
 
   @Mutation(() => User, { name: 'logout' })
   async logout(
-    @Args('mobile') mobile: string,
+    @Args('phone') phone: string,
   ) {
-    await this.usersService.setRefreshToken(mobile, null);
+    await this.usersService.setRefreshToken(phone, null);
   }
 
   @Mutation(() => String, { name: 'refresh' })

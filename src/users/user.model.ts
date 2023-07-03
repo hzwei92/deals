@@ -6,7 +6,7 @@ export class User {
   id: number;
 
   @Field()
-  mobile: string;
+  phone: string;
 
   @Field()
   isAdmin: boolean;

@@ -14,12 +14,12 @@ const REFRESH_TOKEN = gql`
 export default function useToken() {
   const router = useIonRouter();
 
-  const { setMobile, setIsVerified, setTokenRefreshInterval } = useContext(AppContext);
+  const { setPhone, setIsVerified, setTokenRefreshInterval } = useContext(AppContext);
 
   const [refresh] = useMutation(REFRESH_TOKEN, {
     onError: err => {
       console.log(err);
-      setMobile('');
+      setPhone('');
       setIsVerified(false);
     },
     onCompleted: data => {
@@ -40,7 +40,7 @@ export default function useToken() {
       refresh({ variables: { refreshToken: value } });
     }
     else {
-      setMobile('');
+      setPhone('');
       setIsVerified(false);
       router.push('/login')
     }
