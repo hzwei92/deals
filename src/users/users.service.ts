@@ -25,10 +25,10 @@ export class UsersService {
       phone,
       stripeCustomerId: stripeCustomer.id,
     })
-    
+
     return this.usersRepository.save(user);
   }
-
+  
   async setVerificationCode(phone: string, code: string | null): Promise<User> {
     const user = await this.findOne(phone);
     if (!user) throw new Error('User not found');  

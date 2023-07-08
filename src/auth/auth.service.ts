@@ -70,7 +70,11 @@ export class AuthService {
       if (!user) {
         throw new BadRequestException('Invalid refresh token');
       }
-      return this.getAccessToken(user.phone);
+      const accessToken = this.getAccessToken(user.phone);
+      return {
+        user,
+        accessToken,
+      }
     } catch (error) {
       if (error.message === 'jwt expired') {
         throw new BadRequestException('Invalid refresh token');

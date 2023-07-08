@@ -11,12 +11,13 @@ export class DealsService {
     private readonly dealsRepository: Repository<Deal>,
   ) {}
 
-  async createOne(name: string, detail: string, price: number, discountPrice: number, image: Image): Promise<Deal> {
+  async createOne(vendorId: number, name: string, detail: string, quantity: number, price: number, image: Image): Promise<Deal> {
     const deal = await this.dealsRepository.create({
+      vendorId,
       name,
       detail,
+      quantity,
       price,
-      discountPrice,
       image,
     });
     console.log('deal', deal);

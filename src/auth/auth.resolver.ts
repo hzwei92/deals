@@ -2,6 +2,7 @@ import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { User } from 'src/users/user.model';
 import { UsersService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
+import { RefreshTokentResult } from './dto/refresh-token-result.dto';
 import { VerifyResult } from './dto/verify-result.dto';
 
 @Resolver()
@@ -55,7 +56,7 @@ export class AuthResolver {
     await this.usersService.setRefreshToken(phone, null);
   }
 
-  @Mutation(() => String, { name: 'refresh' })
+  @Mutation(() => RefreshTokentResult, { name: 'refresh' })
   async refresh(
     @Args('refreshToken') refreshToken: string,
   ) {

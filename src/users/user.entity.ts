@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Deal } from "src/deals/deal.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class User {
@@ -12,6 +13,9 @@ export class User {
   @Index({ unique: true, where: '"deletedAt" IS NOT NULL AND name IS NOT NULL' })
   @Column({ nullable: true })
   name?: string;
+
+  @OneToMany(() => Deal, deal => deal.vendor)
+  offers: Deal[];
 
   @Column({ default: false })
   isAdmin: boolean;

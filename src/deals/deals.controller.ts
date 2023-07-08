@@ -1,5 +1,6 @@
-import { Body, Controller, Post, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Post, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Request } from 'express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ImagesService } from 'src/images/images.service';
 import { DealsService } from './deals.service';
@@ -16,9 +17,18 @@ export class DealsController {
   @UseInterceptors(FileInterceptor('file'))
   async addDeal(
     @Body() body: any,
-    @UploadedFile() file: Express.Multer.File
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
   ) {
+    const user = req['user'];
     const image = await this.imagesService.createOne(file);
-    return this.dealsService.createOne(body.name, body.detail, parseInt(body.price), parseInt(body.discountPrice), image);
+    return this.dealsService.createOne(
+      user.id, 
+      body.name,
+      body.detail, 
+      parseInt(body.quantity), 
+      parseInt(body.price), 
+      image
+    );
   }
 }

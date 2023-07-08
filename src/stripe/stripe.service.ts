@@ -20,6 +20,18 @@ export class StripeService {
     });
   }
 
+  public async createPaymentIntent(amount: number) {
+    const paymentIntent = await this.stripe.paymentIntents.create({
+      amount,
+      currency: this.configService.get('STRIPE_CURRENCY'),
+      automatic_payment_methods: {
+        enabled: true,
+      }
+    });
+
+    return paymentIntent.client_secret
+  }
+
   public async charge(amount: number, paymentMethodId: string, customerId: string) {
     return this.stripe.paymentIntents.create({
       amount,

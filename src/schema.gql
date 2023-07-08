@@ -11,13 +11,14 @@ type Deal {
   createdAt: DateTime!
   deletedAt: DateTime!
   detail: String!
-  discountPrice: Float!
   id: Int!
   image: Image!
   imageId: Float!
   name: String!
   price: Float!
+  quantity: Float!
   updatedAt: DateTime!
+  vendorId: Int!
 }
 
 type Image {
@@ -28,15 +29,21 @@ type Image {
 }
 
 type Mutation {
-  getDeals(phone: String!): [Deal!]!
+  createPaymentIntent(price: Int!): String!
+  getDeals: [Deal!]!
   login(phone: String!): User!
   logout(phone: String!): User!
-  refresh(refreshToken: String!): String!
+  refresh(refreshToken: String!): RefreshTokentResult!
   resend(phone: String!): User!
   verify(code: String!, phone: String!): VerifyResult!
 }
 
 type Query {
+  user: User!
+}
+
+type RefreshTokentResult {
+  accessToken: String!
   user: User!
 }
 

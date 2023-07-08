@@ -1,10 +1,12 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'io.jamn.deals',
-  appName: 'deals',
+  appId: 'io.ionic.starter',
+  appName: 'JAMN',
   webDir: 'dist',
-  bundledWebRuntime: false
+  server: {
+    androidScheme: 'https'
+  }
 };
 
 export default config;

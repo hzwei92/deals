@@ -1,7 +1,8 @@
 {
-  "name": "client",
+  "name": "JAMN",
   "integrations": {
     "capacitor": {}
   },
-  "type": "react-vite"
+  "type": "react-vite",
+  "id": "b8835db6"
 }

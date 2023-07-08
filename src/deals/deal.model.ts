@@ -6,6 +6,9 @@ export class Deal {
   @Field(() => Int)
   id: number;
 
+  @Field(() => Int)
+  vendorId: number;
+
   @Field()
   name: string;
 
@@ -13,10 +16,13 @@ export class Deal {
   detail: string;
 
   @Field()
+  quantity: number;
+  
+  @Field()
   price: number;
 
-  @Field()
-  discountPrice: number;
+  // @Field()
+  // discountPrice: number;
 
   @Field()
   imageId: number;

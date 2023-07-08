@@ -3,10 +3,9 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from '@apollo/client';
 import { isPlatform } from '@ionic/react';
-import { DEV_SERVER_URI, PROD_SERVER_URI } from './constants';
+import { DEV_SERVER_URI, PROD_SERVER_URI, ACCESS_TOKEN_KEY } from './constants';
 import { setContext } from '@apollo/client/link/context';
 import { Preferences } from '@capacitor/preferences';
-import { ACCESS_TOKEN_KEY } from './constants';
 
 const httpLink = createHttpLink({
   uri: process.env.NODE_ENV === 'production'
@@ -21,7 +20,7 @@ const authLink = setContext(async (_, { headers }) => {
   // get the authentication token from local storage if it exists
   const accessToken = await Preferences.get({
     key: ACCESS_TOKEN_KEY,
-  })
+  });
   // return the headers to the context so httpLink can read them
   return {
     headers: {
@@ -36,12 +35,18 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 });
 
+import { store } from './store';
+import { Provider } from 'react-redux';
+
 const container = document.getElementById('root');
 const root = createRoot(container!);
+
 root.render(
   <React.StrictMode>
     <ApolloProvider client={client}>
-      <App />
+      <Provider store={store}>
+        <App />
+      </Provider>
     </ApolloProvider>
   </React.StrictMode>
 );

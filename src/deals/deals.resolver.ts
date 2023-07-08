@@ -1,4 +1,6 @@
+import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { AuthGuard } from 'src/auth/gql-auth.guard';
 import { Image } from 'src/images/image.model';
 import { ImagesService } from 'src/images/images.service';
 import { Deal } from './deal.model';
@@ -21,10 +23,10 @@ export class DealsResolver {
     return image;
   }
 
+
+  //@UseGuards(AuthGuard)
   @Mutation(() => [Deal], {name: 'getDeals'})
-  async getDeals(
-    @Args('phone') phone: string,
-  ) {
+  async getDeals() {
     return this.dealsService.findAll();
   }
 }
