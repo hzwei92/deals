@@ -2,7 +2,7 @@ import { gql, useMutation } from '@apollo/client';
 import { IonContent, IonFab, IonFabButton, IonIcon, IonPage } from '@ionic/react';
 import { add } from 'ionicons/icons';
 import { useEffect } from 'react';
-import DealListItem from '../components/DealListItem';
+import DealListItem from '../components/deallistitem';
 import { addDeals, selectDeals } from '../slices/dealSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 
@@ -44,13 +44,14 @@ const Deals: React.FC = () => {
     <IonPage>
       <IonContent fullscreen>
         <div style={{
-          padding: 20,
-          paddingBottom: 0,
+          padding: 10,
+          backgroundColor: 'dimgrey',
+          minHeight: '100%',
         }}>
           {
-            Object.entries(deals).map(([id, deal]) => {
+            Object.values(deals).map(deal => {
               return (
-                <DealListItem key={'deal' + id} deal={deal} />
+                <DealListItem key={'deal' + deal.id} deal={deal} />
               )
             })
           }

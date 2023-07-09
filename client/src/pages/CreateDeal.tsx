@@ -1,17 +1,13 @@
-import { gql, useMutation } from '@apollo/client';
-import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonImg, IonInput, IonItem, IonLabel, IonPage, useIonRouter } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonPage, useIonRouter } from '@ionic/react';
 import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../store';
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { usePhotoGallery } from '../hooks/usePhotoGallery';
 import { Uint8ArrayFromBase64 } from '../utils';
 import { Preferences } from '@capacitor/preferences';
 import { ACCESS_TOKEN_KEY, DEV_SERVER_URI, PROD_SERVER_URI } from '../constants';
-import { camera, cameraOutline } from 'ionicons/icons';
+import { cameraOutline } from 'ionicons/icons';
 
 const CreateDeal: React.FC = () => {
-  const dispatch = useAppDispatch();
-
   const router = useIonRouter();
     
   const [name, setName] = useState<string>('');

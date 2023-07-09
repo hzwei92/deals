@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, createParamDecorator, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
@@ -28,12 +28,8 @@ export class AuthGuard implements CanActivate {
           secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET')
         }
       );
-      console.log('payload', payload)
-      const user = await this.usersService.findOne(payload.phone);
-      console.log('user', user)
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
-      request['user'] = user;
+      const user = await this.usersService.findOneByPhone(payload.phone);
+      ctx.getContext().user = user;
     } catch (e) {
       console.log('error', e)
       throw new UnauthorizedException();
@@ -45,3 +41,8 @@ export class AuthGuard implements CanActivate {
     return request.headers.accesstoken as string | undefined;
   }
 }
+
+export const CurrentUser = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) =>
+    GqlExecutionContext.create(ctx).getContext().user,
+);

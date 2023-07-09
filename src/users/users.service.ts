@@ -13,7 +13,12 @@ export class UsersService {
     private stripeService: StripeService,
   ) {}
 
-  async findOne(phone: string): Promise<User | null> {
+
+  async findOne(id: number): Promise<User | null> {
+    return this.usersRepository.findOneBy({ id });
+  }
+
+  async findOneByPhone(phone: string): Promise<User | null> {
     return this.usersRepository.findOneBy({ phone })
   }
 
@@ -30,7 +35,7 @@ export class UsersService {
   }
   
   async setVerificationCode(phone: string, code: string | null): Promise<User> {
-    const user = await this.findOne(phone);
+    const user = await this.findOneByPhone(phone);
     if (!user) throw new Error('User not found');  
 
     if (code == null) {
@@ -44,7 +49,7 @@ export class UsersService {
   }
 
   async setRefreshToken(phone: string, token: string): Promise<User> {
-    const user = await this.findOne(phone);
+    const user = await this.findOneByPhone(phone);
     if (!user) throw new Error('User not found');
 
     if (token == null) {
@@ -58,7 +63,7 @@ export class UsersService {
   }
 
   async getUserIfRefreshTokenMatches(phone: string, refreshToken: string): Promise<User | null> {
-    const user = await this.findOne(phone);
+    const user = await this.findOneByPhone(phone);
     if (!user) throw new Error('User not found');
 
     const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.hashedRefreshToken);

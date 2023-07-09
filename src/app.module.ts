@@ -13,6 +13,7 @@ import { ImagesModule } from './images/images.module';
 import { StripeService } from './stripe/stripe.service';
 import { StripeModule } from './stripe/stripe.module';
 import { OrdersModule } from './orders/orders.module';
+import { ChannelsModule } from './channels/channels.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { OrdersModule } from './orders/orders.module';
     ImagesModule,
     StripeModule,
     OrdersModule,
+    ChannelsModule,
   ],
   providers: [StripeService],
 })

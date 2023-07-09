@@ -37,7 +37,7 @@ export class AuthService {
   }
 
   async verify(phone: string, code: string) {
-    const user = await this.usersService.findOne(phone);
+    const user = await this.usersService.findOneByPhone(phone);
 
     if (!user) {
       throw new Error('User not found');

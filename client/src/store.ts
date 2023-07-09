@@ -1,12 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import authReducer from './slices/authSlice';
+import channelReducer from './slices/channelSlice';
 import dealReducer from './slices/dealSlice';
 import userReducer from './slices/userSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    channel: channelReducer,
     deal: dealReducer,
     user: userReducer,
   },

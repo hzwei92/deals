@@ -4,9 +4,9 @@ import { selectAppUser } from '../slices/userSlice';
 import { useAppSelector } from '../store';
 import LoginStart from './LoginStart';
 import LoginFinish from './LoginFinish';
-import useToken from '../hooks/useToken';
 import { selectIsInitialized } from '../slices/authSlice';
 import { User } from '../types/User';
+import useToken from '../hooks/usetoken';
 
 const AuthModal: React.FC = () => {
   const user = useAppSelector(selectAppUser);
@@ -21,12 +21,10 @@ const AuthModal: React.FC = () => {
       }
     }
     else {
-      console.log('refreshing token');
+      console.log('initializing');
       refreshToken();
     }
   }, [isInitialized]);
-
-  console.log('user', user, isInitialized)
 
   return (
     <IonModal isOpen={isInitialized && !user} backdropDismiss={false}>

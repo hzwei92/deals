@@ -40,19 +40,6 @@ const DealPage: React.FC<DealProps> = ({ match }) => {
   return (
     <IonPage>
       <IonContent fullscreen>
-        <IonHeader>
-          <IonButtons style={{
-            marginLeft: 15,
-            marginTop: 15,
-          }}>
-            <IonButton routerLink='/deal' style={{
-              border: '1px solid',
-              borderRadius: 5,
-            }}>
-              BACK
-            </IonButton>
-          </IonButtons>
-        </IonHeader>
         <div style={{ 
           margin: 'auto',
           maxWidth: 420,
@@ -65,7 +52,18 @@ const DealPage: React.FC<DealProps> = ({ match }) => {
           }}>
             {deal.name}
           </h1>
+          <IonButtons style={{
+            marginTop: 15,
+          }}>
+            <IonButton routerLink='/deal' style={{
+              border: '1px solid',
+              borderRadius: 5,
+            }}>
+              BACK
+            </IonButton>
+          </IonButtons>
           <img src={imgSrc} style={{
+            marginTop: 15,
             width: '100%',
             borderRadius: 5,
           }} />

@@ -36,6 +36,6 @@ export class Deal {
   @Field()
   updatedAt: Date;
 
-  @Field()
+  @Field({ nullable: true })
   deletedAt: Date;
 }

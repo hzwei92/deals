@@ -22,16 +22,12 @@ export const dealSlice = createSlice({
         state.deals[deal.id] = deal
       })
     },
-    inspectDeal: (state, action: PayloadAction<number>) => {
-      state.dealId = action.payload
-    },
   },
 })
 
 // Action creators are generated for each case reducer function
 export const { 
   addDeals,
-  inspectDeal,
  } = dealSlice.actions
 
 export default dealSlice.reducer

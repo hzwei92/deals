@@ -1,7 +1,8 @@
 import {
   IonButton, 
   IonButtons, 
-  IonCard, 
+  IonCard,
+  IonContent, 
   } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import { Deal } from '../types/Deal';
@@ -25,61 +26,63 @@ const DealListItem: React.FC<DealListItemProps> = ({ deal }) => {
     }
   }, [])
 
-  const url = '/deal/' + deal.id;
+  const url = '/deal/deal/' + deal.id;
 
   return (
     <IonCard routerLink={url} style={{
       margin: 'auto',
-      marginBottom: 20,
+      marginBottom: 10,
       padding: 10,
       maxWidth: 420,
+      color: 'var(--ion-color-secondary-contrast)',
+      backgroundColor: 'var(--ion-color-primary-contrast)',
     }}>
-        <h1 style={{
-          marginTop: 0,
-          marginBottom: 10,
-          fontWeight: 'bold',
-          fontSize: 32,
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'center',
-        }}>
-          {deal.name}
-        </h1>
-        <img src={src} style={{
-          width: '100%',
-          borderRadius: 5,
-        }}/>
-        <h3 style={{
-          margin: 5,
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'center',
-        }}>
-          {deal.detail}
-        </h3>
+      <h1 style={{
+        marginTop: 0,
+        marginBottom: 10,
+        fontWeight: 'bold',
+        fontSize: 32,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+      }}>
+        {deal.name}
+      </h1>
+      <img src={src} style={{
+        width: '100%',
+        borderRadius: 5,
+      }}/>
+      <h3 style={{
+        margin: 5,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+      }}>
+        {deal.detail}
+      </h3>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        padding: 10,
+      }}>
         <div style={{
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: 'column',
           justifyContent: 'center',
-          padding: 10,
         }}>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}>
-            {deal.quantity} available @&nbsp;
-          </div>
-          <IonButtons>
-            <IonButton routerLink={url} style={{
-              backgroundColor: '',
-              borderRadius: 5,
-              border: '1px solid'
-            }}>
-              ${deal.price}
-            </IonButton>
-          </IonButtons>
+          {deal.quantity} available @&nbsp;
         </div>
+        <IonButtons>
+          <IonButton routerLink={url} style={{
+            backgroundColor: '',
+            borderRadius: 5,
+            border: '1px solid'
+          }}>
+            ${deal.price}
+          </IonButton>
+        </IonButtons>
+      </div>
     </IonCard>
   );
 };

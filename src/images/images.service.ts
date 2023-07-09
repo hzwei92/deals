@@ -18,11 +18,7 @@ export class ImagesService {
   }
   
   async findOne(id: number): Promise<Image> {
-    return this.imagesRepository.findOne({
-      where: {
-        id
-      }
-    });
+    return this.imagesRepository.findOneBy({ id });
   }
 
 }

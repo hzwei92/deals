@@ -34,6 +34,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 /* Theme variables */
 import './theme/variables.css';
+
 import Meme from './pages/Meme';
 import Map from './pages/Map';
 import Deals from './pages/Deals';
@@ -42,6 +43,7 @@ import AppBar from './components/AppBar';
 import AuthModal from './components/AuthModal';
 import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
+import Channel from './pages/Channel';
 
 setupIonicReact();
 
@@ -56,9 +58,10 @@ const App: React.FC = () => {
           }}>
             <Route exact path="/meme"  component={Meme} />
             <Route exact path="/map" component={Map} />
+            <Route exact path="/map/channel/:id" component={Channel} />
             <Route exact path="/deal" component={Deals} />
             <Route exact path="/deal/create" component={CreateDeal} />
-            <Route exact path="/deal/:id" component={Deal} />
+            <Route exact path="/deal/deal/:id" component={Deal} />
             <Route exact path="/">
               <Redirect to="/map" />
             </Route>

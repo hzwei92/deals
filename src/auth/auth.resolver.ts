@@ -16,7 +16,7 @@ export class AuthResolver {
   async login(
     @Args('phone') phone: string,
   ) {
-    let user = await this.usersService.findOne(phone);
+    let user = await this.usersService.findOneByPhone(phone);
     if (!user) {
       user = await this.usersService.createOne(phone);
     }
@@ -38,7 +38,7 @@ export class AuthResolver {
   async resend(
     @Args('phone') phone: string,
   ) {
-    const user = await this.usersService.findOne(phone);
+    const user = await this.usersService.findOneByPhone(phone);
 
     if (!user) {
       throw new Error('User not found');

@@ -74,6 +74,7 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-light-contrast-rgb: 0, 0, 0;
   --ion-color-light-shade: #d7d8da;
   --ion-color-light-tint: #f5f6f9;
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -85,14 +86,14 @@ http://ionicframework.com/docs/theming/ */
   body {
     --ion-color-primary: #f4900c;
     --ion-color-primary-rgb: 244, 144, 12;
-    --ion-color-primary-contrast: #000000;
+    --ion-color-secondary-contrast: #ffffff;
     --ion-color-primary-contrast-rgb: 0, 0, 0;
     --ion-color-primary-shade: #d77f0b;
     --ion-color-primary-tint: #f59b24;
 
     --ion-color-secondary: #50c8ff;
     --ion-color-secondary-rgb: 80,200,255;
-    --ion-color-secondary-contrast: #ffffff;
+    --ion-color-primary-contrast: #000000;
     --ion-color-secondary-contrast-rgb: 255,255,255;
     --ion-color-secondary-shade: #46b0e0;
     --ion-color-secondary-tint: #62ceff;
@@ -233,4 +234,25 @@ http://ionicframework.com/docs/theming/ */
 
     --ion-card-background: #1e1e1e;
   }
+
+  .mapboxgl-popup-content {
+    background-color:  #000000;
+  }
+
+  .mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
+  .mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
+  .mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+      border-bottom-color: #000000;
+      }
+  .mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+  .mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
+  .mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+      border-top-color: #000000;
+      }
+  .mapboxgl-popup-anchor-left .mapboxgl-popup-tip {
+      border-right-color: #000000;
+      }
+  .mapboxgl-popup-anchor-right .mapboxgl-popup-tip {
+      border-left-color: #000000;
+      }
 }
