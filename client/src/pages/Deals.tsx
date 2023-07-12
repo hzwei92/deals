@@ -2,7 +2,7 @@ import { gql, useMutation } from '@apollo/client';
 import { IonContent, IonFab, IonFabButton, IonIcon, IonPage } from '@ionic/react';
 import { add } from 'ionicons/icons';
 import { useEffect } from 'react';
-import DealListItem from '../components/deallistitem';
+import DealListItem from '../components/DealListItem';
 import { addDeals, selectDeals } from '../slices/dealSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 
