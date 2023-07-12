@@ -35,7 +35,7 @@ import { SignalingModule } from './signaling/signaling.module';
         TWILIO_AUTH_TOKEN: Joi.string().required(),
         STRIPE_SECRET_KEY: Joi.string().required(),
         STRIPE_CURRENCY: Joi.string().required(),
-        FRONTEND_URL: Joi.string().required(),
+        FRONTEND_URL: Joi.string(),
       }))
     }),
     TypeOrmModule.forRootAsync({
