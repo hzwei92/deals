@@ -45,48 +45,59 @@ import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
 import Channel from './pages/Channel';
 import useSignaling from './hooks/useSignaling';
+import { createContext } from 'react';
 
 setupIonicReact();
 
+export const AppContext = createContext({
+  peerConnection: null as RTCPeerConnection | null,
+  remoteStreams: [] as MediaStream[],
+});
+
 const App: React.FC = () => {
-  const makeCall = useSignaling()
+  const { peerConnection, remoteStreams } = useSignaling()
 
   return (
     <IonApp>
-      <IonReactRouter>
-        <AppBar />
-        <IonTabs>
-          <IonRouterOutlet style={{
-            marginTop: isPlatform('ios') ? 56 : 60,
-          }}>
-            <Route exact path="/meme"  component={Meme} />
-            <Route exact path="/map" component={Map} />
-            <Route exact path="/map/channel/:id" component={Channel} />
-            <Route exact path="/deal" component={Deals} />
-            <Route exact path="/deal/create" component={CreateDeal} />
-            <Route exact path="/deal/deal/:id" component={Deal} />
-            <Route exact path="/">
-              <Redirect to="/map" />
-            </Route>
-          </IonRouterOutlet>
-          <IonTabBar slot="bottom">
-            <IonTabButton tab="meme" href="/meme">
-              <IonIcon aria-hidden="true" icon={triangle} />
-              <IonLabel>MEME</IonLabel>
-            </IonTabButton>
-            <IonTabButton tab="map" href="/map">
-              <IonIcon aria-hidden="true" icon={ellipse} />
-              <IonLabel>MAP</IonLabel>
-            </IonTabButton>
-            <IonTabButton tab="deal" href="/deal">
-              <IonIcon aria-hidden="true" icon={square} />
-              <IonLabel>DEAL</IonLabel>
-            </IonTabButton>
-          </IonTabBar>
-        </IonTabs>
-      </IonReactRouter>
-      <AuthModal />
-      <AccountModal />
+      <AppContext.Provider value={{
+        peerConnection,
+        remoteStreams,
+      }}>
+        <IonReactRouter>
+          <AppBar />
+          <IonTabs>
+            <IonRouterOutlet style={{
+              marginTop: isPlatform('ios') ? 56 : 60,
+            }}>
+              <Route exact path="/meme"  component={Meme} />
+              <Route exact path="/map" component={Map} />
+              <Route exact path="/map/channel/:id" component={Channel} />
+              <Route exact path="/deal" component={Deals} />
+              <Route exact path="/deal/create" component={CreateDeal} />
+              <Route exact path="/deal/deal/:id" component={Deal} />
+              <Route exact path="/">
+                <Redirect to="/map" />
+              </Route>
+            </IonRouterOutlet>
+            <IonTabBar slot="bottom">
+              <IonTabButton tab="meme" href="/meme">
+                <IonIcon aria-hidden="true" icon={triangle} />
+                <IonLabel>MEME</IonLabel>
+              </IonTabButton>
+              <IonTabButton tab="map" href="/map">
+                <IonIcon aria-hidden="true" icon={ellipse} />
+                <IonLabel>MAP</IonLabel>
+              </IonTabButton>
+              <IonTabButton tab="deal" href="/deal">
+                <IonIcon aria-hidden="true" icon={square} />
+                <IonLabel>DEAL</IonLabel>
+              </IonTabButton>
+            </IonTabBar>
+          </IonTabs>
+        </IonReactRouter>
+        <AuthModal />
+        <AccountModal />
+      </AppContext.Provider>
     </IonApp>
   );
 };

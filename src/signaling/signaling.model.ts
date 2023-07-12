@@ -19,6 +19,9 @@ export class CandidateInput {
 
   @Field()
   sdpMLineIndex: number;
+
+  @Field()
+  usernameFragment: string;
 }
 
 @InputType()
@@ -53,6 +56,9 @@ export class Candidate {
 
   @Field()
   sdpMLineIndex: number;
+
+  @Field()
+  usernameFragment: string;
 }
 
 @ObjectType()

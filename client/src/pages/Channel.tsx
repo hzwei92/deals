@@ -1,6 +1,7 @@
 import { IonButton, IonButtons, IonContent, IonPage } from '@ionic/react';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
+import { AppContext } from '../App';
 import { selectChannel } from '../slices/channelSlice';
 import { useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
@@ -10,31 +11,15 @@ const getConnectedDevices = async (type: MediaDeviceKind) => {
   return devices.filter(device => device.kind === type)
 }
 
-const openMediaDevices = (constraints: MediaStreamConstraints) => {
-  return navigator.mediaDevices.getUserMedia(constraints);
-}
-
-const openCamera = (cameraId: string, minWidth: number, minHeight: number) => {
-  const constraints = {
-    audio: true,
-    video: {
-      deviceId: cameraId,
-      width: { min: minWidth },
-      height: { min: minHeight },
-    },
-  };
-
-  return navigator.mediaDevices.getUserMedia(constraints);
-}
-
 interface ChannelProps extends RouteComponentProps<{
   id: string;
 }> {}
 
 const Channel: React.FC<ChannelProps> = ({ match }) => {
+  const { remoteStreams } = useContext(AppContext);
+
   const channel = useAppSelector(state => selectChannel(state, parseInt(match.params.id))) as ChannelType | null; 
 
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [cams, setCams] = useState<MediaDeviceInfo[]>([]);
   const [mics, setMics] = useState<MediaDeviceInfo[]>([]);
 
@@ -48,41 +33,34 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
       setMics(microphones);
     }
 
-    const initWebRTC = async () => {
-      if (!videoRef.current) return;
-
+    const getDevices = async () => {
       try {
-        const mediaStream = await openMediaDevices({'video':true,'audio':true});
-        console.log('Got MediaStream:', mediaStream);
-        setStream(mediaStream);
-        videoRef.current.srcObject = mediaStream;
-
         const videoCameras = await getConnectedDevices('videoinput');
         console.log('Cameras found:', videoCameras);
         setCams(videoCameras);
-
-        if (videoCameras && videoCameras.length > 0) {
-          const cameraStream = await openCamera(videoCameras[0].deviceId, 0, 0);
-        }
 
         const microphones = await getConnectedDevices('audioinput');
         console.log('Microphones found:', microphones);
         setMics(microphones);
 
         navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange)
-
       } catch(error) {
         console.error('Error accessing media devices.', error);
       }
     }
 
-    initWebRTC();
+    getDevices();
 
     return () => {
       navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
     }
-  }, [videoRef]);
+  }, []);
 
+  const attachVidSrc = (stream: MediaStream) => (vid: HTMLVideoElement | null) => {
+    if (vid) {
+      vid.srcObject = stream;
+    }
+  }
 
   if (!channel) return (
     <IonPage>
@@ -145,10 +123,16 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           <div>
             { mics.map(mic => (<div key={'mic-'+mic.deviceId}>{mic.label}</div>)) }
           </div>
-          <video ref={videoRef} autoPlay={true} style={{
-            width: '100%',
-            borderRadius: 5,
-          }}></video>
+          {
+            remoteStreams.map(stream => {
+              return (
+                <video key={'stream-'+stream.id} ref={attachVidSrc(stream)} autoPlay={true} style={{
+                  width: '100%',
+                  borderRadius: 5,
+                }}></video>
+              )
+            })
+          }
           <IonButtons>
             <IonButton onClick={() => {}} style={{
               border: '1px solid',

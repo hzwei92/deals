@@ -6,12 +6,14 @@ type Candidate {
   candidate: String!
   sdpMLineIndex: Float!
   sdpMid: String!
+  usernameFragment: String!
 }
 
 input CandidateInput {
   candidate: String!
   sdpMLineIndex: Float!
   sdpMid: String!
+  usernameFragment: String!
 }
 
 type Channel {
@@ -98,7 +100,7 @@ input SessionDescriptionInput {
 }
 
 type Subscription {
-  signalMessage(channelId: Int!): Message!
+  signalMessage(channelId: Int!, userId: Int!): Message!
 }
 
 type User {
