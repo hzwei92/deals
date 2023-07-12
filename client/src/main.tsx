@@ -11,16 +11,23 @@ import { createClient } from 'graphql-ws';
 
 const wsLink = new GraphQLWsLink(createClient({
   url: process.env.NODE_ENV === 'production'
-    ? `ws://${PROD_SERVER_URI}/graphql`
+    ? (isPlatform('android') || isPlatform('ios')) && !isPlatform('mobileweb')
+      ? `ws://${PROD_SERVER_URI}/graphql`
+      : window.location.origin.replace(/^http/, 'ws') + '/graphql'
     : `ws://${DEV_SERVER_URI}/graphql`,
 }));
 
 const httpLink = createHttpLink({
   uri: process.env.NODE_ENV === 'production'
-    ? isPlatform('ios') || isPlatform('android')
+    ? (isPlatform('ios') || isPlatform('android')) && !isPlatform('mobileweb')
       ? `https://${PROD_SERVER_URI}/graphql`
-      : '/graphql'
+      :  window.location.origin + '/graphql'
     : `http://${DEV_SERVER_URI}/graphql`,
+  credentials: process.env.NODE_ENV === 'production'
+    ? isPlatform('ios') || isPlatform('android')
+      ? 'include'
+      : 'same-origin'
+    : 'include'
 });
 
 const authLink = setContext(async (_, { headers }) => {
