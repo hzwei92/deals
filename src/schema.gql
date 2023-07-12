@@ -2,6 +2,18 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Candidate {
+  candidate: String!
+  sdpMLineIndex: Float!
+  sdpMid: String!
+}
+
+input CandidateInput {
+  candidate: String!
+  sdpMLineIndex: Float!
+  sdpMid: String!
+}
+
 type Channel {
   createdAt: DateTime!
   deletedAt: DateTime
@@ -41,6 +53,18 @@ type Image {
   id: Int!
 }
 
+type Message {
+  answer: SessionDescription
+  candidate: Candidate
+  offer: SessionDescription
+}
+
+input MessageInput {
+  answer: SessionDescriptionInput
+  candidate: CandidateInput
+  offer: SessionDescriptionInput
+}
+
 type Mutation {
   createChannel(lat: Float!, lng: Float!): Channel!
   createPaymentIntent(price: Int!): String!
@@ -50,6 +74,7 @@ type Mutation {
   logout(phone: String!): User!
   refresh(refreshToken: String!): RefreshTokentResult!
   resend(phone: String!): User!
+  signalMessage(channelId: Int!, message: MessageInput!): Boolean!
   verify(code: String!, phone: String!): VerifyResult!
 }
 
@@ -60,6 +85,20 @@ type Query {
 type RefreshTokentResult {
   accessToken: String!
   user: User!
+}
+
+type SessionDescription {
+  sdp: String
+  type: String!
+}
+
+input SessionDescriptionInput {
+  sdp: String
+  type: String!
+}
+
+type Subscription {
+  signalMessage(channelId: Int!): Message!
 }
 
 type User {

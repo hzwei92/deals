@@ -1,9 +1,10 @@
 import { gql, useMutation } from '@apollo/client';
-import { IonButton, IonButtons, IonContent, IonInput, IonPage, useIonRouter } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonPage, useIonRouter } from '@ionic/react';
 import mapboxgl, { Map } from 'mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { addChannels, selectChannels } from '../slices/channelSlice';
+import { activateChannel, addChannels, selectChannels } from '../slices/channelSlice';
+import { selectAppUser } from '../slices/userSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel } from '../types/Channel';
 
@@ -112,6 +113,8 @@ const MapComponent: React.FC = () => {
 
   const router = useIonRouter();
 
+  const user = useAppSelector(selectAppUser);
+
   const [createChannel] = useMutation(CREATE_CHANNEL, {
     onError: err => {
       console.log(err);
@@ -120,6 +123,7 @@ const MapComponent: React.FC = () => {
       console.log(data);
 
       dispatch(addChannels([data.createChannel]));
+      dispatch(activateChannel(data.createChannel.id));
       router.push('/map/channel/' + data.createChannel.id);
     },
   });
@@ -133,9 +137,6 @@ const MapComponent: React.FC = () => {
     });
   }
 
-
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-
   const [mapLng, setMapLng] = useState(-70.9);
   const [mapLat, setMapLat] = useState(42.35);
   const [mapZoom, setMapZoom] = useState(9);
@@ -146,12 +147,18 @@ const MapComponent: React.FC = () => {
 
   const channels = useAppSelector(selectChannels);
 
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [shouldAddSource, setShouldAddSource] = useState(false);
+
   const joinChannel = (id: number) => () => {
     router.push('/map/channel/' + id);
+    dispatch(activateChannel(id));
   }
 
   useEffect(() => {
-    if (!map.current || !map.current.loaded() || map.current.getSource('channels')) return;
+    console.log('adding source', map.current?.loaded(), shouldAddSource, map.current?.getSource('channels'));
+
+    if (!map.current || !isMapLoaded || !shouldAddSource || map.current.getSource('channels')) return;
     map.current.addSource('channels', {
       type: 'geojson',
       data: {
@@ -275,11 +282,24 @@ const MapComponent: React.FC = () => {
       if (!map.current) return;
       map.current.getCanvas().style.cursor = 'pointer';
     });
+
     map.current.on('mouseleave', 'clusters', () => {
       if (!map.current) return;
       map.current.getCanvas().style.cursor = '';
     });
-  }, [channels, map.current?.loaded(), map.current?.getSource('channels')])
+
+    map.current.on('mouseenter', 'unclustered-point', () => {
+      if (!map.current) return;
+      map.current.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.current.on('mouseleave', 'unclustered-point', () => {
+      if (!map.current) return;
+      map.current.getCanvas().style.cursor = '';
+    });
+
+    setShouldAddSource(false);
+  }, [isMapLoaded, shouldAddSource, channels, map.current?.getSource('channels')])
 
   const [getChannels] = useMutation(GET_CHANNELS, {
     onError: err => {
@@ -287,18 +307,20 @@ const MapComponent: React.FC = () => {
     },
     onCompleted: data => {
       console.log(data);
+      setShouldAddSource(true);
       dispatch(addChannels(data.getChannels));
     },
   });
 
   useEffect(() => {
+    if (!user?.id) return;
     getChannels({
       variables: {
         lng: mapLng,
         lat: mapLat,
       },
     });
-  }, []);
+  }, [user?.id, mapLng, mapLat]);
 
   useEffect(() => {
     if (marker.current?.getPopup().isOpen()) return;
@@ -316,6 +338,7 @@ const MapComponent: React.FC = () => {
       trackResize: true,
     });
     map.current.on('load', function () {
+      console.log('map loaded');
       map.current?.resize();
       setIsMapLoaded(true);
     });    

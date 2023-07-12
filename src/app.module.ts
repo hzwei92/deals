@@ -1,4 +1,4 @@
-import { ApolloDriver,  } from '@nestjs/apollo';
+import { ApolloDriver, ApolloDriverConfig,  } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,10 +10,11 @@ import * as Joi from 'joi';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { DealsModule } from './deals/deals.module';
 import { ImagesModule } from './images/images.module';
-import { StripeService } from './stripe/stripe.service';
 import { StripeModule } from './stripe/stripe.module';
 import { OrdersModule } from './orders/orders.module';
 import { ChannelsModule } from './channels/channels.module';
+import { PubSubModule } from './pub-sub/pub-sub.module';
+import { SignalingModule } from './signaling/signaling.module';
 
 @Module({
   imports: [
@@ -23,6 +24,8 @@ import { ChannelsModule } from './channels/channels.module';
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test', 'provision')
           .default('development'),
+        DATABASE_URL: Joi.string().required(),
+        REDIS_URL: Joi.string().required(),
         PORT: Joi.number().default(4000),
         JWT_ACCESS_TOKEN_SECRET: Joi.string().required(),
         JWT_ACCESS_TOKEN_EXPIRATION_TIME: Joi.string().required(),
@@ -48,19 +51,15 @@ import { ChannelsModule } from './channels/channels.module';
         keepConnectionAlive: true,
       }),
     }),
-    GraphQLModule.forRootAsync({
+    GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      useFactory: async () => ({
-        autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-        sortSchema: true,
-        cors: {
-          origin: [
-            'http://localhost:8100'
-          ],
-          credentials: true,
-        },
-        uploads: false,
-      })
+      playground: true,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      sortSchema: true,
+      //installSubscriptionHandlers: true,
+      subscriptions: {
+        'graphql-ws': true,
+      },
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'client', 'dist'),
@@ -72,7 +71,8 @@ import { ChannelsModule } from './channels/channels.module';
     StripeModule,
     OrdersModule,
     ChannelsModule,
+    PubSubModule,
+    SignalingModule,
   ],
-  providers: [StripeService],
 })
 export class AppModule {}

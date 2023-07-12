@@ -1,7 +1,6 @@
 import { gql, useMutation } from "@apollo/client";
 import { IonButton, IonButtons, IonContent, IonInput } from "@ionic/react"
 import { useState } from "react";
-import { useAppDispatch } from "../store";
 import { User } from "../types/User";
 
 const LOGIN = gql`
@@ -18,8 +17,6 @@ interface LoginStartProps {
   setPendingUser: (user: User | null) => void;
 };
 const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
-  const dispatch = useAppDispatch();
-
   const [tel, setTel] = useState<string>('');
   const [telIsValid, setTelIsValid] = useState<boolean>(false);
 

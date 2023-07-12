@@ -6,7 +6,7 @@ import LoginStart from './LoginStart';
 import LoginFinish from './LoginFinish';
 import { selectIsInitialized } from '../slices/authSlice';
 import { User } from '../types/User';
-import useToken from '../hooks/usetoken';
+import useToken from '../hooks/useToken';
 
 const AuthModal: React.FC = () => {
   const user = useAppSelector(selectAppUser);

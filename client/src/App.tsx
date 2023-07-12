@@ -44,10 +44,13 @@ import AuthModal from './components/AuthModal';
 import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
 import Channel from './pages/Channel';
+import useSignaling from './hooks/useSignaling';
 
 setupIonicReact();
 
 const App: React.FC = () => {
+  const makeCall = useSignaling()
+
   return (
     <IonApp>
       <IonReactRouter>
