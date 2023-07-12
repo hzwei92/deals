@@ -2,7 +2,6 @@ import {
   IonButton, 
   IonButtons, 
   IonCard,
-  IonContent, 
   } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import { Deal } from '../types/Deal';
