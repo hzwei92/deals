@@ -2,8 +2,15 @@ import { IonAvatar, IonButton, IonButtons, IonHeader, IonTitle, IonToolbar, isPl
 import md5 from "md5";
 import { selectAppUser } from "../slices/userSlice";
 import { useAppSelector } from "../store";
+import useJoinSub from "../hooks/useJoinSub";
+import useConfigureSub from "../hooks/useConfigureSub";
+import useSubscribeSub from "../hooks/useSubscribeSub";
 
 const AppBar: React.FC = () => {
+  useJoinSub();
+  useConfigureSub();
+  useSubscribeSub();
+
   const user = useAppSelector(selectAppUser);
   return (
     <IonHeader>

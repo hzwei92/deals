@@ -320,7 +320,7 @@ const MapComponent: React.FC = () => {
         lat: mapLat,
       },
     });
-  }, [user?.id, mapLng, mapLat]);
+  }, [user?.id]);
 
   useEffect(() => {
     if (marker.current?.getPopup().isOpen()) return;

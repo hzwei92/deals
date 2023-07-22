@@ -1,14 +1,15 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from 'src/users/users.service';
-import * as twilio from 'twilio';
-import * as bcrypt from 'bcrypt';
+const twilio = require('twilio');
+const bcrypt = require('bcrypt');
 import TokenPayload from './tokenPayload.interface';
 import { JwtService } from '@nestjs/jwt';
+import { Twilio } from 'twilio';
 
 @Injectable()
 export class AuthService {
-  client: twilio.Twilio;
+  client: Twilio;
   constructor(
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,

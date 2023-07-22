@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SignalingResolver } from './signaling.resolver';
+import { JanusResolver } from './janus.resolver';
 
-describe('SignalingResolver', () => {
-  let resolver: SignalingResolver;
+describe('JanusResolver', () => {
+  let resolver: JanusResolver;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [SignalingResolver],
+      providers: [JanusResolver],
     }).compile();
 
-    resolver = module.get<SignalingResolver>(SignalingResolver);
+    resolver = module.get<JanusResolver>(JanusResolver);
   });
 
   it('should be defined', () => {

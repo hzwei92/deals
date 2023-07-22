@@ -44,24 +44,35 @@ import AuthModal from './components/AuthModal';
 import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
 import Channel from './pages/Channel';
-import useSignaling from './hooks/useSignaling';
-import { createContext } from 'react';
+import { Dispatch, SetStateAction, createContext, useState } from 'react';
+import { Vid } from './types/Vid';
 
 setupIonicReact();
 
-export const AppContext = createContext({
-  peerConnection: null as RTCPeerConnection | null,
-  remoteStreams: [] as MediaStream[],
+export const AppContext = createContext({} as {
+  pcMap: Record<number, RTCPeerConnection>,
+  setPcMap: Dispatch<SetStateAction<Record<number, RTCPeerConnection>>>,
+  pendingOfferMap: any,
+  setPendingOfferMap: Dispatch<SetStateAction<any>>,
+  vidMap: Record<string, Vid>,
+  setVidMap: Dispatch<SetStateAction<Record<string, Vid>>>,
 });
 
 const App: React.FC = () => {
-  const { peerConnection, remoteStreams } = useSignaling()
+  const [pcMap, setPcMap] = useState<Record<number, RTCPeerConnection>>({})
 
+  const [pendingOfferMap, setPendingOfferMap] = useState<any>({})
+
+  const [vidMap, setVidMap] = useState<Record<string, Vid>>({})
   return (
     <IonApp>
       <AppContext.Provider value={{
-        peerConnection,
-        remoteStreams,
+        pcMap,
+        setPcMap,
+        pendingOfferMap,
+        setPendingOfferMap,
+        vidMap,
+        setVidMap,
       }}>
         <IonReactRouter>
           <AppBar />

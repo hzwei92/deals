@@ -2,16 +2,9 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Candidate {
-  candidate: String!
-  sdpMLineIndex: Float!
-  sdpMid: String!
-  usernameFragment: String!
-}
-
 input CandidateInput {
   candidate: String!
-  sdpMLineIndex: Float!
+  sdpMLineIndex: Int!
   sdpMid: String!
   usernameFragment: String!
 }
@@ -27,6 +20,12 @@ type Channel {
   owner: User!
   ownerId: Int!
   updatedAt: DateTime!
+}
+
+type ConfigureResponse {
+  feed: Float!
+  jsep: Jsep!
+  room: Float!
 }
 
 """
@@ -55,29 +54,55 @@ type Image {
   id: Int!
 }
 
-type Message {
-  answer: SessionDescription
-  candidate: Candidate
-  offer: SessionDescription
+type JoinResponse {
+  display: String!
+  feed: Float!
+  publishers: [Publisher!]!
+  room: Float!
 }
 
-input MessageInput {
-  answer: SessionDescriptionInput
-  candidate: CandidateInput
-  offer: SessionDescriptionInput
+type Jsep {
+  sdp: String!
+  type: String!
+}
+
+input JsepInput {
+  sdp: String!
+  type: String!
 }
 
 type Mutation {
+  configure(audio: Boolean!, channelId: Int!, data: Boolean!, feed: Float!, jsep: JsepInput, restart: Boolean, sc_substream_layer: Int, sc_temporal_layers: Int, video: Boolean!): Boolean!
+  create(channelId: Int!): Boolean!
   createChannel(lat: Float!, lng: Float!): Channel!
   createPaymentIntent(price: Int!): String!
+  disconnect(channelId: Int!): Boolean!
   getChannels(lat: Float!, lng: Float!): [Channel!]!
   getDeals: [Deal!]!
+  join(channelId: Int!): Boolean!
+  leave(channelId: Int!): Boolean!
   login(phone: String!): User!
   logout(phone: String!): User!
+  pause(channelId: Int!): Boolean!
+  publish(channelId: Int!): Boolean!
   refresh(refreshToken: String!): RefreshTokentResult!
   resend(phone: String!): User!
-  signalMessage(channelId: Int!, message: MessageInput!): Boolean!
+  start(channelId: Int!, feed: Float!, jsep: JsepInput!): Boolean!
+  subscribe(channelId: Int!, feed: Float!, sc_substream_layer: Int, sc_temporal_layers: Int): Boolean!
+  switch(channelId: Int!): Boolean!
+  trickle(candidate: CandidateInput!, channelId: Int!, feed: Float!): Boolean!
+  trickleComplete(channelId: Int!, feed: Float!): Boolean!
+  unpublish(channelId: Int!): Boolean!
   verify(code: String!, phone: String!): VerifyResult!
+}
+
+type Publisher {
+  audiocodec: String!
+  display: String!
+  feed: Float!
+  streams: [String!]!
+  talking: Boolean!
+  videocodec: String!
 }
 
 type Query {
@@ -89,18 +114,17 @@ type RefreshTokentResult {
   user: User!
 }
 
-type SessionDescription {
-  sdp: String
-  type: String!
-}
-
-input SessionDescriptionInput {
-  sdp: String
-  type: String!
+type SubscribeResponse {
+  display: String!
+  feed: Float!
+  jsep: Jsep!
+  room: Float!
 }
 
 type Subscription {
-  signalMessage(channelId: Int!, userId: Int!): Message!
+  configured(channelId: Int, userId: Int): ConfigureResponse!
+  joined(channelId: Int, userId: Int): JoinResponse!
+  subscribed(channelId: Int, userId: Int): SubscribeResponse!
 }
 
 type User {
