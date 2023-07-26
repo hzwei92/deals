@@ -16,19 +16,20 @@ export class JanusResolver {
   ) {}
 
   @UseGuards(AuthGuard)
-  @Mutation(() => Boolean, { name: 'join' })
+  @Mutation(() => JoinResponse, { name: 'join' })
   async join(
     @Args('channelId', { type: () => Int }) channelId: number,
     @CurrentUser() user: UserEntity
   ) {
     return this.janusService.join(user.id, channelId, {
+      feed: user.id,
       room: channelId,
       display: user.id.toString(),
     }, this.pubSub);
   }
 
   @UseGuards(AuthGuard)
-  @Mutation(() => Boolean, { name: 'subscribe' })
+  @Mutation(() => SubscribeResponse, { name: 'subscribe' })
   async subscribe(
     @Args('feed', { type: () => Float }) feed: number,
     @Args('channelId', { type: () => Int }) channelId: number,
@@ -54,7 +55,7 @@ export class JanusResolver {
   }
 
   @UseGuards(AuthGuard)
-  @Mutation(() => Boolean, { name: 'configure' })
+  @Mutation(() => ConfigureResponse, { name: 'configure' })
   async configure(
     @Args('channelId', { type: () => Int }) channelId: number,
     @Args('feed', { type: () => Float }) feed: number,
@@ -92,10 +93,9 @@ export class JanusResolver {
   @UseGuards(AuthGuard)
   @Mutation(() => Boolean, { name: 'leave' })
   async leave(
-    @Args('channelId', { type: () => Int }) channelId: number,
     @CurrentUser() user: UserEntity
   ) {
-    return this.janusService.leave(user.id, channelId, {}, this.pubSub);
+    return this.janusService.leave(user.id, this.pubSub);
   }
 
   @UseGuards(AuthGuard)
@@ -109,6 +109,7 @@ export class JanusResolver {
     return this.janusService.start(user.id, channelId, {
       feed,
       room: channelId,
+      jsep,
     }, this.pubSub);
   }
 
@@ -179,7 +180,10 @@ export class JanusResolver {
 
   @Subscription(() => JoinResponse, { 
     name: 'joined', 
-    filter: (payload, variables) => payload.channelId === variables.channelId
+    filter: (payload, variables) => {
+      if (payload.userId === variables.userId) return false;
+      return payload.channelId === variables.channelId;
+    },
   })
   joinSub(
     @Args('userId', { type: () => Int, nullable: true }) userId: number,
@@ -191,7 +195,10 @@ export class JanusResolver {
 
   @Subscription(() => ConfigureResponse, { 
     name: 'configured', 
-    filter: (payload, variables) => payload.channelId === variables.channelId
+    filter: (payload, variables) => {
+      if (payload.userId === variables.userId) return false;
+      return payload.channelId === variables.channelId;
+    },
   })
   configureSub(
     @Args('userId', { type: () => Int, nullable: true }) userId: number,
@@ -203,7 +210,10 @@ export class JanusResolver {
 
   @Subscription(() => SubscribeResponse, { 
     name: 'subscribed', 
-    filter: (payload, variables) => payload.channelId === variables.channelId
+    filter: (payload, variables) => {
+      if (payload.userId === variables.userId) return false;
+      return payload.channelId === variables.channelId;
+    },
   })
   subscribeSub(
     @Args('userId', { type: () => Int, nullable: true }) userId: number,

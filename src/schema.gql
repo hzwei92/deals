@@ -72,15 +72,15 @@ input JsepInput {
 }
 
 type Mutation {
-  configure(audio: Boolean!, channelId: Int!, data: Boolean!, feed: Float!, jsep: JsepInput, restart: Boolean, sc_substream_layer: Int, sc_temporal_layers: Int, video: Boolean!): Boolean!
+  configure(audio: Boolean!, channelId: Int!, data: Boolean!, feed: Float!, jsep: JsepInput, restart: Boolean, sc_substream_layer: Int, sc_temporal_layers: Int, video: Boolean!): ConfigureResponse!
   create(channelId: Int!): Boolean!
   createChannel(lat: Float!, lng: Float!): Channel!
   createPaymentIntent(price: Int!): String!
   disconnect(channelId: Int!): Boolean!
   getChannels(lat: Float!, lng: Float!): [Channel!]!
   getDeals: [Deal!]!
-  join(channelId: Int!): Boolean!
-  leave(channelId: Int!): Boolean!
+  join(channelId: Int!): JoinResponse!
+  leave: Boolean!
   login(phone: String!): User!
   logout(phone: String!): User!
   pause(channelId: Int!): Boolean!
@@ -88,7 +88,7 @@ type Mutation {
   refresh(refreshToken: String!): RefreshTokentResult!
   resend(phone: String!): User!
   start(channelId: Int!, feed: Float!, jsep: JsepInput!): Boolean!
-  subscribe(channelId: Int!, feed: Float!, sc_substream_layer: Int, sc_temporal_layers: Int): Boolean!
+  subscribe(channelId: Int!, feed: Float!, sc_substream_layer: Int, sc_temporal_layers: Int): SubscribeResponse!
   switch(channelId: Int!): Boolean!
   trickle(candidate: CandidateInput!, channelId: Int!, feed: Float!): Boolean!
   trickleComplete(channelId: Int!, feed: Float!): Boolean!

@@ -35,6 +35,8 @@ import { JanusModule } from './janus/janus.module';
         TWILIO_AUTH_TOKEN: Joi.string().required(),
         STRIPE_SECRET_KEY: Joi.string().required(),
         STRIPE_CURRENCY: Joi.string().required(),
+        JANUS_URL: Joi.string().required(),
+        JANUS_SECRET: Joi.string().required(),
         FRONTEND_URL: Joi.string(),
       }))
     }),

@@ -3,11 +3,12 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { AppContext } from '../App';
 import useJoin from '../hooks/useJoin';
-import { selectChannel } from '../slices/channelSlice';
-import { useAppSelector } from '../store';
+import { activateChannel, selectChannel } from '../slices/channelSlice';
+import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
 import { closeAllPCs } from '../utils';
 import useCreate from '../hooks/useCreate';
+import useLeave from '../hooks/useLeave';
 
 const getConnectedDevices = async (type: MediaDeviceKind) => {
   const devices = await navigator.mediaDevices.enumerateDevices();
@@ -19,6 +20,8 @@ interface ChannelProps extends RouteComponentProps<{
 }> {}
 
 const Channel: React.FC<ChannelProps> = ({ match }) => {
+  const dispatch = useAppDispatch();
+
   const {
     pcMap,
     setPcMap,
@@ -32,8 +35,8 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   const [cams, setCams] = useState<MediaDeviceInfo[]>([]);
   const [mics, setMics] = useState<MediaDeviceInfo[]>([]);
 
-  const create = useCreate();
   const join = useJoin();
+  const leave = useLeave();
 
   useEffect(() => {
     const handleDeviceChange = async () => {
@@ -59,7 +62,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
       }
     }
 
-    getDevices();
+    //getDevices();
 
     return () => {
       navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
@@ -92,16 +95,11 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     if (!isConnected) {
       scheduleConnection(channel.id, 0.1);
     }
-    else {
-      setPendingOfferMap({});
-      // removeAllVideoElements();
-      closeAllPCs(pcMap, setPcMap);
-    }
   }
 
-  const handleCreate = () => {
-    if (!channel) return;
-    create(channel.id);
+  const handleDisconnect = () => {
+    leave();
+    dispatch(activateChannel(null));
   }
 
   if (!channel) return (
@@ -166,17 +164,17 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
             { mics.map(mic => (<div key={'mic-'+mic.deviceId}>{mic.label}</div>)) }
           </div>
           <IonButtons>
-            <IonButton onClick={handleCreate} style={{
-              border: '1px solid',
-              borderRadius: 5,
-            }}>
-              CREATE
-            </IonButton>
             <IonButton onClick={handleClick} style={{
               border: '1px solid',
               borderRadius: 5,
             }}>
               CALL
+            </IonButton>
+            <IonButton onClick={handleDisconnect} style={{
+              border: '1px solid',
+              borderRadius: 5,
+            }}>
+              DISCONNECT
             </IonButton>
           </IonButtons>
         </div>
@@ -189,19 +187,18 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           Object.entries(vidMap).map(([feed, {stream, display}]) => {
             console.log(feed)
             return (
-              <div key={feed} style={{
+              <div key={'content-' + feed} style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
               }}>
                 <video key={'stream-'+stream.id} ref={attachVidSrc(stream)} autoPlay={true} style={{
-                  width: 'calc(100% - 40px)',
+                  width: 'calc(50% - 40px)',
                   maxWidth: 420,
                   borderRadius: 5,
                 }}></video>
                 <div>
                   { feed }
-                  { display }
                 </div>
               </div>
             )

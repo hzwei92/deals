@@ -201,8 +201,9 @@ export class JanusService {
         userId,
         channelId,
       });
-      console.log(`${LOG_NS} ${userId}:${channelId} joined sent`);
-      return true;
+      console.log(`${LOG_NS} ${userId}:${channelId} joined sent`, response);
+
+      return response;
     }
     catch (err) {
       if (pubHandle) pubHandle.detach().catch(() => { });
@@ -243,14 +244,13 @@ export class JanusService {
 
       const response = await subHandle.joinListener(subscribeData);
 
-      console.log('response', response)
       pubSub.publish('subscribed', {
         subscribed: response,
         userId,
         channelId,
       });
       console.log(`${LOG_NS} ${userId}:${channelId} subscribed sent`);
-      return true;
+      return response;
     } catch (err) {
       if (subHandle) subHandle.detach().catch(() => { });
       console.error(`${LOG_NS} ${userId}:${channelId} videoroom subscribe handle attach error: ${err.message}`);
@@ -308,7 +308,7 @@ export class JanusService {
         channelId,
       });
       console.log(`${LOG_NS} ${userId}:${channelId} configured sent`);
-      return true;
+      return response;
     } catch (err) {
       console.error(`${LOG_NS} ${userId}:${channelId} videoroom configure error: ${err.message}`);
       throw err;
@@ -343,16 +343,16 @@ export class JanusService {
     }
   }
 
-  async leave(userId: number, channelId: number, leaveData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} leave received`);
+  async leave(userId: number, pubSub: RedisPubSub) {
+    console.log(`${LOG_NS} ${userId} leave received`);
 
     if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
+      console.error(`${LOG_NS} ${userId} videoroom session not found`);
       throw new Error('videoroom session not found');
     }
-    const handle = this.getHandleByFeed(leaveData.feed);
+    const handle = this.getHandleByFeed(userId);
     if (!handle) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom leave handle not found`);
+      console.error(`${LOG_NS} ${userId} videoroom leave handle not found`);
       throw new Error('videoroom leave handle not found');
     }
 
@@ -361,13 +361,12 @@ export class JanusService {
       pubSub.publish('leaving', {
         leaving: response,
         userId,
-        channelId,
       });
-      console.log(`${LOG_NS} ${userId}:${channelId} leaving sent`);
+      console.log(`${LOG_NS} ${userId}: leaving sent`);
       handle.detach().catch(() => { });
       return true;
     } catch (err) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom leave error: ${err.message}`);
+      console.error(`${LOG_NS} ${userId}: videoroom leave error: ${err.message}`);
       throw err;
     }
   }
@@ -509,17 +508,26 @@ export class JanusService {
     }
 
     try {
-      const response = await this.handle.create({
-        ...createData,
+      const existsResponse = await this.handle.exists({
         room: channelId,
-      });
-      pubSub.publish('created', {
-        created: response,
-        userId,
-        channelId,
-      });
-      console.log(`${LOG_NS} ${userId}:${channelId} created sent`);
-      return true;
+      })
+      if (existsResponse.exists) {
+        console.log(`${LOG_NS} ${userId}:${channelId} videoroom already created`);
+        return false;
+      }
+      else {
+        const response = await this.handle.create({
+          ...createData,
+          room: channelId,
+        });
+        pubSub.publish('created', {
+          created: response,
+          userId,
+          channelId,
+        });
+        console.log(`${LOG_NS} ${userId}:${channelId} created sent`);
+        return true;
+      }
     } catch (err) {
       console.error(`${LOG_NS} ${userId}:${channelId} videoroom create error: ${err.message}`);
       throw err;

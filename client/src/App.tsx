@@ -44,8 +44,13 @@ import AuthModal from './components/AuthModal';
 import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
 import Channel from './pages/Channel';
-import { Dispatch, SetStateAction, createContext, useState } from 'react';
+import { Dispatch, SetStateAction, createContext, useEffect, useState } from 'react';
 import { Vid } from './types/Vid';
+import { useAppSelector } from './store';
+import { selectActiveChannel } from './slices/channelSlice';
+import { closeAllPCs } from './utils';
+import useCreate from './hooks/useCreate';
+import useLeave from './hooks/useLeave';
 
 setupIonicReact();
 
@@ -59,11 +64,25 @@ export const AppContext = createContext({} as {
 });
 
 const App: React.FC = () => {
+  const channel = useAppSelector(selectActiveChannel);
   const [pcMap, setPcMap] = useState<Record<number, RTCPeerConnection>>({})
-
   const [pendingOfferMap, setPendingOfferMap] = useState<any>({})
-
   const [vidMap, setVidMap] = useState<Record<string, Vid>>({})
+
+  const create = useCreate();
+
+  useEffect(() => {
+    console.log('channel', channel)
+    if (channel) {
+      create(channel.id);
+    }
+    else {
+      setPendingOfferMap({});
+      setVidMap({});
+      closeAllPCs(pcMap, setPcMap);
+    };
+  }, [channel]);
+
   return (
     <IonApp>
       <AppContext.Provider value={{

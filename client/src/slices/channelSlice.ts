@@ -22,7 +22,7 @@ export const channelSlice = createSlice({
         state.channels[channel.id] = channel
       })
     },
-    activateChannel: (state, action: PayloadAction<number>) => {
+    activateChannel: (state, action: PayloadAction<number | null>) => {
       state.channelId = action.payload
     },
   },
