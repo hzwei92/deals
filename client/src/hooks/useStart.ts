@@ -3,8 +3,12 @@ import { useAppSelector } from "../store";
 import { selectActiveChannel } from "../slices/channelSlice";
 
 const START = gql`
-  mutation Start($feed: Float!, $channelId: Int! $jsep: JsepInput!) {
-    start(feed: $feed, channelId: $channelId, jsep: $jsep)
+  mutation Start($feed: Int! $jsep: JsepInput!) {
+    start(feed: $feed, jsep: $jsep) {
+      room
+      feed
+      started
+    }
   }
 `;
 
@@ -20,9 +24,9 @@ const useStart = () => {
     },
   });
 
-  const start = (feed: string, jsep: any) => {
+  const start = (feed: number, jsep: any) => {
     if (!channel) return;
-    startFeed({ variables: { feed, jsep, channelId: channel.id } });
+    startFeed({ variables: { feed, jsep } });
   }
 
   return start;

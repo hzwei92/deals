@@ -48,17 +48,15 @@ import { Dispatch, SetStateAction, createContext, useEffect, useState } from 're
 import { Vid } from './types/Vid';
 import { useAppSelector } from './store';
 import { selectActiveChannel } from './slices/channelSlice';
-import { closeAllPCs } from './utils';
-import useCreate from './hooks/useCreate';
-import useLeave from './hooks/useLeave';
+import useExists from './hooks/useExists';
 
 setupIonicReact();
 
 export const AppContext = createContext({} as {
   pcMap: Record<number, RTCPeerConnection>,
   setPcMap: Dispatch<SetStateAction<Record<number, RTCPeerConnection>>>,
-  pendingOfferMap: any,
-  setPendingOfferMap: Dispatch<SetStateAction<any>>,
+  pendingOfferMap: Record<number, any>,
+  setPendingOfferMap: Dispatch<SetStateAction<Record<number, any>>>,
   vidMap: Record<string, Vid>,
   setVidMap: Dispatch<SetStateAction<Record<string, Vid>>>,
 });
@@ -69,18 +67,14 @@ const App: React.FC = () => {
   const [pendingOfferMap, setPendingOfferMap] = useState<any>({})
   const [vidMap, setVidMap] = useState<Record<string, Vid>>({})
 
-  const create = useCreate();
+  console.log('pcMap', pcMap);
+  const exists = useExists();
 
   useEffect(() => {
     console.log('channel', channel)
-    if (channel) {
-      create(channel.id);
+    if (channel) {    
+      exists(channel.id);
     }
-    else {
-      setPendingOfferMap({});
-      setVidMap({});
-      closeAllPCs(pcMap, setPcMap);
-    };
   }, [channel]);
 
   return (

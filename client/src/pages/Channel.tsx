@@ -6,9 +6,10 @@ import useJoin from '../hooks/useJoin';
 import { activateChannel, selectChannel } from '../slices/channelSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
-import { closeAllPCs } from '../utils';
-import useCreate from '../hooks/useCreate';
 import useLeave from '../hooks/useLeave';
+import { selectAppUser } from '../slices/userSlice';
+import useDisconnect from '../hooks/useDisconnect';
+import { closeAllPCs } from '../utils';
 
 const getConnectedDevices = async (type: MediaDeviceKind) => {
   const devices = await navigator.mediaDevices.enumerateDevices();
@@ -25,10 +26,13 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   const {
     pcMap,
     setPcMap,
+    pendingOfferMap,
     setPendingOfferMap,
     vidMap,
+    setVidMap,
   } = useContext(AppContext);
 
+  const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(state => selectChannel(state, parseInt(match.params.id))) as ChannelType | null; 
 
   const [isConnected, setIsConnected] = useState(false);
@@ -37,6 +41,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
 
   const join = useJoin();
   const leave = useLeave();
+  const disconnect = useDisconnect();
 
   useEffect(() => {
     const handleDeviceChange = async () => {
@@ -185,14 +190,13 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
         }}>
         {
           Object.entries(vidMap).map(([feed, {stream, display}]) => {
-            console.log(feed)
             return (
               <div key={'content-' + feed} style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
               }}>
-                <video key={'stream-'+stream.id} ref={attachVidSrc(stream)} autoPlay={true} style={{
+                <video key={'stream-'+stream.id} ref={attachVidSrc(stream)} autoPlay={true} muted={parseInt(feed) === user?.id} style={{
                   width: 'calc(50% - 40px)',
                   maxWidth: 420,
                   borderRadius: 5,

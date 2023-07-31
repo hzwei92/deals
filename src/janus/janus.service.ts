@@ -1,6 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { User } from 'src/users/user.entity';
+import { CandidateInput, JsepInput } from './janus.model';
+import { PUB_SUB } from 'src/pub-sub/pub-sub.module';
 
 const LOG_NS = '[JanusService]';
 
@@ -12,12 +15,14 @@ export class JanusService {
   videoRoomPlugin: any;
   connection: any;
   session: any;
-  handle: any;
+  managerHandle: any;
 
   handles: any[];
 
   constructor(
     private readonly configService: ConfigService,
+    @Inject(PUB_SUB)
+    private readonly pubSub: RedisPubSub,
   ) {
     (async () => {
       const { default: Janode } = await eval("import('janode')");
@@ -34,10 +39,10 @@ export class JanusService {
   scheduleConnection(del = 10) {
     if (this.task) return;
 
-    console.log(`${LOG_NS} scheduleConnection`)
+    console.log(`${LOG_NS} schedule connection`)
 
     this.task = setTimeout(() => {
-      this.init()
+      this.connectService()
         .then(() => this.task = null)
         .catch(() => {
           this.task = null;
@@ -46,22 +51,30 @@ export class JanusService {
     }, del * 1000);
   }
 
-  async init() {
-    console.log(`${LOG_NS} init`)
+  async connectService() {
     try {
-      this.connection = await this.janode.connect({
+      const janodeConfig = {
         is_admin: false,
         address: {
           url: this.configService.get('JANUS_URL'),
           apisecret: this.configService.get('JANUS_SECRET'),
         }
+      };
+
+      console.log(`${LOG_NS} connecting Janode...`)
+      this.connection = await this.janode.connect(janodeConfig);
+      console.log(`${LOG_NS} connection with Janus created `);
+
+      this.connection.once(this.janode.EVENT.CONNECTION_CLOSED, () => {
+        console.log(`${LOG_NS} connection with Janus closed`);
       });
-      console.log(`${LOG_NS} connected: `)
 
       this.connection.once(this.janode.EVENT.CONNECTION_ERROR, error => {
         console.error(`${LOG_NS} connection with Janus error: ${error.message}`);
   
-        //replyError(io, 'backend-failure');
+        this.pubSub.publish('error', {
+          error: error.message,
+        });
   
         this.scheduleConnection();
       });
@@ -74,20 +87,20 @@ export class JanusService {
         this.session = null;
       });
   
-      this.handle = await this.session.attach(this.videoRoomPlugin);
-      console.log(`${LOG_NS} manager handle ${this.handle.id} attached`);
+      this.managerHandle = await this.session.attach(this.videoRoomPlugin);
+      console.log(`${LOG_NS} manager handle ${this.managerHandle.id} attached`);
 
-      // generic handle events
-      this.handle.once(this.janode.EVENT.HANDLE_DETACHED, () => {
-        console.log(`${LOG_NS} ${this.handle.name} manager handle detached event`);
+      this.managerHandle.once(this.janode.EVENT.HANDLE_DETACHED, () => {
+        console.log(`${LOG_NS} ${this.managerHandle.name} manager handle detached event`);
       });
     }
     catch (error) {
       console.error(`${LOG_NS} Janode setup error: ${error.message}`);
       if (this.connection) this.connection.close().catch(() => { });
   
-      // notify clients
-      //replyError(io, 'backend-failure');
+      this.pubSub.publish('error', {
+        error: error.message,
+      });
   
       throw error;
     }
@@ -95,42 +108,39 @@ export class JanusService {
   }
 
 
-  async join(userId: number, channelId: number, joinData: any, pubSub: RedisPubSub) {
-    if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
-      throw new Error('videoroom session not found');
-    }
-
+  async join(params: {feed: number, room: number, display: string}) {
     let pubHandle;
-
     try {
+      console.log(`${LOG_NS} [${params.feed}] videoroom join received`);
+
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+
       pubHandle = await this.session.attach(this.videoRoomPlugin);
 
-      console.log(`${LOG_NS} ${userId}:${channelId} videoroom publisher handle ${pubHandle.id} attached`);
+      console.log(`${LOG_NS} videoroom publisher handle ${pubHandle.id} attached`);
       this.insertHandle(pubHandle);
 
       // custom vidoeroom publisher/manager events
       pubHandle.on(this.videoRoomPlugin.EVENT.VIDEOROOM_DESTROYED, event => {
-        pubSub.publish('destroyed', { 
+        this.pubSub.publish('destroyed', { 
           destroyed: event,
-          userId,
-          channelId,
+          feed: params.feed
         });
       });
 
       pubHandle.on(this.videoRoomPlugin.EVENT.VIDEOROOM_PUB_LIST, event => {
-        pubSub.publish('feedList', { 
+        this.pubSub.publish('feedList', { 
           feedList: event,
-          userId,
-          channelId,
+          feed: params.feed,
         });
       });
 
       pubHandle.on(this.videoRoomPlugin.EVENT.VIDEOROOM_PUB_PEER_JOINED, event => {
-        pubSub.publish('feedJoined', {
+        this.pubSub.publish('feedJoined', {
           feedJoined: event,
-          userId,
-          channelId,
+          feed: params.feed,
         });
       });
 
@@ -138,10 +148,9 @@ export class JanusService {
         const handle = this.getHandleByFeed(event.feed);
         this.removeHandleByFeed(event.feed);
         if (handle) handle.detach().catch(() => { });
-        pubSub.publish('unpublished', {
+        this.pubSub.publish('unpublished', {
           unpublished: event,
-          userId,
-          channelId,
+          feed: params.feed
         });
       });
 
@@ -149,26 +158,23 @@ export class JanusService {
         const handle = this.getHandleByFeed(event.feed);
         this.removeHandleByFeed(event.feed);
         if (handle) handle.detach().catch(() => { });
-        pubSub.publish('leaving', {
+        this.pubSub.publish('leaving', {
           leaving: event,
-          userId,
-          channelId,
+          feed: params.feed,
         });
       });
 
       pubHandle.on(this.videoRoomPlugin.EVENT.VIDEOROOM_DISPLAY, event => {
-        pubSub.publish('display', {
+        this.pubSub.publish('display', {
           display: event,
-          userId,
-          channelId,
+          feed: params.feed,
         });
       });
 
       pubHandle.on(this.videoRoomPlugin.EVENT.VIDEOROOM_TALKING, event => {
-        pubSub.publish('talking', {
+        this.pubSub.publish('talking', {
           talking: event,
-          userId,
-          channelId,
+          feed: params.feed,
         });
       });
 
@@ -176,55 +182,44 @@ export class JanusService {
         const handle = this.getHandleByFeed(event.feed);
         this.removeHandleByFeed(event.feed);
         if (handle) handle.detach().catch(() => { });
-        pubSub.publish('kicked', {
+        this.pubSub.publish('kicked', {
           kicked: event,
-          userId,
-          channelId,
+          feed: params.feed,
         });
       });
 
       // generic videoroom events
-      pubHandle.on(this.janode.EVENT.HANDLE_WEBRTCUP, () => console.log(`${LOG_NS} ${pubHandle.name} webrtcup event`));
-      pubHandle.on(this.janode.EVENT.HANDLE_MEDIA, event => console.log(`${LOG_NS} ${pubHandle.name} media event ${JSON.stringify(event)}`));
-      pubHandle.on(this.janode.EVENT.HANDLE_SLOWLINK, event => console.log(`${LOG_NS} ${pubHandle.name} slowlink event ${JSON.stringify(event)}`));
-      pubHandle.on(this.janode.EVENT.HANDLE_HANGUP, event => console.log(`${LOG_NS} ${pubHandle.name} hangup event ${JSON.stringify(event)}`));
+      pubHandle.on(this.janode.EVENT.HANDLE_WEBRTCUP, () => console.log(`${LOG_NS} ${pubHandle.feed} ${pubHandle.name} webrtcup event`));
+      pubHandle.on(this.janode.EVENT.HANDLE_MEDIA, event => console.log(`${LOG_NS} ${pubHandle.feed} ${pubHandle.name} media event ${JSON.stringify(event)}`));
+      pubHandle.on(this.janode.EVENT.HANDLE_SLOWLINK, event => console.log(`${LOG_NS} ${pubHandle.feed} ${pubHandle.name} slowlink event ${JSON.stringify(event)}`));
+      pubHandle.on(this.janode.EVENT.HANDLE_HANGUP, event => console.log(`${LOG_NS} ${pubHandle.feed} ${pubHandle.name} hangup event ${JSON.stringify(event)}`));
       pubHandle.on(this.janode.EVENT.HANDLE_DETACHED, () => {
-        console.log(`${LOG_NS} ${pubHandle.name} detached event`);
+        console.log(`${LOG_NS} ${pubHandle.feed} ${pubHandle.name} detached event`);
         this.removeHandle(pubHandle);
       });
-      pubHandle.on(this.janode.EVENT.HANDLE_TRICKLE, event => console.log(`${LOG_NS} ${pubHandle.name} trickle event ${JSON.stringify(event)}`));
+      pubHandle.on(this.janode.EVENT.HANDLE_TRICKLE, event => console.log(`${LOG_NS} ${pubHandle.feed} ${pubHandle.name} trickle event ${JSON.stringify(event)}`));
 
-      const response = await pubHandle.joinPublisher(joinData);
-
-      pubSub.publish('joined', {
-        joined: response,
-        userId,
-        channelId,
-      });
-      console.log(`${LOG_NS} ${userId}:${channelId} joined sent`, response);
-
-      return response;
+      return pubHandle.joinPublisher(params);
     }
     catch (err) {
       if (pubHandle) pubHandle.detach().catch(() => { });
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom publisher handle attach error: ${err.message}`);
-      throw err;
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
     }
   }
 
-  async subscribe(userId: number, channelId: number, subscribeData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} subscribe received`);
-
-    if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
-      throw new Error('videoroom session not found');
-    }
-
+  async subscribe(params: {feed: number, room: number, audio: boolean, video: boolean, data: boolean, sc_substream_layer: number, sc_temporal_layers: number}) {
     let subHandle;
-
     try {
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
       subHandle = await this.session.attach(this.videoRoomPlugin);
-      console.log(`${LOG_NS} ${userId}:${channelId} videoroom listener handle ${subHandle.id} attached`);
+      console.log(`${LOG_NS} videoroom listener handle ${subHandle.id} attached`);
       this.insertHandle(subHandle);
 
       // generic videoroom events
@@ -237,308 +232,437 @@ export class JanusService {
       });
       subHandle.on(this.janode.EVENT.HANDLE_TRICKLE, event => console.log(`${LOG_NS} ${subHandle.name} trickle event ${JSON.stringify(event)}`));
 
-
       // specific videoroom events
       subHandle.on(this.videoRoomPlugin.EVENT.VIDEOROOM_SC_SUBSTREAM_LAYER, event => console.log(`${LOG_NS} ${subHandle.name} simulcast substream layer switched to ${event.sc_substream_layer}`));
       subHandle.on(this.videoRoomPlugin.EVENT.VIDEOROOM_SC_TEMPORAL_LAYERS, event => console.log(`${LOG_NS} ${subHandle.name} simulcast temporal layers switched to ${event.sc_temporal_layers}`));
 
-      const response = await subHandle.joinListener(subscribeData);
-
-      pubSub.publish('subscribed', {
-        subscribed: response,
-        userId,
-        channelId,
-      });
-      console.log(`${LOG_NS} ${userId}:${channelId} subscribed sent`);
-      return response;
-    } catch (err) {
+      return subHandle.joinSubscriber(params);
+    } 
+    catch (err) {
       if (subHandle) subHandle.detach().catch(() => { });
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom subscribe handle attach error: ${err.message}`);
-      throw err;
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
     }
   }
   
-  async publish(userId: number, channelId: number, publishData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} publish received`);
-
-    if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
-      throw new Error('videoroom session not found');
-    }
-
-    const handle = this.getHandleByFeed(publishData.feed);
-    if (!handle) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom publish handle not found`);
-      throw new Error('videoroom publish handle not found');
-    }
-
+  async publish(params: { feed: number, audio: boolean, video: boolean, data: boolean, jsep: JsepInput }) {
     try {
-      const response = await handle.publish(publishData);
-      pubSub.publish('published', {
-        published: response,
-        userId,
-        channelId,
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      const handle = this.getHandleByFeed(params.feed);
+      if (!handle) {
+        throw new Error('videoroom publish handle not found');
+      }
+      return handle.publish(params);
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
       });
-      console.log(`${LOG_NS} ${userId}:${channelId} published sent`);
-      return true;
-    } catch (err) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom publish error: ${err.message}`);
-      throw err;
     }
   }
 
-  async configure(userId: number, channelId: number, configureData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} configure received`);
-
-    if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
-      throw new Error('videoroom session not found');
-    }
-    const handle = this.getHandleByFeed(configureData.feed);
-    if (!handle) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom configure handle not found`);
-      throw new Error('videoroom configure handle not found');
-    }
+  async configure(params: { 
+    feed: number, 
+    room: number, 
+    audio: boolean, 
+    video: boolean, 
+    data: boolean, 
+    jsep: JsepInput, 
+    restart: boolean, 
+    sc_substream_layer: number, 
+    sc_temporal_layers: number,
+  }) {
     try {
-      const response = await handle.configure(configureData);
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      const handle = this.getHandleByFeed(params.feed);
+      if (!handle) {
+        throw new Error('videoroom configure handle not found');
+      }
+      const response = await handle.configure(params);
       delete response.configured;
-      pubSub.publish('configured', {
-        configured: response,
-        userId,
-        channelId,
-      });
-      console.log(`${LOG_NS} ${userId}:${channelId} configured sent`);
       return response;
-    } catch (err) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom configure error: ${err.message}`);
-      throw err;
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
     }
   }
 
-  async unpublish(userId: number, channelId: number, unpublishData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} unpublish received`);
-
-    if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
-      throw new Error('videoroom session not found');
-    }
-    const handle = this.getHandleByFeed(unpublishData.feed);
-    if (!handle) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom configure handle not found`);
-      throw new Error('videoroom configure handle not found');
-    }
+  async unpublish(params: { feed: number }) {
     try {
-      const response = await handle.unpublish();
-      pubSub.publish('unpublished', {
-        unpublished: response,
-        userId,
-        channelId,
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      const handle = this.getHandleByFeed(params.feed);
+      if (!handle) {
+        throw new Error('videoroom configure handle not found');
+      }
+      return handle.unpublish();
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
       });
-
-      console.log(`${LOG_NS} ${userId}:${channelId} unpublished sent`);
-      return true;
-    } catch (err) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom unpublish error: ${err.message}`);
-      throw err;
     }
   }
 
-  async leave(userId: number, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId} leave received`);
-
-    if (!this.session) {
-      console.error(`${LOG_NS} ${userId} videoroom session not found`);
-      throw new Error('videoroom session not found');
-    }
-    const handle = this.getHandleByFeed(userId);
-    if (!handle) {
-      console.error(`${LOG_NS} ${userId} videoroom leave handle not found`);
-      throw new Error('videoroom leave handle not found');
-    }
-
+  async leave(params: { feed: number }) {
     try {
-      const response = await handle.leave();
-      pubSub.publish('leaving', {
-        leaving: response,
-        userId,
-      });
-      console.log(`${LOG_NS} ${userId}: leaving sent`);
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      const handle = this.getHandleByFeed(params.feed);
+      if (!handle) {
+        throw new Error('videoroom leave handle not found');
+      }
+      const res = await handle.leave();
       handle.detach().catch(() => { });
-      return true;
-    } catch (err) {
-      console.error(`${LOG_NS} ${userId}: videoroom leave error: ${err.message}`);
-      throw err;
+      return res;
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
     }
   }
 
-  async start(userId: number, channelId: number, startData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} start received`);
-
-    if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
-      throw new Error('videoroom session not found');
-    }
-    const handle = this.getHandleByFeed(startData.feed);
-    if (!handle) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom start handle not found`);
-      throw new Error('videoroom start handle not found');
-    }
+  async start(params: {feed: number, jsep: JsepInput}) {
     try {
-      const response = await handle.start(startData);
-      pubSub.publish('started', {
-        started: response,
-        userId,
-        channelId,
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      const handle = this.getHandleByFeed(params.feed);
+      console.log('start handle', handle)
+      if (!handle) {
+        throw new Error('videoroom start handle not found');
+      }
+      return handle.start(params);
+    }
+    catch (err) {
+      console.log('error', err, params)
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
       });
-      console.log(`${LOG_NS} ${userId}:${channelId} started sent`);
-      return true;
-    } catch (err) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom start error: ${err.message}`);
-      throw err;
     }
   }
 
-  async pause(userId: number, channelId: number, pauseData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} pause received`);
-
-    if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
-      throw new Error('videoroom session not found');
-    }
-    const handle = this.getHandleByFeed(pauseData.feed);
-    if (!handle) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom pause handle not found`);
-      throw new Error('videoroom pause handle not found');
-    }
-
+  async pause(params: {feed: number}) {
     try {
-      const response = await handle.pause();
-      pubSub.publish('paused', {
-        paused: response,
-        userId,
-        channelId,
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      const handle = this.getHandleByFeed(params.feed);
+      if (!handle) {
+        throw new Error('videoroom pause handle not found');
+      }
+      return handle.pause();
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
       });
-      console.log(`${LOG_NS} ${userId}:${channelId} paused sent`);
-      return true;
-    } catch (err) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom pause error: ${err.message}`);
-      throw err;
     }
   }
 
-  async switch(userId: number, channelId: number, switchData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} switch received`);
-
-    if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
-      throw new Error('videoroom session not found');
-    }
-    const handle = this.getHandleByFeed(switchData.from_feed);
-    if (!handle) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom switch handle not found`);
-      throw new Error('videoroom switch handle not found');
-    }
-
+  async switch(params: {from_feed: number, to_feed: number, audio: boolean, video: boolean, data: boolean}) {
     try {
-      const response = await handle.switch({
-        to_feed: switchData.to_feed,
-        audio: switchData.audio,
-        video: switchData.video,
-        data: switchData.data,
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      const handle = this.getHandleByFeed(params.from_feed);
+      if (!handle) {
+        throw new Error('videoroom switch handle not found');
+      }
+      delete params.from_feed;
+      return handle.switch(params);
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
       });
-      pubSub.publish('switched', {
-        paused: response,
-        userId,
-        channelId,
-      });
-      console.log(`${LOG_NS} ${userId}:${channelId} switched sent`);
-      return true;
-    } catch (err) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom switch error: ${err.message}`);
-      throw err;
     }
   }
 
-  async trickle(userId: number, channelId: number, trickleData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} trickle received`);
+  async trickle(params: {feed: number, candidate: CandidateInput}) {
     if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
       throw new Error('videoroom session not found');
     }
-    const handle = this.getHandleByFeed(trickleData.feed);
+    const handle = this.getHandleByFeed(params.feed);
     if (!handle) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom trickle handle not found`);
       throw new Error('videoroom trickle handle not found');
     }
-    handle.trickle(trickleData.candidate).catch((err) => {
-      console.error(`${LOG_NS} ${userId}:${channelId} trickle error: ${err.message}`);
-      throw err;
-    });
+    try {
+      handle.trickle(params.candidate);
+      return true;
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
+    }
+  }
+
+  async trickleComplete(params: {feed: number, candidate: CandidateInput}) {
+    try {
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      const handle = this.getHandleByFeed(params.feed);
+      if (!handle) {
+        throw new Error('videoroom trickle-complete handle not found');
+      }
+      handle.trickleComplete(params.candidate);
+      return true;
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
+    }
+  }
+
+  async disconnect() {
+    this.leaveAll();
+    this.detachAll();
     return true;
   }
 
-  async trickleComplete(userId: number, channelId: number, trickleData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} trickle-complete received`);
-    if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
-      throw new Error('videoroom session not found');
+  // Management API
+
+  async listParticipants(params: {room: number}) {
+    try {
+      if (!this.session) {
+        throw new Error('videoroom session not found')
+      }
+      if (!this.managerHandle) {
+        throw new Error('videoroom manager handle not found')
+      }
+      return this.managerHandle.list_participants(params);
     }
-    const handle = this.getHandleByFeed(trickleData.feed);
-    if (!handle) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom trickle-complete handle not found`);
-      throw new Error('videoroom trickle-complete handle not found');
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
     }
-    handle.trickleComplete(trickleData.candidate).catch((err) => {
-      console.error(`${LOG_NS} ${userId}:${channelId} trickle error: ${err.message}`);
-      throw err;
-    });
-    return true;
   }
 
-  async create(userId: number, channelId: number, createData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} create received`);
+  async kick(params: {feed: number, room: number }) {
+    try {
+      if (!this.session) {
+        throw new Error('videoroom session not found')
+      }
+      if (!this.managerHandle) {
+        throw new Error('videoroom manager handle not found')
+      }
+      return this.managerHandle.kick(params);
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
+    }
+  }
 
+  async exists(params: {room: number}) {
+    try {
+      if (!this.session) {
+        throw new Error('videoroom session not found')
+      }
+      if (!this.managerHandle) {
+        throw new Error('videoroom manager handle not found')
+      }
+      return this.managerHandle.exists(params);
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
+    }
+  }
+
+  async listRooms() {
+    try {
+      if (!this.session) {
+        throw new Error('videoroom session not found')
+      }
+      if (!this.managerHandle) {
+        throw new Error('videoroom manager handle not found')
+      }
+      return this.managerHandle.list();
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: '',
+        }
+      });
+    }
+  }
+
+  async create(params: {room: number}) {
+    try {
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      if (!this.managerHandle) {
+        throw new Error('videoroom manager handle not found');
+      }
+      return this.managerHandle.create(params);
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
+    }
+  }
+
+  async destroy(params: { room: number }) {
     if (!this.session) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom session not found`);
       throw new Error('videoroom session not found');
     }
-    if (!this.handle) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom manager handle not found`);
+    if (!this.managerHandle) {
       throw new Error('videoroom manager handle not found');
     }
-
     try {
-      const existsResponse = await this.handle.exists({
-        room: channelId,
-      })
-      if (existsResponse.exists) {
-        console.log(`${LOG_NS} ${userId}:${channelId} videoroom already created`);
-        return false;
-      }
-      else {
-        const response = await this.handle.create({
-          ...createData,
-          room: channelId,
-        });
-        pubSub.publish('created', {
-          created: response,
-          userId,
-          channelId,
-        });
-        console.log(`${LOG_NS} ${userId}:${channelId} created sent`);
-        return true;
-      }
-    } catch (err) {
-      console.error(`${LOG_NS} ${userId}:${channelId} videoroom create error: ${err.message}`);
-      throw err;
+      return this.managerHandle.destroy(params);
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
     }
   }
 
-  async disconnect(userId: number, channelId: number, trickleData: any, pubSub: RedisPubSub) {
-    console.log(`${LOG_NS} ${userId}:${channelId} disconnected socket`);
+  async allow(params: { room: number, action: string }) {
+    try {
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      if (!this.managerHandle) {
+        throw new Error('videoroom manager handle not found');
+      }
+      return this.managerHandle.allow(params);
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
+    }
+  }
 
-    await this.leaveAll();
-    await this.detachAll();
+  async rtpFwdStart(params: {feed: number, room: number, host: string}) {
+    try {
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      if (!this.managerHandle) {
+        throw new Error('videoroom manager handle not found');
+      }
+      return this.managerHandle.startForward(params);
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
+    }
+  }
+
+  async rtpFwdStop(params: {room: number, feed: number, stream: number}) {
+    try {
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      if (!this.managerHandle) {
+        throw new Error('videoroom manager handle not found');
+      }
+      return this.managerHandle.stopForward(params);
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
+    }
+  }
+
+  async rtpFwdList(params: {room: number}) {
+    try {
+      if (!this.session) {
+        throw new Error('videoroom session not found');
+      }
+      if (!this.managerHandle) {
+        throw new Error('videoroom manager handle not found');
+      }
+      return this.managerHandle.listForward(params);
+    }
+    catch (err) {
+      this.pubSub.publish('error', {
+        error: {
+          error: err.message,
+          request: JSON.stringify(params),
+        }
+      });
+    }
   }
 
   insertHandle(handle) {

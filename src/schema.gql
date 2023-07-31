@@ -2,6 +2,10 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type Allowed {
+  list: [String!]!
+}
+
 input CandidateInput {
   candidate: String!
   sdpMLineIndex: Int!
@@ -22,10 +26,19 @@ type Channel {
   updatedAt: DateTime!
 }
 
-type ConfigureResponse {
-  feed: Float!
+type Configured {
+  configured: String
+  display: String
+  feed: Int!
   jsep: Jsep!
-  room: Float!
+  restart: Boolean
+  room: Int!
+  update: Boolean
+}
+
+type Created {
+  permanent: Boolean!
+  room: Int!
 }
 
 """
@@ -47,18 +60,32 @@ type Deal {
   vendorId: Int!
 }
 
+type Destroyed {
+  permanent: Boolean!
+  room: Int!
+}
+
+type Display {
+  display: Int!
+  feed: Int!
+  room: Int!
+}
+
+type Exists {
+  exists: Boolean!
+  room: Int!
+}
+
+type Forwarder {
+  feed: Int!
+  forwarders: [RtpForwarder!]!
+}
+
 type Image {
   createdAt: DateTime!
   data: String!
   deletedAt: DateTime!
   id: Int!
-}
-
-type JoinResponse {
-  display: String!
-  feed: Float!
-  publishers: [Publisher!]!
-  room: Float!
 }
 
 type Jsep {
@@ -71,37 +98,104 @@ input JsepInput {
   type: String!
 }
 
+type Kicked {
+  feed: Int!
+  room: Int!
+}
+
+type Leaving {
+  feed: Int!
+  reason: String
+  room: Int!
+}
+
 type Mutation {
-  configure(audio: Boolean!, channelId: Int!, data: Boolean!, feed: Float!, jsep: JsepInput, restart: Boolean, sc_substream_layer: Int, sc_temporal_layers: Int, video: Boolean!): ConfigureResponse!
-  create(channelId: Int!): Boolean!
+  allow(action: String!, room: Int!): Allowed!
+  configure(audio: Boolean!, data: Boolean!, jsep: JsepInput, restart: Boolean, room: Int!, sc_substream_layer: Int, sc_temporal_layers: Int, video: Boolean!): Configured!
+  create(room: Int!): Created!
   createChannel(lat: Float!, lng: Float!): Channel!
   createPaymentIntent(price: Int!): String!
-  disconnect(channelId: Int!): Boolean!
+  destroy(room: Int!): Destroyed!
+  disconnect: Boolean!
+  exists(room: Int!): Exists!
   getChannels(lat: Float!, lng: Float!): [Channel!]!
   getDeals: [Deal!]!
-  join(channelId: Int!): JoinResponse!
-  leave: Boolean!
+  join(room: Int!): PubJoined!
+  kick(feed: Int!, room: Int!): Kicked!
+  leave: Leaving
+  listParticipants(room: Int!): ParticipantsList!
+  listRooms: RoomsList!
   login(phone: String!): User!
   logout(phone: String!): User!
-  pause(channelId: Int!): Boolean!
-  publish(channelId: Int!): Boolean!
+  pause: Paused!
+  publish(audio: Boolean!, data: Boolean!, jsep: JsepInput, video: Boolean!): Configured!
   refresh(refreshToken: String!): RefreshTokentResult!
   resend(phone: String!): User!
-  start(channelId: Int!, feed: Float!, jsep: JsepInput!): Boolean!
-  subscribe(channelId: Int!, feed: Float!, sc_substream_layer: Int, sc_temporal_layers: Int): SubscribeResponse!
-  switch(channelId: Int!): Boolean!
-  trickle(candidate: CandidateInput!, channelId: Int!, feed: Float!): Boolean!
-  trickleComplete(channelId: Int!, feed: Float!): Boolean!
-  unpublish(channelId: Int!): Boolean!
+  rtpFwdList(room: Int!): RtpFwdList!
+  rtpFwdStart(feed: Int!, host: String!, room: Int!): RtpFwdStarted!
+  rtpFwdStop(feed: Int!, room: Int!, stream: Int!): RtpFwdStopped!
+  start(feed: Int!, jsep: JsepInput): Started!
+  subscribe(audio: Boolean, data: Boolean, feed: Int!, room: Int!, sc_substream_layer: Int, sc_temporal_layers: Int, video: Boolean): SubJoined!
+  switch(audio: Boolean!, data: Boolean!, to_feed: Int!, video: Boolean!): Switched!
+  trickle(candidate: CandidateInput!, feed: Int!): Boolean!
+  trickleComplete(candidate: CandidateInput, feed: Int!): Boolean!
+  unpublish: Unpublished!
   verify(code: String!, phone: String!): VerifyResult!
+}
+
+type MyError {
+  error: String!
+  request: String
+}
+
+type Participant {
+  display: String
+  feed: Int!
+  publisher: Boolean!
+  talking: Boolean!
+}
+
+type ParticipantsList {
+  feed: Int!
+  participants: [Participant!]!
+  room: Int!
+}
+
+type Paused {
+  feed: Int!
+  paused: String!
+  room: Int!
+}
+
+type PubJoined {
+  description: String
+  display: String
+  feed: Int!
+  jsep: Jsep
+  private_id: Float!
+  publishers: [Publisher!]!
+  room: Int!
+}
+
+type PubList {
+  feed: Int
+  publishers: [Publisher!]!
+  room: Int!
+}
+
+type PubPeerJoined {
+  display: String
+  feed: Int!
+  room: Int!
 }
 
 type Publisher {
   audiocodec: String!
   display: String!
-  feed: Float!
-  streams: [String!]!
-  talking: Boolean!
+  feed: Int!
+  simulcast: Boolean
+  streams: [Stream!]!
+  talking: Boolean
   videocodec: String!
 }
 
@@ -114,17 +208,117 @@ type RefreshTokentResult {
   user: User!
 }
 
-type SubscribeResponse {
+type Room {
+  audiocodec: String!
+  audiolevel_event: Boolean!
+  audiolevel_ext: Boolean!
+  bitrate: Int!
+  description: String!
+  dummy_publisher: Boolean!
+  fir_freq: Int!
+  is_private: Boolean!
+  lock_record: Boolean!
+  max_publishers: Int!
+  num_participants: Int!
+  opus_fec: Boolean!
+  pin_required: Boolean!
+  playoutdelay_ext: Boolean!
+  record: Boolean!
+  require_e2ee: Boolean!
+  require_pvtid: Boolean!
+  room: Int!
+  transport_wide_cc_ext: Boolean!
+  videocodec: String!
+  videoorient_ext: Boolean!
+}
+
+type RoomsList {
+  list: [Room!]!
+}
+
+type RtpForwarder {
+  audio_port: Int!
+  audio_rtcp_port: Int!
+  audio_stream: Int!
+  data_port: Int!
+  data_stream: Int!
+  host: String!
+  pt: Int!
+  sc_substream_layer: Int!
+  srtp: Boolean!
+  ssrc: Int!
+  video_port: Int!
+  video_rtcp_port: Int!
+  video_stream: Int!
+}
+
+type RtpFwdList {
+  forwarders: [Forwarder!]!
+  room: Int!
+}
+
+type RtpFwdStarted {
+  forwarder: RtpForwarder!
+  room: Int!
+}
+
+type RtpFwdStopped {
+  feed: Int!
+  room: Int!
+  stream: Int!
+}
+
+type Started {
+  feed: Int!
+  room: Int!
+  started: String!
+}
+
+type Stream {
+  codec: String!
+  fec: Boolean
+  mid: String!
+  mindex: Int!
+  type: String!
+}
+
+type SubJoined {
   display: String!
-  feed: Float!
+  feed: Int!
   jsep: Jsep!
-  room: Float!
+  room: Int!
 }
 
 type Subscription {
-  configured(channelId: Int, userId: Int): ConfigureResponse!
-  joined(channelId: Int, userId: Int): JoinResponse!
-  subscribed(channelId: Int, userId: Int): SubscribeResponse!
+  destroyed(feed: Int): Destroyed!
+  display(feed: Int): Display!
+  error(feed: Int): MyError!
+  feedJoined(feed: Int): PubPeerJoined!
+  feedList(feed: Int): PubList!
+  kicked(feed: Int): Kicked!
+  leaving(feed: Int): Leaving!
+  talking(feed: Int): Talking!
+  unpublished(feed: Int): Unpublished!
+}
+
+type Switched {
+  display: String!
+  from_feed: Int!
+  room: Int!
+  switched: String!
+  to_feed: Int!
+}
+
+type Talking {
+  audio_level: Int!
+  feed: Int!
+  room: Int!
+  talking: Boolean
+}
+
+type Unpublished {
+  feed: Int!
+  room: Int!
 }
 
 type User {

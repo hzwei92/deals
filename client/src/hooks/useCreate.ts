@@ -1,8 +1,11 @@
 import { gql, useMutation } from "@apollo/client"
 
 const CREATE = gql`
-  mutation Create($channelId: Int!) {
-    create(channelId: $channelId)
+  mutation Create($room: Int!) {
+    create(room: $room) {
+      room
+      permanent
+    }
   }
 `;
 
@@ -16,8 +19,8 @@ const useCreate = () => {
     },
   });
 
-  const create = (channelId: number) => {
-    createRoom({ variables: { channelId } });
+  const create = (room: number) => {
+    createRoom({ variables: { room } });
   }
 
   return create;

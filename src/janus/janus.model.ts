@@ -1,4 +1,4 @@
-import { Field, Float, InputType, Int, ObjectType } from "@nestjs/graphql";
+import { Field, InputType, Int, ObjectType } from "@nestjs/graphql";
 
 @InputType()
 export class CandidateInput {
@@ -35,14 +35,32 @@ export class Jsep {
 }
 
 @ObjectType()
+export class Stream {
+  @Field()
+  type: string;
+
+  @Field(() => Int)
+  mindex: number;
+
+  @Field()
+  mid: string;
+
+  @Field()
+  codec: string;
+
+  @Field({ nullable: true })
+  fec: boolean;
+}
+
+@ObjectType()
 export class Publisher {
-  @Field(() => Float)
+  @Field(() => Int)
   feed: number;
 
   @Field()
   display: string;
 
-  @Field()
+  @Field({ nullable: true })
   talking: boolean;
 
   @Field()
@@ -51,48 +69,132 @@ export class Publisher {
   @Field()
   videocodec: string;
 
-  @Field(() => [String])
-  streams: string[];
+  @Field({ nullable: true })
+  simulcast: boolean;
+
+  @Field(() => [Stream])
+  streams: Stream[];
 }
 
 @ObjectType()
-export class JoinResponse {
-  @Field()
+export class Participant {
+  @Field(() => Int)
   feed: number;
 
-  @Field()
-  room: number;
-
-  @Field()
+  @Field({ nullable: true })
   display: string;
 
-  @Field(() => [Publisher])
-  publishers: Publisher[];
+  @Field()
+  publisher: boolean;
+
+  @Field()
+  talking: boolean;
 }
 
 @ObjectType()
-export class ConfigureResponse {
-  @Field(() => Float)
-  feed: number;
+export class RtpForwarder {
+  @Field()
+  host: string;
+
+  @Field(() => Int)
+  audio_port: number;
+
+  @Field(() => Int)
+  audio_rtcp_port: number;
+
+  @Field(() => Int)
+  audio_stream: number;
+
+  @Field(() => Int)
+  video_port: number;
+
+  @Field(() => Int)
+  video_rtcp_port: number;
+
+  @Field(() => Int)
+  video_stream: number;
+
+  @Field(() => Int)
+  data_port: number;
+
+  @Field(() => Int)
+  data_stream: number;
+
+  @Field(() => Int)
+  ssrc: number;
+
+  @Field(() => Int)
+  pt: number;
+
+  @Field(() => Int)
+  sc_substream_layer: number;
 
   @Field()
-  room: number;
-
-  @Field(() => Jsep)
-  jsep: Jsep;
+  srtp: boolean;
 }
 
 @ObjectType()
-export class SubscribeResponse {
-  @Field(() => Float)
-  feed: number;
-
-  @Field()
+export class Room {
+  @Field(() => Int)
   room: number;
 
   @Field()
-  display: string;
+  description: string;
 
-  @Field(() => Jsep)
-  jsep: Jsep;
+  @Field()
+  pin_required: boolean;
+
+  @Field()
+  is_private: boolean;
+
+  @Field(() => Int)
+  max_publishers: number;
+
+  @Field(() => Int)
+  bitrate: number;
+
+  @Field(() => Int)
+  fir_freq: number;
+
+  @Field()
+  require_pvtid: boolean;
+
+  @Field()
+  require_e2ee: boolean;
+
+  @Field()
+  dummy_publisher: boolean;
+
+  @Field()
+  audiocodec: string;
+
+  @Field()
+  videocodec: string;
+
+  @Field()
+  opus_fec: boolean;
+
+  @Field()
+  record: boolean;
+
+  @Field()
+  lock_record: boolean;
+
+  @Field(() => Int)
+  num_participants: number;
+
+  @Field()
+  audiolevel_ext: boolean;
+
+  @Field()
+  audiolevel_event: boolean;
+
+  @Field()
+  videoorient_ext: boolean;
+
+  @Field()
+  playoutdelay_ext: boolean;
+
+  @Field()
+  transport_wide_cc_ext: boolean;
 }

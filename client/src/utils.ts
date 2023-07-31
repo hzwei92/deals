@@ -32,9 +32,11 @@ export const closePC = (pcMap: Record<number, RTCPeerConnection>, feed: number, 
   console.log('closing pc for feed', feed);
   _closePC(pc);
 
-  const newPcMap = { ...pcMap };
-  delete newPcMap[feed];
-  setPcMap(newPcMap);
+  setPcMap(prev => {
+    const newPcMap = { ...prev };
+    delete newPcMap[feed];
+    return newPcMap;
+  });
 }
 
 export const closeAllPCs = (pcMap: Record<number, RTCPeerConnection>, setPcMap: Dispatch<SetStateAction<Record<number, RTCPeerConnection>>>) => {
@@ -43,9 +45,7 @@ export const closeAllPCs = (pcMap: Record<number, RTCPeerConnection>, setPcMap: 
   Object.entries(pcMap).forEach(([feed, pc]) => {
     console.log('closing pc for feed', feed);
     _closePC(pc);
-    
-    const newPcMap = { ...pcMap };
-    delete newPcMap[parseInt(feed)];
-    setPcMap(newPcMap);
   });
+
+  setPcMap({})
 }

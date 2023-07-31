@@ -7,10 +7,14 @@ import useAnswer from "./useAnswer";
 import useStart from "./useStart";
 
 const CONFIGURE = gql`
-  mutation Configure($channelId: Int!, $feed: Float!, $audio: Boolean!, $video: Boolean!, $data: Boolean!, $jsep: JsepInput, $restart: Boolean, $sc_substream_layer: Int, $sc_temporal_layers: Int) {
-    configure(channelId: $channelId, feed: $feed, audio: $audio, video: $video, data: $data, jsep: $jsep, restart: $restart, sc_substream_layer: $sc_substream_layer, sc_temporal_layers: $sc_temporal_layers) {
-      feed
+  mutation Configure($room: Int!, $audio: Boolean!, $video: Boolean!, $data: Boolean!, $jsep: JsepInput, $restart: Boolean, $sc_substream_layer: Int, $sc_temporal_layers: Int) {
+    configure(room: $room, audio: $audio, video: $video, data: $data, jsep: $jsep, restart: $restart, sc_substream_layer: $sc_substream_layer, sc_temporal_layers: $sc_temporal_layers) {
       room
+      feed
+      display
+      restart
+      update
+      configured
       jsep {
         type
         sdp 
@@ -22,8 +26,6 @@ const CONFIGURE = gql`
 const useConfigure = () => {
   const { 
     pcMap,
-    setPcMap,
-    pendingOfferMap,
     setPendingOfferMap,
   } = useContext(AppContext);
 
@@ -37,9 +39,11 @@ const useConfigure = () => {
     },
     onCompleted: async ({ configure }) => {
       console.log(configure);
-      const newPendingOfferMap = { ...pendingOfferMap };
-      delete newPendingOfferMap[configure.room];
-      setPendingOfferMap(newPendingOfferMap)
+      setPendingOfferMap(prev => {
+        const newPendingOfferMap = { ...prev };
+        delete newPendingOfferMap[configure.feed];
+        return newPendingOfferMap;
+      })
 
       const pc = pcMap[configure.feed];
 
@@ -48,7 +52,8 @@ const useConfigure = () => {
           await pc.setRemoteDescription(configure.jsep);
           console.log('configure remote sdp OK');
           if (configure.jsep.type === 'offer') {
-            const answer = await doAnswer(configure.feed, null, configure.jsep);
+            const answer = await doAnswer(configure.feed, '', configure.jsep);
+            await new Promise(r => setTimeout(r, 10000))
             start(configure.feed, answer);
           }
         } catch (e) {
@@ -58,11 +63,10 @@ const useConfigure = () => {
     },
   });
 
-  const configure = (channelId: number, feed: number, jsep: any, restart: boolean, substream: any, temporal: any) => {
+  const configure = (room: number, jsep: any, restart: boolean, substream: any, temporal: any) => {
     if (!user) return;
     const variables = {
-      channelId,
-      feed,
+      room,
       audio: true,
       video: true,
       data: true,
@@ -75,9 +79,9 @@ const useConfigure = () => {
     configureChannel({ variables });
 
     if (jsep) {
-      setPendingOfferMap({ ...pendingOfferMap, [user.id]: { 
-        feed 
-      }});
+      setPendingOfferMap(prev => ({ ...prev, [user.id]: { 
+        feed: user.id, 
+      }}));
     }
   }
 

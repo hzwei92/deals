@@ -1,14 +1,14 @@
 import { gql, useMutation } from "@apollo/client";
 
 const TRICKLE = gql`
-  mutation Trickle($channelId: Int!, $candidate: CandidateInput!, $feed: Float!) {
-    trickle(channelId: $channelId, candidate: $candidate, feed: $feed)
+  mutation Trickle( $feed: Int!, $candidate: CandidateInput!) {
+    trickle( feed: $feed, candidate: $candidate)
   }
 `;
 
 const TRICKLE_COMPLETE = gql`
-  mutation TrickleComplete($channelId: Int!, $feed: Float!) {
-    trickleComplete(channelId: $channelId, feed: $feed)
+  mutation TrickleComplete($feed: Int!, $candidate: CandidateInput) {
+    trickleComplete(feed: $feed, candidate: $candidate)
   }
 `;
 
@@ -18,7 +18,7 @@ const useTrickle = () => {
       console.error(err);
     },
     onCompleted: data => {
-      console.log(data);
+      //console.log(data);
     },
   });
 
@@ -27,17 +27,16 @@ const useTrickle = () => {
       console.error(err);
     },
     onCompleted: data => {
-      console.log(data);
+      //console.log(data);
     },
   });
 
-  const trickler = (channelId: number, feed: number, candidate: any) => {
+  const trickler = (feed: number, candidate: any) => {
     if (candidate) {
-      console.log('trickle', feed)
-      trickle({ variables: { channelId, feed, candidate } });
+      trickle({ variables: { feed, candidate } });
     }
     else {
-      trickleComplete({ variables: { channelId, feed } });
+      trickleComplete({ variables: { feed } });
     }
   };
 
