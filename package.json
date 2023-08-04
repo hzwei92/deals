@@ -9,7 +9,7 @@
     "node": ">=18.16.1"
   },
   "scripts": {
-    "prebuild": "yarn global add node-gyp",
+    "preinstall": "yarn global add node-gyp",
     "build": "cd client && yarn install && yarn prebuild && yarn build && cd .. && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
