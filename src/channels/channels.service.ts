@@ -12,6 +12,14 @@ export class ChannelsService {
     private readonly channelsRepository: Repository<Channel>,
   ) {}
 
+  async findOne(id: number): Promise<Channel> {
+    return this.channelsRepository.findOne({
+      where: {
+        id,
+      },
+    });
+  }
+
   async findAll(): Promise<Channel[]> {
     return this.channelsRepository.find();
   }

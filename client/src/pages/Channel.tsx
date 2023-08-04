@@ -1,15 +1,30 @@
 import { IonButton, IonButtons, IonContent, IonPage } from '@ionic/react';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
-import { AppContext } from '../App';
-import useJoin from '../hooks/useJoin';
-import { activateChannel, selectChannel } from '../slices/channelSlice';
+import { activateChannel, addChannels, selectChannel } from '../slices/channelSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
-import useLeave from '../hooks/useLeave';
 import { selectAppUser } from '../slices/userSlice';
-import useDisconnect from '../hooks/useDisconnect';
-import { closeAllPCs } from '../utils';
+import { sfutest, localTracks, remoteTracks, feedStreams, feeds } from '../hooks/useJanus';
+import { AppContext } from '../App';
+import { gql, useMutation } from '@apollo/client';
+
+const GET_CHANNEL = gql`
+  mutation GetChannel($id: Int!) {
+    getChannel(id: $id) {
+      id
+      name
+      detail
+      ownerId
+      lat
+      lng
+      createdAt
+      updatedAt
+      deletedAt
+    }
+  }
+`;
+
 
 const getConnectedDevices = async (type: MediaDeviceKind) => {
   const devices = await navigator.mediaDevices.enumerateDevices();
@@ -23,56 +38,75 @@ interface ChannelProps extends RouteComponentProps<{
 const Channel: React.FC<ChannelProps> = ({ match }) => {
   const dispatch = useAppDispatch();
 
-  const {
-    pcMap,
-    setPcMap,
-    pendingOfferMap,
-    setPendingOfferMap,
-    vidMap,
-    setVidMap,
+  const { 
+    refresh,
+    joinRoom,
+    resetHandle,
   } = useContext(AppContext);
 
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(state => selectChannel(state, parseInt(match.params.id))) as ChannelType | null; 
 
-  const [isConnected, setIsConnected] = useState(false);
   const [cams, setCams] = useState<MediaDeviceInfo[]>([]);
   const [mics, setMics] = useState<MediaDeviceInfo[]>([]);
 
-  const join = useJoin();
-  const leave = useLeave();
-  const disconnect = useDisconnect();
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const [getChannel] = useMutation(GET_CHANNEL, {
+    onError: (error) => {
+      console.log(error);
+    },
+    onCompleted: ({ getChannel }) => {
+      console.log(getChannel);
+      dispatch(addChannels([getChannel]));
+      setIsLoaded(true);
+    },
+  });
 
   useEffect(() => {
-    const handleDeviceChange = async () => {
-      const cameras = await getConnectedDevices('videoinput');
-      const microphones = await getConnectedDevices('audioinput');
-      setCams(cameras);
-      setMics(microphones);
+    if (!channel) {
+      getChannel({
+        variables: {
+          id: parseInt(match.params.id),
+        }
+      });
     }
-
-    const getDevices = async () => {
-      try {
-        const videoCameras = await getConnectedDevices('videoinput');
-        console.log('Cameras found:', videoCameras);
-        setCams(videoCameras);
-
-        const microphones = await getConnectedDevices('audioinput');
-        console.log('Microphones found:', microphones);
-        setMics(microphones);
-
-        navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange)
-      } catch(error) {
-        console.error('Error accessing media devices.', error);
-      }
+    else {
+      setIsLoaded(true);
+      dispatch(activateChannel(channel.id));
     }
+  }, [channel?.id, match.params.id]);
 
-    //getDevices();
+  // useEffect(() => {
+  //   const handleDeviceChange = async () => {
+  //     const cameras = await getConnectedDevices('videoinput');
+  //     const microphones = await getConnectedDevices('audioinput');
+  //     setCams(cameras);
+  //     setMics(microphones);
+  //   }
 
-    return () => {
-      navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
-    }
-  }, []);
+  //   const getDevices = async () => {
+  //     try {
+  //       const videoCameras = await getConnectedDevices('videoinput');
+  //       console.log('Cameras found:', videoCameras);
+  //       setCams(videoCameras);
+
+  //       const microphones = await getConnectedDevices('audioinput');
+  //       console.log('Microphones found:', microphones);
+  //       setMics(microphones);
+
+  //       navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange)
+  //     } catch(error) {
+  //       console.error('Error accessing media devices.', error);
+  //     }
+  //   }
+
+  //   //getDevices();
+
+  //   return () => {
+  //     navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
+  //   }
+  // }, []);
 
   const attachVidSrc = (stream: MediaStream) => (vid: HTMLVideoElement | null) => {
     if (vid) {
@@ -80,32 +114,48 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     }
   }
 
-  const scheduleConnection = (function () {
-    let task: ReturnType<typeof setTimeout> | null = null;
-    const delay = 5000;
-  
-    return (function (channelId: number, secs: number) {
-      if (task) return;
-      const timeout = secs * 1000 || delay;
-      console.log('scheduled joining in ' + timeout + ' ms');
-      task = setTimeout(() => {
-        join(channelId);
-        task = null;
-      }, timeout);
-    });
-  })();
-
   const handleClick = () => {
-    if (!channel) return;
-    if (!isConnected) {
-      scheduleConnection(channel.id, 0.1);
+    if (!user || !channel) {
+      return;
     }
+    joinRoom(channel.id, user.id, user.name || 'anon');
   }
 
   const handleDisconnect = () => {
-    leave();
+    sfutest?.detach();
+    resetHandle();
     dispatch(activateChannel(null));
   }
+
+  if (!isLoaded) return (
+    <IonPage>
+      <IonContent fullscreen>
+        <div style={{ 
+          margin: 'auto',
+          maxWidth: 420,
+          padding: 20,
+          paddingTop: 0,
+        }}>
+          <h1 style={{
+            fontSize: 32,
+            fontWeight: 'bold',
+          }}>
+            LOADING...
+          </h1>
+        <IonButtons style={{
+          marginTop: 15,
+        }}>
+          <IonButton routerLink='/map' style={{
+            border: '1px solid',
+            borderRadius: 5,
+          }}>
+            BACK
+          </IonButton>
+        </IonButtons>
+        </div>
+      </IonContent>
+    </IonPage>
+  );
 
   if (!channel) return (
     <IonPage>
@@ -168,7 +218,9 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           <div>
             { mics.map(mic => (<div key={'mic-'+mic.deviceId}>{mic.label}</div>)) }
           </div>
-          <IonButtons>
+          <IonButtons style={{
+            marginTop: 15,
+          }}>
             <IonButton onClick={handleClick} style={{
               border: '1px solid',
               borderRadius: 5,
@@ -188,21 +240,45 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           justifyContent: 'space-around',
           flexWrap: 'wrap',
         }}>
+          {
+            Object.entries(localTracks).map(([id, stream]) => {
+              return (
+                <div key={'local-'+id} style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}>
+                  <video ref={attachVidSrc(stream as MediaStream)} autoPlay={true} muted={true} style={{
+                    width: 'calc(80% - 40px)',
+                    maxWidth: 420,
+                    borderRadius: 5,
+                  }} />
+                  <div>
+                    {user?.id} (YOU)
+                  </div>
+                </div>
+              )
+            })
+          }
         {
-          Object.entries(vidMap).map(([feed, {stream, display}]) => {
+          Object.entries(remoteTracks).map(([slot, stream]) => {
+            console.log('stream', stream)
+            if (!stream) {
+              return null;
+            }
             return (
-              <div key={'content-' + feed} style={{
+              <div key={'remote-' + slot} style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
               }}>
-                <video key={'stream-'+stream.id} ref={attachVidSrc(stream)} autoPlay={true} muted={parseInt(feed) === user?.id} style={{
-                  width: 'calc(50% - 40px)',
+                <video ref={attachVidSrc(stream as MediaStream)} autoPlay={true} style={{
+                  width: 'calc(80% - 40px)',
                   maxWidth: 420,
                   borderRadius: 5,
                 }}></video>
                 <div>
-                  { feed }
+                  { feeds[slot] }
                 </div>
               </div>
             )

@@ -44,48 +44,41 @@ import AuthModal from './components/AuthModal';
 import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
 import Channel from './pages/Channel';
-import { Dispatch, SetStateAction, createContext, useEffect, useState } from 'react';
-import { Vid } from './types/Vid';
+import { createContext } from 'react';
 import { useAppSelector } from './store';
 import { selectActiveChannel } from './slices/channelSlice';
-import useExists from './hooks/useExists';
+import { selectAppUser } from './slices/userSlice';
+import useJanus from './hooks/useJanus';
 
 setupIonicReact();
 
 export const AppContext = createContext({} as {
-  pcMap: Record<number, RTCPeerConnection>,
-  setPcMap: Dispatch<SetStateAction<Record<number, RTCPeerConnection>>>,
-  pendingOfferMap: Record<number, any>,
-  setPendingOfferMap: Dispatch<SetStateAction<Record<number, any>>>,
-  vidMap: Record<string, Vid>,
-  setVidMap: Dispatch<SetStateAction<Record<string, Vid>>>,
+  refresh: boolean;
+  joinRoom: (room: number, id: number, username: string) => void;
+  unpublishOwnFeed: () => void;
+  unsubscribeFrom: (id: string) => void;
+  resetHandle: () => void;
 });
 
 const App: React.FC = () => {
+  const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectActiveChannel);
-  const [pcMap, setPcMap] = useState<Record<number, RTCPeerConnection>>({})
-  const [pendingOfferMap, setPendingOfferMap] = useState<any>({})
-  const [vidMap, setVidMap] = useState<Record<string, Vid>>({})
-
-  console.log('pcMap', pcMap);
-  const exists = useExists();
-
-  useEffect(() => {
-    console.log('channel', channel)
-    if (channel) {    
-      exists(channel.id);
-    }
-  }, [channel]);
+  const { 
+    refresh,
+    joinRoom,
+    unpublishOwnFeed,
+    unsubscribeFrom,
+    resetHandle,
+  } = useJanus();
 
   return (
     <IonApp>
       <AppContext.Provider value={{
-        pcMap,
-        setPcMap,
-        pendingOfferMap,
-        setPendingOfferMap,
-        vidMap,
-        setVidMap,
+        refresh,
+        joinRoom,
+        unpublishOwnFeed,
+        unsubscribeFrom,
+        resetHandle,
       }}>
         <IonReactRouter>
           <AppBar />

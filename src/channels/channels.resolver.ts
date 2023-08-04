@@ -1,5 +1,5 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Float, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Float, Int, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthGuard, CurrentUser } from 'src/auth/gql-auth.guard';
 import { User as UserEntity } from 'src/users/user.entity';
 import { User } from 'src/users/user.model';
@@ -22,6 +22,15 @@ export class ChannelsResolver {
   }
 
   @UseGuards(AuthGuard)
+  @Mutation(() => Channel, {name: 'getChannel'})
+  async getChannel(
+    @Args('id', {type: () => Int }) id: number,
+    @CurrentUser() user: UserEntity
+  ) {
+    return this.channelsService.findOne(id);
+  }
+  
+  @UseGuards(AuthGuard)
   @Mutation(() => [Channel], {name: 'getChannels'})
   async getChannels(
     @Args('lng', { type: () => Float }) lng: number,
@@ -30,6 +39,7 @@ export class ChannelsResolver {
   ) {
     return this.channelsService.findAll();
   }
+
   @UseGuards(AuthGuard)
   @Mutation(() => Channel, {name: 'createChannel'})
   async createChannel(

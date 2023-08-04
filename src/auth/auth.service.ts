@@ -34,7 +34,8 @@ export class AuthService {
         to: '+1' + phone,
         body: `Your login verification code for JAMN Deals is: ${code}`,
       })
-      .then(message => console.log(message.sid));
+      .then(message => console.log(message.sid))
+      .catch(err => console.error(err));
   }
 
   async verify(phone: string, code: string) {

@@ -2,27 +2,8 @@ import { IonAvatar, IonButton, IonButtons, IonHeader, IonTitle, IonToolbar, isPl
 import md5 from "md5";
 import { selectAppUser } from "../slices/userSlice";
 import { useAppSelector } from "../store";
-import useErrorSub from "../hooks/useErrorSub";
-import useDestroyedSub from "../hooks/useDestroyedSub";
-import useDisplaySub from "../hooks/useDisplaySub";
-import useFeedListSub from "../hooks/useFeedListSub";
-import useKickSub from "../hooks/useKickSub";
-import useLeavingSub from "../hooks/useLeavingSub";
-import useTalkingSub from "../hooks/useTalkingSub";
-import useUnpublishedSub from "../hooks/useUnpublishedSub";
-import useFeedJoinedSub from "../hooks/useFeedJoinedSub";
 
 const AppBar: React.FC = () => {
-  useErrorSub();
-  useDestroyedSub();
-  useDisplaySub();
-  useFeedJoinedSub();
-  useFeedListSub();
-  useKickSub();
-  useLeavingSub();
-  useTalkingSub();
-  useUnpublishedSub()
-  
   const user = useAppSelector(selectAppUser);
   return (
     <IonHeader>
