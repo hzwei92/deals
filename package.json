@@ -9,7 +9,7 @@
     "node": ">=18.16.1"
   },
   "scripts": {
-    "build": "cd client && yarn install && yarn build && cd .. && nest build",
+    "build": "cd client && yarn install && yarn prebuild && yarn build && cd .. && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest build --webpack --webpackPath webpack-hmr.config.js --watch",
