@@ -5,7 +5,7 @@ import { activateChannel, addChannels, selectChannel } from '../slices/channelSl
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
 import { selectAppUser } from '../slices/userSlice';
-import { sfutest, localTracks, remoteTracks, feedStreams, feeds } from '../hooks/useJanus';
+import { localTracks, remoteTracks, feeds } from '../hooks/useJanus';
 import { AppContext } from '../App';
 import { gql, useMutation } from '@apollo/client';
 
@@ -41,7 +41,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   const { 
     refresh,
     joinRoom,
-    resetHandle,
+    disconnect,
   } = useContext(AppContext);
 
   const user = useAppSelector(selectAppUser);
@@ -122,8 +122,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   }
 
   const handleDisconnect = () => {
-    sfutest?.detach();
-    resetHandle();
+    disconnect()
     dispatch(activateChannel(null));
   }
 

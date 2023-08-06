@@ -269,6 +269,7 @@ const joinRoom = (room: number, id: number, username: string) => {
               if(unpublished === 'ok') {
                 // That's us
                 sfutest?.hangup();
+                sfutest = null;
                 return;
               }
               unsubscribeFrom(unpublished);
@@ -758,8 +759,9 @@ const subscribeTo = (sources: any) => {
   const unsubscribeFrom = (id: string) => {
     // Unsubscribe from this publisher
     let feed = feedStreams[id];
-    if(!feed)
+    if (!feed) {
       return;
+    }
     Janus.debug("Feed " + id + " (" + feed.display + ") has left the room, detaching");
     if(bitrateTimer[feed.slot]) {
       clearInterval(bitrateTimer[feed.slot]);
@@ -773,15 +775,21 @@ const subscribeTo = (sources: any) => {
     // Send an unsubscribe request
     let unsubscribe = {
       request: "unsubscribe",
-      streams: [{ feed: id }]
+      streams: [{ feed: parseInt(id) }]
     };
-    if(remoteFeed != null)
+    if(remoteFeed != null) {
       remoteFeed.send({ message: unsubscribe });
+    }
     delete subscriptions[id];
   }
 
-  const resetHandle = () => {
-    sfutest = null;
+  const disconnect = () => {
+    unpublishOwnFeed();
+    const leave = { request: "leave" }
+    sfutest?.send({ message: leave });
+    Object.keys(feedStreams).forEach((id) => {
+      unsubscribeFrom(id);
+    });
   };
 
   return {
@@ -792,7 +800,7 @@ const subscribeTo = (sources: any) => {
     joinRoom,
     subscribeTo, 
     unsubscribeFrom,
-    resetHandle,
+    disconnect,
   }
 }
 

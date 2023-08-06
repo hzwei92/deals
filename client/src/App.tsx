@@ -57,7 +57,7 @@ export const AppContext = createContext({} as {
   joinRoom: (room: number, id: number, username: string) => void;
   unpublishOwnFeed: () => void;
   unsubscribeFrom: (id: string) => void;
-  resetHandle: () => void;
+  disconnect: () => void;
 });
 
 const App: React.FC = () => {
@@ -68,7 +68,7 @@ const App: React.FC = () => {
     joinRoom,
     unpublishOwnFeed,
     unsubscribeFrom,
-    resetHandle,
+    disconnect,
   } = useJanus();
 
   return (
@@ -78,7 +78,7 @@ const App: React.FC = () => {
         joinRoom,
         unpublishOwnFeed,
         unsubscribeFrom,
-        resetHandle,
+        disconnect,
       }}>
         <IonReactRouter>
           <AppBar />
