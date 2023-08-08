@@ -9,8 +9,12 @@ async function bootstrap() {
   
   const configService = app.get(ConfigService);
 
-  app.enableCors();
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
 
+  
   await app.listen(configService.get('PORT'));
 
   if (module.hot) {
