@@ -49,6 +49,7 @@ import { useAppSelector } from './store';
 import { selectActiveChannel } from './slices/channelSlice';
 import { selectAppUser } from './slices/userSlice';
 import useJanus from './hooks/useJanus';
+import { DEV_SERVER_URI, PROD_SERVER_URI } from './constants';
 
 setupIonicReact();
 

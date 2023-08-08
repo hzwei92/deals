@@ -9,6 +9,7 @@ import { Preferences } from '@capacitor/preferences';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 
+
 const wsLink = new GraphQLWsLink(createClient({
   url: process.env.NODE_ENV === 'production'
     ? (isPlatform('android') || isPlatform('ios')) && !isPlatform('mobileweb')
@@ -24,7 +25,7 @@ const httpLink = createHttpLink({
       :  window.location.origin + '/graphql'
     : `http://${DEV_SERVER_URI}/graphql`,
   credentials: process.env.NODE_ENV === 'production'
-    ? isPlatform('ios') || isPlatform('android')
+    ? (isPlatform('ios') || isPlatform('android')) && !isPlatform('mobileweb')
       ? 'include'
       : 'same-origin'
     : 'include'
