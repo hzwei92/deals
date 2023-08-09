@@ -313,14 +313,13 @@ const MapComponent: React.FC = () => {
   });
 
   useEffect(() => {
-    if (!user?.id) return;
     getChannels({
       variables: {
         lng: mapLng,
         lat: mapLat,
       },
     });
-  }, [user?.id]);
+  }, []);
 
   useEffect(() => {
     if (marker.current?.getPopup().isOpen()) return;

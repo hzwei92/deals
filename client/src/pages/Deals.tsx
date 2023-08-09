@@ -1,10 +1,12 @@
 import { gql, useMutation } from '@apollo/client';
-import { IonContent, IonFab, IonFabButton, IonIcon, IonPage } from '@ionic/react';
+import { IonContent, IonFab, IonFabButton, IonIcon, IonPage, useIonRouter } from '@ionic/react';
 import { add } from 'ionicons/icons';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import DealListItem from '../components/DealListItem';
 import { addDeals, selectDeals } from '../slices/dealSlice';
 import { useAppDispatch, useAppSelector } from '../store';
+import { AppContext } from '../App';
+import { selectAppUser } from '../slices/userSlice';
 
 const GET_DEALS = gql`
   mutation GetDeals {
@@ -23,7 +25,14 @@ const GET_DEALS = gql`
 `;
 
 const Deals: React.FC = () => {
+  const router = useIonRouter();
+
   const dispatch = useAppDispatch();
+
+  const { setShowAuthModal } = useContext(AppContext);
+
+  const user = useAppSelector(selectAppUser);
+
   const deals = useAppSelector(selectDeals);
 
   const [getDeals] = useMutation(GET_DEALS, {
@@ -39,6 +48,15 @@ const Deals: React.FC = () => {
   useEffect(() => {
     getDeals();
   }, []);
+
+  const handleClick = () => {
+    if (user?.id) {
+      router.push('/deal/create')
+    }
+    else { 
+      setShowAuthModal(true);
+    }
+  }
 
   return (
     <IonPage>
@@ -57,7 +75,7 @@ const Deals: React.FC = () => {
           }
         </div>
         <IonFab vertical="bottom" horizontal="end" slot="fixed"> 
-          <IonFabButton routerLink='/deal/create' style={{
+          <IonFabButton onClick={handleClick} style={{
             boxShadow: '0 5px 15px rgb(0 0 0 / 0.2)',
             borderRadius: '50%',
           }}>

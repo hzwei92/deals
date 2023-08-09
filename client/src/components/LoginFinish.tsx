@@ -1,35 +1,35 @@
 import { gql, useMutation } from "@apollo/client";
 import { Preferences } from "@capacitor/preferences";
 import { IonButton, IonButtons, IonContent, IonInput } from "@ionic/react"
-import { useState } from "react";
-import { ACCESS_TOKEN_KEY, PHONE_KEY, REFRESH_TOKEN_KEY } from "../constants";
+import { useContext, useState } from "react";
+import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../constants";
 import useToken from "../hooks/useToken";
 import { addUsers, setAppUserId } from "../slices/userSlice";
 import { useAppDispatch } from "../store";
 import { User } from "../types/User";
+import { AppContext } from "../App";
+import { USER_FIELDS } from "../fragments/user";
 
 const VERIFY = gql`
-  mutation Verify($phone: String!, $code: String!) {
-    verify(phone: $phone, code: $code) {
+  mutation Verify($id: Int!, $code: String!) {
+    verify(id: $id, code: $code) {
       user {
-        id
-        phone
-        isAdmin
+        ...UserFields
       }
       accessToken
       refreshToken
     }
   }
+  ${USER_FIELDS}
 `;
 
 const RESEND = gql`
-  mutation Resend($phone: String!) {
-    resend(phone: $phone) {
-      id
-      phone
-      isAdmin
+  mutation Resend($phone: String, $email: String) {
+    resend(phone: $phone, email: $email) {
+      ...UserFields
     }
   }
+  ${USER_FIELDS}
 `;
 
 interface LoginFinishProps {
@@ -39,6 +39,8 @@ interface LoginFinishProps {
 
 const LoginFinish: React.FC<LoginFinishProps> = ({ pendingUser, setPendingUser }) => {
   const dispatch = useAppDispatch();
+
+  const { authModal } = useContext(AppContext);
 
   const [code, setCode] = useState<string>('');
   const [isCodeInvalid, setIsCodeInvalid] = useState<boolean>(false);
@@ -54,6 +56,10 @@ const LoginFinish: React.FC<LoginFinishProps> = ({ pendingUser, setPendingUser }
     onCompleted: async (data) => {
       console.log(data);
       if (data.verify.user.id) {
+        setPendingUser(null);
+        
+        authModal.current?.dismiss();
+        
         dispatch(addUsers([data.verify.user]));
         dispatch(setAppUserId(data.verify.user.id));
 
@@ -98,14 +104,14 @@ const LoginFinish: React.FC<LoginFinishProps> = ({ pendingUser, setPendingUser }
     const code1 = code.replace(/[^0-9]/g, '').trim();
     verify({ 
       variables: { 
-        phone: pendingUser.phone, 
+        id: pendingUser.id, 
         code: code1 
       }
     });
   }
 
   const handleResend = () => {
-    resend({ variables: { phone: pendingUser.phone } })
+    resend({ variables: { phone: pendingUser.phone, email: pendingUser.email } })
   }
 
   const handleBack = () => {
@@ -118,14 +124,25 @@ const LoginFinish: React.FC<LoginFinishProps> = ({ pendingUser, setPendingUser }
       <div style={{
         margin: 30,
       }}>
-        A <b>verification code</b> has been texted to 
+        A <b>verification code</b> has been { pendingUser.email ? 'emailed' : 'texted' } to 
       </div>
       <div style={{
         margin: 30,
         fontWeight: 'bold',
         fontSize: 24,
       }}>
-        +1 {pendingUser.phone.slice(0, 3)} {pendingUser.phone.slice(3, 6)} {pendingUser.phone.slice(6-10)}.
+        {
+          pendingUser.email 
+            ? pendingUser.email
+            : null
+        }
+        {
+          pendingUser.phone
+            ? <div>
+              +1 {pendingUser.phone.slice(0, 3)} {pendingUser.phone.slice(3, 6)} {pendingUser.phone.slice(6-10)}
+              </div>
+            : null
+        }
       </div>
       <div style={{
         margin: 30,

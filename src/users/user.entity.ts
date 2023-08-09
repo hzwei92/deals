@@ -6,9 +6,13 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index({ unique: true, where: '"deletedAt" IS NULL'})
-  @Column()
-  phone: string;
+  @Index({ unique: true, where: '"deletedAt" IS NULL AND email IS NOT NULL' })
+  @Column({ nullable: true })
+  email?: string;
+
+  @Index({ unique: true, where: '"deletedAt" IS NULL AND phone IS NOT NULL' })
+  @Column({ nullable: true })
+  phone?: string;
 
   @Index({ unique: true, where: '"deletedAt" IS NOT NULL AND name IS NOT NULL' })
   @Column({ nullable: true })

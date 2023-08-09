@@ -39,6 +39,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   const dispatch = useAppDispatch();
 
   const { 
+    authModal,
     refresh,
     joinRoom,
     disconnect,
@@ -115,7 +116,11 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   }
 
   const handleClick = () => {
-    if (!user || !channel) {
+    if (!user) {
+      authModal.current?.present();
+      return;
+    }
+    if (!channel) {
       return;
     }
     joinRoom(channel.id, user.id, user.name || 'anon');

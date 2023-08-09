@@ -44,14 +44,17 @@ type Image {
 type Mutation {
   createChannel(lat: Float!, lng: Float!): Channel!
   createPaymentIntent(price: Int!): String!
+  emailLogin(email: String!): User!
+  facebookAuth(credential: String!): VerifyResult!
   getChannel(id: Int!): Channel!
   getChannels(lat: Float!, lng: Float!): [Channel!]!
   getDeals: [Deal!]!
-  login(phone: String!): User!
+  googleAuth(credential: String!): VerifyResult!
   logout(phone: String!): User!
+  phoneLogin(phone: String!): User!
   refresh(refreshToken: String!): RefreshTokentResult!
-  resend(phone: String!): User!
-  verify(code: String!, phone: String!): VerifyResult!
+  resend(email: String, phone: String): User!
+  verify(code: String!, id: Int!): VerifyResult!
 }
 
 type Query {
@@ -64,9 +67,11 @@ type RefreshTokentResult {
 }
 
 type User {
+  email: String
   id: Int!
   isAdmin: Boolean!
-  phone: String!
+  name: String
+  phone: String
 }
 
 type VerifyResult {

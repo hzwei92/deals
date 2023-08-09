@@ -1,3 +1,5 @@
 export default interface TokenPayload {
-  phone: string;
+  id: number;
+  phone?: string;
+  email?: string;
 }

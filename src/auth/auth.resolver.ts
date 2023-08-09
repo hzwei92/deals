@@ -1,9 +1,10 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Resolver } from '@nestjs/graphql';
 import { User } from 'src/users/user.model';
 import { UsersService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
 import { RefreshTokentResult } from './dto/refresh-token-result.dto';
 import { VerifyResult } from './dto/verify-result.dto';
+import { BadRequestException } from '@nestjs/common';
 
 @Resolver()
 export class AuthResolver {
@@ -12,41 +13,81 @@ export class AuthResolver {
     private readonly usersService: UsersService,
   ) {}
 
-  @Mutation(() => User, { name: 'login' })
-  async login(
+  @Mutation(() => VerifyResult, { name: 'facebookAuth' })
+  async facebookAuth(
+    @Args('credential') credential: string,
+  ) {
+    return this.authService.facebookAuth(credential);
+  }
+  
+  @Mutation(() => VerifyResult, { name: 'googleAuth' })
+  async googleAuth(
+    @Args('credential') credential: string,
+  ) {
+    return this.authService.googleAuth(credential);
+  }
+
+  @Mutation(() => User, { name: 'emailLogin' })
+  async emailLogin(
+    @Args('email') email: string,
+  ) {
+    let user = await this.usersService.findOneByEmail(email);
+    if (!user) {
+      user = await this.usersService.createOne({ email });
+    }
+
+    await this.authService.emailLogin(user);
+
+    return user;
+  }
+
+
+  @Mutation(() => User, { name: 'phoneLogin' })
+  async phoneLogin(
     @Args('phone') phone: string,
   ) {
     let user = await this.usersService.findOneByPhone(phone);
     if (!user) {
-      user = await this.usersService.createOne(phone);
+      user = await this.usersService.createOne({ phone });
     }
 
-    await this.authService.login(phone);
+    await this.authService.phoneLogin(user);
 
     return user;
   }
 
   @Mutation(() => VerifyResult, { name: 'verify' })
   async verify(
-    @Args('phone') phone: string,
+    @Args('id', { type: () => Int }) id: number,
     @Args('code') code: string,
   ) {
-    return this.authService.verify(phone, code);
+    return this.authService.verify(id, code);
   }
     
   @Mutation(() => User, { name: 'resend' })
   async resend(
-    @Args('phone') phone: string,
+    @Args('email', { nullable: true}) email: string,
+    @Args('phone', { nullable: true}) phone: string,
   ) {
-    const user = await this.usersService.findOneByPhone(phone);
-
-    if (!user) {
-      throw new Error('User not found');
+    if (!email && !phone) {
+      throw new BadRequestException('Must provide either email or phone');
     }
-
-    await this.authService.login(phone);
-
-    return user;
+    if (phone) {
+      const user = await this.usersService.findOneByPhone(phone);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      await this.authService.phoneLogin(user);
+      return user;
+    }
+    if (email) {
+      const user = await this.usersService.findOneByEmail(email);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      await this.authService.emailLogin(user);
+      return user;
+    }
   }
 
   @Mutation(() => User, { name: 'logout' })

@@ -72,7 +72,7 @@ const DealPage: React.FC<DealProps> = ({ match }) => {
             {deal.detail}
           </h3>
           {
-            (deal.quantity > 0 && deal.vendorId !== user?.id) && (
+            (user?.id && deal.quantity > 0 && deal.vendorId !== user?.id) && (
               <Checkout deal={deal} />
             )
           }

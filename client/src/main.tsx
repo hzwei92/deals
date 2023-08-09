@@ -3,12 +3,12 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink, split } from '@apollo/client';
 import { isPlatform } from '@ionic/react';
-import { DEV_SERVER_URI, PROD_SERVER_URI, ACCESS_TOKEN_KEY } from './constants';
+import { DEV_SERVER_URI, PROD_SERVER_URI, ACCESS_TOKEN_KEY, GOOGLE_CLIENT_ID } from './constants';
 import { setContext } from '@apollo/client/link/context';
 import { Preferences } from '@capacitor/preferences';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
-
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const wsLink = new GraphQLWsLink(createClient({
   url: process.env.NODE_ENV === 'production'
@@ -72,10 +72,12 @@ const root = createRoot(container!);
 
 root.render(
   <React.StrictMode>
-    <ApolloProvider client={client}>
-      <Provider store={store}>
-        <App />
-      </Provider>
-    </ApolloProvider>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <ApolloProvider client={client}>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </ApolloProvider>
+    </GoogleOAuthProvider>
   </React.StrictMode>
 );

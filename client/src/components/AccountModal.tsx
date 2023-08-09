@@ -36,11 +36,26 @@ const AccountModal: React.FC = () => {
       <IonHeader style={{
         fontWeight: 'bold',
         fontSize: 40,
-        margin: 20,
       }}> 
-        +1 { user?.phone.slice(0, 3) } { user?.phone.slice(3, 6) } { user?.phone.slice(6-10) }
       </IonHeader>
       <IonContent>
+        <div style={{
+          fontWeight: 'bold',
+          fontSize: 20,
+          margin: 25,
+        }}>
+          { user?.name }
+          <br/>
+          { user?.email }
+          <br/>
+          {
+            user?.phone 
+              ? <div>
+                +1 { user?.phone.slice(0, 3) } { user?.phone.slice(3, 6) } { user?.phone.slice(6-10) }
+              </div>
+              : null
+          }
+        </div>
         <IonButtons style={{
           display: 'flex',
           flexDirection: 'column',

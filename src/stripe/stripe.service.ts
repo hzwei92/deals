@@ -14,8 +14,13 @@ export class StripeService {
     });
   }
 
-  public async createCustomer(phone: string) {
+  public async createCustomer({phone, email}: {phone?: string, email?: string}) {
+    if (!phone && !email) {
+      throw new Error('Must provide either phone or email');
+    }
+    
     return this.stripe.customers.create({
+      email,
       phone,
     });
   }

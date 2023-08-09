@@ -22,20 +22,36 @@ export class UsersService {
     return this.usersRepository.findOneBy({ phone })
   }
 
-  async createOne(phone: string): Promise<User> {
-    phone = phone.trim();
-    const stripeCustomer = await this.stripeService.createCustomer(phone);
+  async findOneByEmail(email: string): Promise<User | null> {
+    return this.usersRepository.findOneBy({ email });
+  }
+
+  async createOne({phone, email}: {phone?: string, email?: string}): Promise<User> {
+    if (!phone && !email) {
+      throw new Error('Must provide either phone or email');
+    }
+    if (phone) {
+      phone = phone.trim();
+    }
+    if (email) {
+      email = email.trim();
+    }
+    const stripeCustomer = await this.stripeService.createCustomer({
+      phone, 
+      email
+    });
  
     const user = await this.usersRepository.create({
       phone,
+      email,
       stripeCustomerId: stripeCustomer.id,
     })
 
     return this.usersRepository.save(user);
   }
   
-  async setVerificationCode(phone: string, code: string | null): Promise<User> {
-    const user = await this.findOneByPhone(phone);
+  async setVerificationCode(id: number, code: string | null): Promise<User> {
+    const user = await this.findOne(id);
     if (!user) throw new Error('User not found');  
 
     if (code == null) {
@@ -62,8 +78,8 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async getUserIfRefreshTokenMatches(phone: string, refreshToken: string): Promise<User | null> {
-    const user = await this.findOneByPhone(phone);
+  async getUserIfRefreshTokenMatches(id: number, refreshToken: string): Promise<User | null> {
+    const user = await this.findOne(id);
     if (!user) throw new Error('User not found');
 
     const isRefreshTokenValid = await bcrypt.compare(refreshToken, user.hashedRefreshToken);

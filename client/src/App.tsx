@@ -44,16 +44,16 @@ import AuthModal from './components/AuthModal';
 import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
 import Channel from './pages/Channel';
-import { createContext } from 'react';
+import { createContext, useRef } from 'react';
 import { useAppSelector } from './store';
 import { selectActiveChannel } from './slices/channelSlice';
 import { selectAppUser } from './slices/userSlice';
 import useJanus from './hooks/useJanus';
-import { DEV_SERVER_URI, PROD_SERVER_URI } from './constants';
 
 setupIonicReact();
 
 export const AppContext = createContext({} as {
+  authModal: React.MutableRefObject<HTMLIonModalElement | null>;
   refresh: boolean;
   joinRoom: (room: number, id: number, username: string) => void;
   unpublishOwnFeed: () => void;
@@ -64,6 +64,7 @@ export const AppContext = createContext({} as {
 const App: React.FC = () => {
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectActiveChannel);
+
   const { 
     refresh,
     joinRoom,
@@ -72,9 +73,12 @@ const App: React.FC = () => {
     disconnect,
   } = useJanus();
 
+  const authModal = useRef<HTMLIonModalElement>(null);
+
   return (
     <IonApp>
       <AppContext.Provider value={{
+        authModal,
         refresh,
         joinRoom,
         unpublishOwnFeed,

@@ -1,5 +1,5 @@
 import { IonHeader, IonModal } from '@ionic/react';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { selectAppUser } from '../slices/userSlice';
 import { useAppSelector } from '../store';
 import LoginStart from './LoginStart';
@@ -7,11 +7,18 @@ import LoginFinish from './LoginFinish';
 import { selectIsInitialized } from '../slices/authSlice';
 import { User } from '../types/User';
 import useToken from '../hooks/useToken';
+import { AppContext } from '../App';
 
 const AuthModal: React.FC = () => {
+  const { 
+    authModal,
+  } = useContext(AppContext);
+
   const user = useAppSelector(selectAppUser);
   const isInitialized = useAppSelector(selectIsInitialized);
+
   const { refreshToken, refreshTokenInterval } = useToken();
+
   const [pendingUser, setPendingUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -25,15 +32,15 @@ const AuthModal: React.FC = () => {
       refreshToken();
     }
   }, [isInitialized]);
-
+  
   return (
-    <IonModal isOpen={isInitialized && !user} backdropDismiss={false}>
+    <IonModal trigger='auth-modal-button' ref={authModal} backdropDismiss={false}>
       <IonHeader style={{
         fontWeight: 'bold',
         fontSize: 40,
         margin: 20,
       }}>
-        JAMN
+        LOG IN
       </IonHeader>
       {
         !pendingUser

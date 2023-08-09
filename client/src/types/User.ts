@@ -1,7 +1,8 @@
 
 export type User = {
   id: number;
-  phone: string;
-  name: string | null;
+  email?: string;
+  phone?: string;
+  name?: string;
   isAdmin: boolean;
 }

@@ -4,6 +4,7 @@ import { Request } from 'express';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ImagesService } from 'src/images/images.service';
 import { DealsService } from './deals.service';
+import { User } from 'src/users/user.entity';
 
 @Controller('deals')
 export class DealsController {
@@ -20,7 +21,7 @@ export class DealsController {
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
   ) {
-    const user = req['user'];
+    const user = req['user'] as User;
     const image = await this.imagesService.createOne(file);
     return this.dealsService.createOne(
       user.id, 

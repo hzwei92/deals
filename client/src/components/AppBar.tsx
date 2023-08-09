@@ -1,7 +1,8 @@
-import { IonAvatar, IonButton, IonButtons, IonHeader, IonTitle, IonToolbar, isPlatform } from "@ionic/react"
+import { IonAvatar, IonButton, IonButtons, IonHeader, IonIcon, IonTitle, IonToolbar, isPlatform } from "@ionic/react"
 import md5 from "md5";
 import { selectAppUser } from "../slices/userSlice";
 import { useAppSelector } from "../store";
+import { personCircleOutline } from "ionicons/icons";
 
 const AppBar: React.FC = () => {
   const user = useAppSelector(selectAppUser);
@@ -13,17 +14,20 @@ const AppBar: React.FC = () => {
       }}>
         <IonTitle size="large">JAMN</IonTitle>
         <IonButtons slot='end'>
-          <IonButton  id={'account-modal-button'} >
+          <IonButton id='auth-modal-button' style={{
+            display: user?.id ? 'none' : 'block',
+          }}>
+            <IonIcon icon={personCircleOutline} />
+          </IonButton>
+          <IonButton id='account-modal-button' style={{
+            display: user?.id ? 'block' : 'none',
+          }}>
             <IonAvatar style={{
-              display: user?.phone ? 'block' : 'none',
-              margin: 10,
               width: 30,
               height: 30,
               cursor: 'pointer',
             }}>
-              <img 
-                src={`https://www.gravatar.com/avatar/${md5(user?.phone || '')}?d=retro`}
-              />
+              <img src={`https://www.gravatar.com/avatar/${md5(user?.id.toString() || '')}?d=retro`} />
             </IonAvatar>
           </IonButton>
         </IonButtons>

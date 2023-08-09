@@ -6,10 +6,19 @@ const bcrypt = require('bcrypt');
 import TokenPayload from './tokenPayload.interface';
 import { JwtService } from '@nestjs/jwt';
 import { Twilio } from 'twilio';
+import { User } from 'src/users/user.entity';
+import { OAuth2Client } from 'google-auth-library';
+import axios from 'axios';
+import mailgun from 'mailgun-js';
 
 @Injectable()
 export class AuthService {
-  client: Twilio;
+  twilioClient: Twilio;
+  googleOauthClient: OAuth2Client;
+
+  mailgunClient: any;
+
+
   constructor(
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
@@ -18,28 +27,114 @@ export class AuthService {
     const accountSid = this.configService.get('TWILIO_ACCOUNT_SID');
     const authToken = this.configService.get('TWILIO_AUTH_TOKEN');
 
-    console.log(accountSid, authToken);
-    this.client = twilio(accountSid, authToken);
+    this.twilioClient = twilio(accountSid, authToken);
+
+    const clientId = this.configService.get('GOOGLE_CLIENT_ID');
+    const clientSecret = this.configService.get('GOOGLE_CLIENT_SECRET');
+
+    this.googleOauthClient = new OAuth2Client(clientId, clientSecret);
+
+    this.mailgunClient = mailgun({
+      apiKey: this.configService.get('MAILGUN_API_KEY'),
+      domain: this.configService.get('MAILGUN_DOMAIN'),
+    });
   }
 
-  async login(phone: string) {
+  async facebookAuth(credential: string) {
+    console.log(credential);
+    const { data } = await axios({
+      url: 'https://graph.facebook.com/me',
+      method: 'get',
+      params: {
+        fields: ['email'].join(','),
+        access_token: credential,
+      }
+    });
+    console.log(data);
+    const { email } = data;
+
+    let user = await this.usersService.findOneByEmail(email);
+
+    if (!user) {
+      user = await this.usersService.createOne({email});
+    }
+
+    const accessToken = this.getAccessToken(user);
+    const refreshToken = await this.getRefreshToken(user, false);
+
+    return {
+      user, 
+      accessToken,
+      refreshToken,
+    };
+  }
+
+
+  async googleAuth(credential: string) {
+    const ticket = await this.googleOauthClient.verifyIdToken({
+      idToken: credential,
+      audience: this.configService.get('GOOGLE_CLIENT_ID'),
+    });
+
+    const payload = ticket.getPayload();
+
+    console.log(payload);
+    const { email } = payload
+
+    let user = await this.usersService.findOneByEmail(email);
+
+    if (!user) {
+      user = await this.usersService.createOne({email});
+    }
+
+    const accessToken = this.getAccessToken(user);
+    const refreshToken = await this.getRefreshToken(user, false);
+
+
+    return {
+      user,
+      accessToken,
+      refreshToken,
+    }
+  }
+
+
+  async emailLogin(user: User) {
     const code = Math.floor(Math.random() * 1e6).toString().padStart(6, '0');
     console.log(code);
 
-    await this.usersService.setVerificationCode(phone, code);
+    await this.usersService.setVerificationCode(user.id, code);
       
-    this.client.messages
+    this.mailgunClient.messages()
+      .send({
+        from: 'JAMN Deals <verify@jamn.io>',
+        to: user.email,
+        subject: `Email verifcation code: ${code}`,
+        text: `Welcome to JAMN Deals! Your email verification code is: ${code}`,
+      })
+      .then(msg => console.log(msg))
+      .catch(err => console.error(err));
+  }
+
+
+  async phoneLogin(user: User) {
+    const code = Math.floor(Math.random() * 1e6).toString().padStart(6, '0');
+    console.log(code);
+
+    await this.usersService.setVerificationCode(user.id, code);
+      
+    this.twilioClient.messages
       .create({
         from: '+17257264123',
-        to: '+1' + phone,
+        to: '+1' + user.phone,
         body: `Your login verification code for JAMN Deals is: ${code}`,
       })
       .then(message => console.log(message.sid))
       .catch(err => console.error(err));
   }
 
-  async verify(phone: string, code: string) {
-    const user = await this.usersService.findOneByPhone(phone);
+  async verify(id: number, code: string) {
+    const user = await this.usersService.findOne(id);
 
     if (!user) {
       throw new Error('User not found');
@@ -51,10 +146,10 @@ export class AuthService {
       throw new Error('Invalid verification code');
     }
 
-    await this.usersService.setVerificationCode(phone, null);
+    await this.usersService.setVerificationCode(user.id, null);
 
-    const accessToken = this.getAccessToken(phone);
-    const refreshToken = await this.getRefreshToken(phone, false);
+    const accessToken = this.getAccessToken(user);
+    const refreshToken = await this.getRefreshToken(user, false);
 
     return {
       user,
@@ -65,14 +160,14 @@ export class AuthService {
 
   async refreshToken(token: string) {
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
+      const payload: TokenPayload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       });
-      const user = await this.usersService.getUserIfRefreshTokenMatches(payload.phone, token);
+      const user = await this.usersService.getUserIfRefreshTokenMatches(payload.id, token);
       if (!user) {
         throw new BadRequestException('Invalid refresh token');
       }
-      const accessToken = this.getAccessToken(user.phone);
+      const accessToken = this.getAccessToken(user);
       return {
         user,
         accessToken,
@@ -85,8 +180,9 @@ export class AuthService {
     }
   }
 
-  getAccessToken(phone: string) {
-    const payload: TokenPayload = { phone };
+  getAccessToken(user: User) {
+    const { id, phone, email } = user;
+    const payload: TokenPayload = { id, phone, email };
 		const expirationTime = this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
@@ -96,8 +192,9 @@ export class AuthService {
     return token;
   }
 
-  async getRefreshToken(phone: string, shouldTokenExpire: boolean) {
-    const payload: TokenPayload = { phone };
+  async getRefreshToken(user: User, shouldTokenExpire: boolean) {
+    const { id, phone, email } = user;
+    const payload: TokenPayload = { id, phone, email };
 		const expirationTime = this.configService.get('JWT_REFRESH_TOKEN_EXPIRATION_TIME')
     const token = this.jwtService.sign(payload, {
       secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),

@@ -21,7 +21,6 @@ export class ChannelsResolver {
     return this.usersService.findOne(channel.ownerId);
   }
 
-  @UseGuards(AuthGuard)
   @Mutation(() => Channel, {name: 'getChannel'})
   async getChannel(
     @Args('id', {type: () => Int }) id: number,
@@ -30,7 +29,6 @@ export class ChannelsResolver {
     return this.channelsService.findOne(id);
   }
   
-  @UseGuards(AuthGuard)
   @Mutation(() => [Channel], {name: 'getChannels'})
   async getChannels(
     @Args('lng', { type: () => Float }) lng: number,
