@@ -29,7 +29,7 @@ const Deals: React.FC = () => {
 
   const dispatch = useAppDispatch();
 
-  const { setShowAuthModal } = useContext(AppContext);
+  const { authModal } = useContext(AppContext);
 
   const user = useAppSelector(selectAppUser);
 
@@ -54,7 +54,7 @@ const Deals: React.FC = () => {
       router.push('/deal/create')
     }
     else { 
-      setShowAuthModal(true);
+      authModal.current?.present();
     }
   }
 
