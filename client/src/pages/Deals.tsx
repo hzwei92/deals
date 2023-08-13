@@ -63,7 +63,7 @@ const Deals: React.FC = () => {
       <IonContent fullscreen>
         <div style={{
           padding: 10,
-          backgroundColor: 'dimgrey',
+          backgroundColor: '#222222',
           minHeight: '100%',
         }}>
           {
@@ -75,11 +75,11 @@ const Deals: React.FC = () => {
           }
         </div>
         <IonFab vertical="bottom" horizontal="end" slot="fixed"> 
-          <IonFabButton onClick={handleClick} style={{
+          <IonFabButton onClick={handleClick} size='small' style={{
             boxShadow: '0 5px 15px rgb(0 0 0 / 0.2)',
             borderRadius: '50%',
           }}>
-            <IonIcon icon={add}/>
+            <IonIcon icon={add} />
           </IonFabButton>
         </IonFab>
       </IonContent>

@@ -29,11 +29,12 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
-
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 /* Theme variables */
 import './theme/variables.css';
+
+import './theme/main.css';
 
 import Meme from './pages/Meme';
 import Map from './pages/Map';
@@ -45,9 +46,6 @@ import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
 import Channel from './pages/Channel';
 import { createContext, useRef } from 'react';
-import { useAppSelector } from './store';
-import { selectActiveChannel } from './slices/channelSlice';
-import { selectAppUser } from './slices/userSlice';
 import useJanus from './hooks/useJanus';
 
 setupIonicReact();
@@ -62,9 +60,6 @@ export const AppContext = createContext({} as {
 });
 
 const App: React.FC = () => {
-  const user = useAppSelector(selectAppUser);
-  const channel = useAppSelector(selectActiveChannel);
-
   const { 
     refresh,
     joinRoom,
@@ -89,7 +84,9 @@ const App: React.FC = () => {
           <AppBar />
           <IonTabs>
             <IonRouterOutlet style={{
-              marginTop: isPlatform('ios') ? 56 : 60,
+              marginTop: isPlatform('ios') 
+                ? 95 
+                : 60,
             }}>
               <Route exact path="/meme"  component={Meme} />
               <Route exact path="/map" component={Map} />

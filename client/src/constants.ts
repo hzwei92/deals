@@ -12,3 +12,5 @@ export const FACEBOOK_APP_ID = '1483086142451421';
 
 
 export const PRIMARY_COLOR = '#f4900c';
+
+export const DEFAULT_TITLE = 'JAMN';

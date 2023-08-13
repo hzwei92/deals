@@ -45,5 +45,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+  <string>Use camera for video calling.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Use microphone for video calling.</string>
 </dict>
 </plist>

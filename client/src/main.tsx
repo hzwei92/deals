@@ -10,6 +10,10 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
+(window as any).EXCALIDRAW_ASSET_PATH = process.env.NODE_ENV === 'production'
+  ? '/excalidraw-assets'
+  : '/excalidraw-assets-dev';
+
 const wsLink = new GraphQLWsLink(createClient({
   url: process.env.NODE_ENV === 'production'
     ? (isPlatform('android') || isPlatform('ios')) && !isPlatform('mobileweb')

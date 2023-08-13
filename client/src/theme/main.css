@@ -1,0 +1,9 @@
+.ToolIcon__lock,
+.App-toolbar__divider,
+.App-toolbar-content button[aria-label="Edit"],
+.App-toolbar-content button[aria-label="Duplicate"],
+label[title="Diamond — D or 3"],
+label[title="Line — L or 6"],
+label[title="Library"] {
+  display: none !important;
+}

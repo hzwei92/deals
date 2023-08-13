@@ -1,13 +1,16 @@
-import { IonButton, IonButtons, IonContent, IonPage } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonIcon, IonPage } from '@ionic/react';
 import { useContext, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { activateChannel, addChannels, selectChannel } from '../slices/channelSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
 import { selectAppUser } from '../slices/userSlice';
-import { localTracks, remoteTracks, feeds } from '../hooks/useJanus';
 import { AppContext } from '../App';
 import { gql, useMutation } from '@apollo/client';
+import VideoRoom from '../components/VideoRoom';
+import { arrowBackOutline } from 'ionicons/icons';
+import { Excalidraw } from '@excalidraw/excalidraw';
+import Tiptap from '../components/Tiptap';
 
 const GET_CHANNEL = gql`
   mutation GetChannel($id: Int!) {
@@ -37,20 +40,9 @@ interface ChannelProps extends RouteComponentProps<{
 
 const Channel: React.FC<ChannelProps> = ({ match }) => {
   const dispatch = useAppDispatch();
-
-  const { 
-    authModal,
-    refresh,
-    joinRoom,
-    disconnect,
-  } = useContext(AppContext);
-
-  const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(state => selectChannel(state, parseInt(match.params.id))) as ChannelType | null; 
 
-  const [cams, setCams] = useState<MediaDeviceInfo[]>([]);
-  const [mics, setMics] = useState<MediaDeviceInfo[]>([]);
-
+  const [mode, setMode] = useState<'cluster' | 'draw' | 'call' | 'text' | 'settings'>('call');
   const [isLoaded, setIsLoaded] = useState(false);
 
   const [getChannel] = useMutation(GET_CHANNEL, {
@@ -78,84 +70,35 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     }
   }, [channel?.id, match.params.id]);
 
-  // useEffect(() => {
-  //   const handleDeviceChange = async () => {
-  //     const cameras = await getConnectedDevices('videoinput');
-  //     const microphones = await getConnectedDevices('audioinput');
-  //     setCams(cameras);
-  //     setMics(microphones);
-  //   }
-
-  //   const getDevices = async () => {
-  //     try {
-  //       const videoCameras = await getConnectedDevices('videoinput');
-  //       console.log('Cameras found:', videoCameras);
-  //       setCams(videoCameras);
-
-  //       const microphones = await getConnectedDevices('audioinput');
-  //       console.log('Microphones found:', microphones);
-  //       setMics(microphones);
-
-  //       navigator.mediaDevices.addEventListener('devicechange', handleDeviceChange)
-  //     } catch(error) {
-  //       console.error('Error accessing media devices.', error);
-  //     }
-  //   }
-
-  //   //getDevices();
-
-  //   return () => {
-  //     navigator.mediaDevices.removeEventListener('devicechange', handleDeviceChange);
-  //   }
-  // }, []);
-
-  const attachVidSrc = (stream: MediaStream) => (vid: HTMLVideoElement | null) => {
-    if (vid) {
-      vid.srcObject = stream;
-    }
-  }
-
-  const handleClick = () => {
-    if (!user) {
-      authModal.current?.present();
-      return;
-    }
-    if (!channel) {
-      return;
-    }
-    joinRoom(channel.id, user.id, user.name || 'anon');
-  }
-
-  const handleDisconnect = () => {
-    disconnect()
-    dispatch(activateChannel(null));
-  }
-
   if (!isLoaded) return (
     <IonPage>
       <IonContent fullscreen>
         <div style={{ 
-          margin: 'auto',
-          maxWidth: 420,
-          padding: 20,
-          paddingTop: 0,
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'start',
+          marginLeft: 5,
+          marginTop: 5,
         }}>
-          <h1 style={{
+          <IonButtons style={{
+            display: 'inline-flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}>
+            <IonButton routerLink='/map' style={{
+            }}>
+              <IonIcon icon={arrowBackOutline} />
+            </IonButton>
+          </IonButtons>
+          <div style={{
+            display: 'inline-flex',
             fontSize: 32,
             fontWeight: 'bold',
+            flexDirection: 'column',
+            justifyContent: 'center',
           }}>
             LOADING...
-          </h1>
-        <IonButtons style={{
-          marginTop: 15,
-        }}>
-          <IonButton routerLink='/map' style={{
-            border: '1px solid',
-            borderRadius: 5,
-          }}>
-            BACK
-          </IonButton>
-        </IonButtons>
+          </div>
         </div>
       </IonContent>
     </IonPage>
@@ -165,27 +108,31 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     <IonPage>
       <IonContent fullscreen>
         <div style={{ 
-          margin: 'auto',
-          maxWidth: 420,
-          padding: 20,
-          paddingTop: 0,
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'start',
+          marginLeft: 5,
+          marginTop: 5,
         }}>
-          <h1 style={{
+          <IonButtons style={{
+            display: 'inline-flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}>
+            <IonButton routerLink='/map' style={{
+            }}>
+              <IonIcon icon={arrowBackOutline} />
+            </IonButton>
+          </IonButtons>
+          <div style={{
+            display: 'inline-flex',
             fontSize: 32,
             fontWeight: 'bold',
+            flexDirection: 'column',
+            justifyContent: 'center',
           }}>
-            NOT FOUND
-          </h1>
-        <IonButtons style={{
-          marginTop: 15,
-        }}>
-          <IonButton routerLink='/map' style={{
-            border: '1px solid',
-            borderRadius: 5,
-          }}>
-            BACK
-          </IonButton>
-        </IonButtons>
+            NOT FOUND...
+          </div>
         </div>
       </IonContent>
     </IonPage>
@@ -195,100 +142,56 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     <IonPage>
       <IonContent fullscreen>
         <div style={{ 
-          margin: 'auto',
-          maxWidth: 420,
-          padding: 20,
-          paddingTop: 0,
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'start',
+          marginLeft: 5,
+          marginTop: 5,
         }}>
-          <h1 style={{
-            fontSize: 32,
-            fontWeight: 'bold',
-          }}>
-            { channel.name }
-          </h1>
           <IonButtons style={{
-            marginTop: 15,
+            display: 'inline-flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
           }}>
             <IonButton routerLink='/map' style={{
-              border: '1px solid',
-              borderRadius: 5,
             }}>
-              BACK
+              <IonIcon icon={arrowBackOutline} />
             </IonButton>
           </IonButtons>
-          <div>
-            { cams.map(cam => (<div key={'cam-'+cam.deviceId}>{cam.label}</div>)) }
-          </div>
-          <div>
-            { mics.map(mic => (<div key={'mic-'+mic.deviceId}>{mic.label}</div>)) }
-          </div>
-          <IonButtons style={{
-            marginTop: 15,
+          <div style={{
+            display: 'inline-flex',
+            fontSize: 32,
+            fontWeight: 'bold',
+            flexDirection: 'column',
+            justifyContent: 'center',
           }}>
-            <IonButton onClick={handleClick} style={{
-              border: '1px solid',
-              borderRadius: 5,
-            }}>
-              CALL
-            </IonButton>
-            <IonButton onClick={handleDisconnect} style={{
-              border: '1px solid',
-              borderRadius: 5,
-            }}>
-              DISCONNECT
-            </IonButton>
-          </IonButtons>
+            { channel.name }
+          </div>
+        </div>
+
+        <div style={{
+          display: mode === 'cluster' ? 'block' : 'none',
+        }}>
+          
         </div>
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-around',
-          flexWrap: 'wrap',
+          height: 'calc(100% - 40px)',
+          display: mode === 'draw' ? 'block' : 'none'
         }}>
-          {
-            Object.entries(localTracks).map(([id, stream]) => {
-              return (
-                <div key={'local-'+id} style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                }}>
-                  <video ref={attachVidSrc(stream as MediaStream)} autoPlay={true} muted={true} style={{
-                    width: 'calc(80% - 40px)',
-                    maxWidth: 420,
-                    borderRadius: 5,
-                  }} />
-                  <div>
-                    {user?.id} (YOU)
-                  </div>
-                </div>
-              )
-            })
-          }
-        {
-          Object.entries(remoteTracks).map(([slot, stream]) => {
-            console.log('stream', stream)
-            if (!stream) {
-              return null;
-            }
-            return (
-              <div key={'remote-' + slot} style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-              }}>
-                <video ref={attachVidSrc(stream as MediaStream)} autoPlay={true} style={{
-                  width: 'calc(80% - 40px)',
-                  maxWidth: 420,
-                  borderRadius: 5,
-                }}></video>
-                <div>
-                  { feeds[slot] }
-                </div>
-              </div>
-            )
-          })
-        }  
-      </div>
+          <Excalidraw
+            theme={'dark'}
+          />
+        </div>
+        <div style={{
+          display: mode === 'call' ? 'block' : 'none',
+        }}>
+          <VideoRoom channel={channel} />
+        </div>
+        <div style={{
+          display: mode === 'text' ? 'block' : 'none',
+        }}>
+          <Tiptap />
+        </div>
       </IonContent>
     </IonPage>
   );

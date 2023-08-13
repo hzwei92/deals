@@ -10,10 +10,12 @@ const AppBar: React.FC = () => {
     <IonHeader>
       <IonToolbar style={{
         position: 'fixed',
-        paddingTop: isPlatform('ios') ? 10 : 0,
+        paddingTop: isPlatform('ios') ? 50 : 0,
       }}>
         <IonTitle size="large">JAMN</IonTitle>
-        <IonButtons slot='end'>
+        <IonButtons slot='end' style={{
+          marginRight: 10,
+        }}>
           <IonButton id='auth-modal-button' style={{
             display: user?.id ? 'none' : 'block',
           }}>

@@ -176,7 +176,7 @@ const MapComponent: React.FC = () => {
       },
       cluster: true,
       clusterMaxZoom: 14,
-      clusterRadius: 50,
+      clusterRadius: 30,
     });
     map.current.addLayer({
       id: 'clusters',
@@ -223,7 +223,7 @@ const MapComponent: React.FC = () => {
       filter: ['!', ['has', 'point_count']],
       paint: {
         'circle-color': '#f4900c',
-        'circle-radius': 8,
+        'circle-radius': 10,
         'circle-stroke-width': 1,
         'circle-stroke-color': '#fff'
       }

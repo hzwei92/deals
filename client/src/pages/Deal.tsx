@@ -4,6 +4,7 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonPage,
 } from '@ionic/react';
 import { RouteComponentProps } from 'react-router';
@@ -13,6 +14,7 @@ import { Uint8ArrayFromBase64 } from '../utils';
 import { selectAppUser } from '../slices/userSlice';
 import { Deal } from '../types/Deal';
 import Checkout from '../components/Checkout';
+import { arrowBackOutline } from 'ionicons/icons';
 
 interface DealProps extends RouteComponentProps<{
   id: string;
@@ -41,27 +43,38 @@ const DealPage: React.FC<DealProps> = ({ match }) => {
     <IonPage>
       <IonContent fullscreen>
         <div style={{ 
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'start',
+          marginLeft: 5,
+          marginTop: 5,
+        }}>
+          <IonButtons style={{
+            display: 'inline-flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}>
+            <IonButton routerLink='/deal' style={{
+            }}>
+              <IonIcon icon={arrowBackOutline} />
+            </IonButton>
+          </IonButtons>
+          <div style={{
+            display: 'inline-flex',
+            fontSize: 32,
+            fontWeight: 'bold',
+            flexDirection: 'column',
+            justifyContent: 'center',
+          }}>
+            { deal.name }
+          </div>
+        </div>
+        <div style={{ 
           margin: 'auto',
           maxWidth: 420,
           padding: 20,
           paddingTop: 0,
         }}>
-          <h1 style={{
-            fontWeight: 'bold',
-            fontSize: 32,
-          }}>
-            {deal.name}
-          </h1>
-          <IonButtons style={{
-            marginTop: 15,
-          }}>
-            <IonButton routerLink='/deal' style={{
-              border: '1px solid',
-              borderRadius: 5,
-            }}>
-              BACK
-            </IonButton>
-          </IonButtons>
           <img src={imgSrc} style={{
             marginTop: 15,
             width: '100%',

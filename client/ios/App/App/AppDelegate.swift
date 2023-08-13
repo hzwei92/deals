@@ -5,9 +5,14 @@ import Capacitor
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        if let controller = window?.rootViewController as? CAPBridgeViewController,
+            let wkWebView = controller.webView {
+                wkWebView.configuration.allowsInlineMediaPlayback = true
+        }
         return true
     }
 

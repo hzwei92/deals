@@ -5,15 +5,33 @@ import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '../constants';
 import { selectInterval, setRefreshInterval } from '../slices/authSlice';
 import { selectAppUser, setAppUserId } from '../slices/userSlice';
 import { useAppDispatch, useAppSelector } from '../store';
+import { gql, useMutation } from '@apollo/client';
+
+const LOGOUT = gql`
+  mutation Logout {
+    logout
+  }
+`
 
 const AccountModal: React.FC = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectAppUser);
   const interval = useAppSelector(selectInterval);
 
+  const [logout] = useMutation(LOGOUT, {
+    onError: (error) => {
+      console.log(error);
+    },
+    onCompleted: (data) => {
+      console.log(data)
+    },
+  });
+
   const handleLogout = async () => {
     modal.current?.dismiss();
 
+    logout();
+    
     if (interval) {
       clearInterval(interval);
       dispatch(setRefreshInterval(null));
