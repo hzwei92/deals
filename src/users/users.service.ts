@@ -64,8 +64,8 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async setRefreshToken(phone: string, token: string): Promise<User> {
-    const user = await this.findOneByPhone(phone);
+  async setRefreshToken(id: number, token: string): Promise<User> {
+    const user = await this.findOne(id);
     if (!user) throw new Error('User not found');
 
     if (token == null) {

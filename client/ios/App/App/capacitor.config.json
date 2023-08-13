@@ -1,0 +1,8 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "JAMN",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}
