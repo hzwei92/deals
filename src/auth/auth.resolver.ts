@@ -4,7 +4,9 @@ import { UsersService } from 'src/users/users.service';
 import { AuthService } from './auth.service';
 import { RefreshTokentResult } from './dto/refresh-token-result.dto';
 import { VerifyResult } from './dto/verify-result.dto';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UseGuards } from '@nestjs/common';
+import { AuthGuard, CurrentUser } from './gql-auth.guard';
+import { User as UserEntity } from 'src/users/user.entity';
 
 @Resolver()
 export class AuthResolver {
@@ -90,11 +92,12 @@ export class AuthResolver {
     }
   }
 
+  @UseGuards(AuthGuard)
   @Mutation(() => User, { name: 'logout' })
   async logout(
-    @Args('phone') phone: string,
+    @CurrentUser() user: UserEntity,
   ) {
-    await this.usersService.setRefreshToken(phone, null);
+    await this.usersService.setRefreshToken(user.id, null);
   }
 
   @Mutation(() => RefreshTokentResult, { name: 'refresh' })

@@ -202,7 +202,7 @@ export class AuthService {
         ? `${expirationTime}s`
         : '9999 years',
     });
-    await this.usersService.setRefreshToken(phone, token);
+    await this.usersService.setRefreshToken(id, token);
 
     return token;
   }
