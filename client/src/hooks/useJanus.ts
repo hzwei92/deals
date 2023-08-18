@@ -27,7 +27,7 @@ let bitrateTimer = [] as any[], simulcastStarted = {} as any, svcStarted = {} as
 let doSimulcast = false;
 let doSvc = null as boolean | null;
 let acodec = null as string | null;
-let vcodec = null as string | null;
+let vcodec = "h264" as string | null;
 let subscriber_mode = false;
 let use_msid = false;
 
@@ -99,7 +99,7 @@ const joinRoom = (room: number, id: number, username: string) => {
           let create = {
             request: "create",
             room: myroom,
-            videocodec: "h264",
+            videocodec: vcodec,
           };
           sfutest?.send({ 
             message: create,
@@ -406,10 +406,12 @@ const publishOwnFeed = (useAudio: boolean) => {
       // so the browser supports it), and (2) the codec is in the list of
       // allowed codecs in a room. With respect to the point (2) above,
       // refer to the text in janus.plugin.videoroom.cfg for more details
-      if(acodec)
+      if(acodec) {
         publish["audiocodec"] = acodec;
-      if(vcodec)
+      }
+      if(vcodec) {
         publish["videocodec"] = vcodec;
+      }
       sfutest?.send({ message: publish, jsep: jsep });
     },
     error: function(error) {
