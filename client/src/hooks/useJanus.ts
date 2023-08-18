@@ -99,8 +99,11 @@ const joinRoom = (room: number, id: number, username: string) => {
           let create = {
             request: "create",
             room: myroom,
-            videocodec: vcodec,
-          };
+          } as any;
+          if (vcodec === 'h264') {
+            create['videocodec'] = vcodec;
+            create['h264_profile'] = '42e01f'
+          }
           sfutest?.send({ 
             message: create,
             success: (res) => {
