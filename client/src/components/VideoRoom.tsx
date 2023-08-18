@@ -1,5 +1,5 @@
 
-import { useContext, useState } from 'react';
+import { useContext, useRef, useState } from 'react';
 import { AppContext } from '../App';
 import  { localTracks, remoteTracks, feeds } from '../hooks/useJanus';
 import { selectAppUser } from '../slices/userSlice';
@@ -45,7 +45,19 @@ const VideoRoom = ({ channel }: VideoRoomProps) => {
   const attachVidSrc = (stream: MediaStream) => (vid: HTMLVideoElement | null) => {
     if (vid) {
       vid.srcObject = stream;
+      vid.play();
+
+      vids.current.push(vid);
     }
+  }
+
+  const vids = useRef<HTMLVideoElement[]>([]);
+
+  const handlePlay = () => {
+    vids.current.reduce(async (acc, vid) => {
+      await acc;
+      return vid.play();
+    }, Promise.resolve())
   }
 
   return (
@@ -89,7 +101,7 @@ const VideoRoom = ({ channel }: VideoRoomProps) => {
       }
     {
       Object.entries(remoteTracks).map(([slot, stream]) => {
-        console.log('stream', stream)
+        console.log('stream', (stream as MediaStream));
         if (!stream) {
           return null;
         }
@@ -99,11 +111,11 @@ const VideoRoom = ({ channel }: VideoRoomProps) => {
             flexDirection: 'column',
             alignItems: 'center',
           }}>
-            <video ref={attachVidSrc(stream as MediaStream)} playsInline={true} autoPlay={true} style={{
+            <video ref={attachVidSrc(stream as MediaStream)} playsInline={true} autoPlay={true} muted={true} style={{
               width: 'calc(80% - 40px)',
               maxWidth: 420,
               borderRadius: 5,
-            }}></video>
+            }} />
             <div>
               { feeds[slot] }
             </div>
@@ -120,6 +132,9 @@ const VideoRoom = ({ channel }: VideoRoomProps) => {
       flexDirection: 'column',
       justifyContent: 'center',
     }}>
+      <IonButton onClick={handlePlay}>
+        Play
+      </IonButton>
       <IonButton onClick={handleClick} style={{
         borderRadius: 20,
         backgroundColor: 'green',

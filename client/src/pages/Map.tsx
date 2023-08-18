@@ -319,6 +319,7 @@ const MapComponent: React.FC = () => {
         lat: mapLat,
       },
     });
+    map.current?.resize();
   }, []);
 
   useEffect(() => {

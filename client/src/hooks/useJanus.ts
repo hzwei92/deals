@@ -27,7 +27,7 @@ let bitrateTimer = [] as any[], simulcastStarted = {} as any, svcStarted = {} as
 let doSimulcast = false;
 let doSvc = null as boolean | null;
 let acodec = null as string | null;
-let vcodec = null as string | null;
+let vcodec = "h264" as string | null;
 let subscriber_mode = false;
 let use_msid = false;
 
