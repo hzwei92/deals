@@ -50,7 +50,7 @@ type Mutation {
   getChannels(lat: Float!, lng: Float!): [Channel!]!
   getDeals: [Deal!]!
   googleAuth(credential: String!): VerifyResult!
-  logout: User!
+  logout: Boolean!
   phoneLogin(phone: String!): User!
   refresh(refreshToken: String!): RefreshTokentResult!
   resend(email: String, phone: String): User!

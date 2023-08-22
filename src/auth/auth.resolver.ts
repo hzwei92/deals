@@ -93,7 +93,7 @@ export class AuthResolver {
   }
 
   @UseGuards(AuthGuard)
-  @Mutation(() => User, { name: 'logout' })
+  @Mutation(() => Boolean, { name: 'logout' })
   async logout(
     @CurrentUser() user: UserEntity,
   ) {

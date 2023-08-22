@@ -4,18 +4,18 @@ import { ACCESS_TOKEN_KEY, REFRESH_ACCESS_TOKEN_TIME, REFRESH_TOKEN_KEY } from "
 import { selectInterval, setIsInitialized, setRefreshInterval } from "../slices/authSlice";
 import { addUsers, setAppUserId } from "../slices/userSlice";
 import { useAppDispatch, useAppSelector } from "../store";
+import { USER_FIELDS } from "../fragments/user";
 
 const REFRESH_TOKEN = gql`
   mutation Refresh($refreshToken: String!) {
     refresh(refreshToken: $refreshToken) {
       user {
-        id
-        phone
-        isAdmin
+        ...UserFields
       }
       accessToken
     }
   }
+  ${USER_FIELDS}
 `;
 
 export default function useToken() {
