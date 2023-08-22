@@ -123,8 +123,7 @@ const MapComponent: React.FC = () => {
       console.log(data);
 
       dispatch(addChannels([data.createChannel]));
-      dispatch(activateChannel(data.createChannel.id));
-      router.push('/map/channel/' + data.createChannel.id);
+      router.push('/map/channel/' + data.createChannel.id + '/set');
     },
   });
 
@@ -151,8 +150,7 @@ const MapComponent: React.FC = () => {
   const [shouldAddSource, setShouldAddSource] = useState(false);
 
   const joinChannel = (id: number) => () => {
-    router.push('/map/channel/' + id);
-    dispatch(activateChannel(id));
+    router.push('/map/channel/' + id + '/talk');
   }
 
   useEffect(() => {
@@ -399,6 +397,7 @@ const MapComponent: React.FC = () => {
       }}>
         <div ref={mapContainer} className="map-container" style={{
           opacity: isMapLoaded ? 1 : 0,
+          top: 0,
           height: '100%',
         }} />
       </IonContent>

@@ -1,14 +1,12 @@
-import { IonButton, IonButtons, IonContent, IonIcon, IonPage } from '@ionic/react';
-import { useContext, useEffect, useState } from 'react';
+import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonPage, useIonRouter } from '@ionic/react';
+import { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { activateChannel, addChannels, selectChannel } from '../slices/channelSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
-import { selectAppUser } from '../slices/userSlice';
-import { AppContext } from '../App';
 import { gql, useMutation } from '@apollo/client';
 import VideoRoom from '../components/VideoRoom';
-import { arrowBackOutline } from 'ionicons/icons';
+import { arrowBackOutline, callOutline, chatboxEllipsesOutline, createOutline, globeOutline, settingsOutline } from 'ionicons/icons';
 import { Excalidraw } from '@excalidraw/excalidraw';
 import Tiptap from '../components/Tiptap';
 
@@ -29,20 +27,17 @@ const GET_CHANNEL = gql`
 `;
 
 
-const getConnectedDevices = async (type: MediaDeviceKind) => {
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  return devices.filter(device => device.kind === type)
-}
-
 interface ChannelProps extends RouteComponentProps<{
   id: string;
+  mode: string;
 }> {}
 
 const Channel: React.FC<ChannelProps> = ({ match }) => {
+  const router = useIonRouter();
+
   const dispatch = useAppDispatch();
   const channel = useAppSelector(state => selectChannel(state, parseInt(match.params.id))) as ChannelType | null; 
 
-  const [mode, setMode] = useState<'cluster' | 'draw' | 'call' | 'text' | 'settings'>('call');
   const [isLoaded, setIsLoaded] = useState(false);
 
   const [getChannel] = useMutation(GET_CHANNEL, {
@@ -66,9 +61,8 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     }
     else {
       setIsLoaded(true);
-      dispatch(activateChannel(channel.id));
     }
-  }, [channel?.id, match.params.id]);
+  }, [match.params.id]);
 
   if (!isLoaded) return (
     <IonPage>
@@ -170,28 +164,59 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
         </div>
 
         <div style={{
-          display: mode === 'cluster' ? 'block' : 'none',
+          display: match.params.mode === 'go' ? 'block' : 'none',
         }}>
           
         </div>
         <div style={{
           height: 'calc(100% - 40px)',
-          display: mode === 'draw' ? 'block' : 'none'
+          display: match.params.mode === 'draw' ? 'block' : 'none'
         }}>
           <Excalidraw
             theme={'dark'}
           />
         </div>
         <div style={{
-          display: mode === 'call' ? 'block' : 'none',
+          display: match.params.mode === 'talk' ? 'block' : 'none',
+          height: 'calc(100% - 40px)',
         }}>
           <VideoRoom channel={channel} />
         </div>
         <div style={{
-          display: mode === 'text' ? 'block' : 'none',
+          display: match.params.mode === 'text' ? 'block' : 'none',
         }}>
           <Tiptap />
         </div>
+        <IonFab slot='fixed' vertical='top' horizontal='end' style={{
+          marginTop: 'calc(50vh - 120px)'
+        }}>
+          <IonFabButton size='small' color={match.params.mode === 'go' ? 'primary' : 'light'} onClick={() => {
+            router.push('/map/channel/' + channel.id + '/go');
+          }}>
+            <IonIcon icon={globeOutline} />
+          </IonFabButton>
+          <IonFabButton size='small' color={match.params.mode === 'draw' ? 'primary' : 'light'} onClick={() => {
+            router.push('/map/channel/' + channel.id + '/draw');
+          }}>
+            <IonIcon icon={createOutline} />
+          </IonFabButton>
+          <IonFabButton size='small' color={match.params.mode === 'talk' ? 'primary' : 'light'} onClick={() => {
+            router.push('/map/channel/' + channel.id + '/talk');
+
+          }}>
+            <IonIcon icon={callOutline} />
+          </IonFabButton>
+          <IonFabButton size='small' color={match.params.mode === 'text' ? 'primary' : 'light'} onClick={() => {
+            router.push('/map/channel/' + channel.id + '/text');
+          }}>
+            <IonIcon icon={chatboxEllipsesOutline}/>
+          </IonFabButton>
+          <IonFabButton size='small' color={match.params.mode === 'set' ? 'primary' : 'light'} onClick={() => {
+            router.push('/map/channel/' + channel.id + '/set');
+          }}>
+            <IonIcon icon={settingsOutline} />
+          </IonFabButton>
+        </IonFab>
       </IonContent>
     </IonPage>
   );

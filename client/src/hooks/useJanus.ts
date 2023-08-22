@@ -4,6 +4,8 @@ import { JanusJS } from 'janus-gateway/npm';
 import { useEffect, useState } from 'react';
 
 import adapter from 'webrtc-adapter';
+import { useAppDispatch } from '../store';
+import { activateChannel } from '../slices/channelSlice';
 
 let janus = null as Janus | null;
 let sfutest = null as JanusJS.PluginHandle | null;
@@ -16,9 +18,12 @@ let mystream = null as any;
 let mypvtid = null as any;
 
 let remoteFeed = null as JanusJS.PluginHandle | null;
-let feeds = {} as any;
-let feedStreams = {} as any;
-let subStreams = {} as any, slots = {} as any, mids = {} as any, subscriptions = {} as any;
+let feeds = {} as any; // feed.slot -> feed.id
+let feedStreams = {} as any; // feed.id -> feed
+let subStreams = {} as any; 
+let slots = {} as any; // feed.mid -> feed.slot
+let mids = {} as any; // feed.slot -> feed.mid 
+let subscriptions = {} as any;
 let localTracks = {} as Record<string, MediaStream>;
 let localVideos = 0;
 let remoteTracks = {} as Record<string, MediaStream>;
@@ -34,6 +39,7 @@ let use_msid = false;
 let creatingSubscription = false;
 
 const useJanus = () => {
+  const dispatch = useAppDispatch();
   const [refresh, setRefresh] = useState(false);
   
   useEffect(() => {
@@ -165,6 +171,7 @@ const joinRoom = (room: number, id: number, username: string) => {
             myid = msg["id"];
             mypvtid = msg["private_id"];
             Janus.log("Successfully joined room " + msg["room"] + " with ID " + myid);
+            dispatch(activateChannel(msg["room"]));
             if (subscriber_mode) {
   
             }
@@ -202,6 +209,7 @@ const joinRoom = (room: number, id: number, username: string) => {
                 }
                 sources.push(streams);
               }
+              console.log('feedStreams', feedStreams);
               if (sources) {
                 subscribeTo(sources);
               }
@@ -210,6 +218,7 @@ const joinRoom = (room: number, id: number, username: string) => {
           else if (event === "destroyed") {
             // The room has been destroyed
             Janus.warn("The room has been destroyed!");
+            dispatch(activateChannel(null));
           }
           else if (event === "event") {
             // Any info on our streams or a new feed to attach to?
@@ -225,6 +234,7 @@ const joinRoom = (room: number, id: number, username: string) => {
                 display: myusername,
                 streams: streams
               }
+              console.log('feedStreams', feedStreams);
             }
             else if (msg["publishers"]) {
               let list = msg["publishers"];
@@ -368,6 +378,7 @@ const joinRoom = (room: number, id: number, username: string) => {
         delete feedStreams[myid];
         localTracks = {};
         localVideos = 0;
+        dispatch(activateChannel(null));
       },
     });  
   }
@@ -458,6 +469,7 @@ const subscribeTo = (sources: any) => {
     // Prepare the streams to subscribe to, as an array: we have the list of
     // streams the feeds are publishing, so we can choose what to pick or skip
     let added = null, removed = null;
+    console.log('sources1',sources);
     for (let s in sources) {
       let streams = sources[s];
       for (let i in streams) {
@@ -542,8 +554,10 @@ const subscribeTo = (sources: any) => {
       // Prepare the streams to subscribe to, as an array:  we hav e the list of
       // streams the feed is publishing, so we can choose what to pick or skip
       let subscription = [];
+      console.log('sources',sources);
       for (let s in sources) {
         let streams = sources[s];
+        console.log('streams', streams)
         for (let i in streams) {
           let stream = streams[i];
           // If the publisher is VP8/VP9 and this is an older Safari, let's avoid video
@@ -776,7 +790,7 @@ const subscribeTo = (sources: any) => {
     delete simulcastStarted[feed.slot];
     delete svcStarted[feed.slot];
     delete feeds[feed.slot];
-    feeds.slot = 0;
+    // feeds.slot = 0;
     delete feedStreams[id];
     // Send an unsubscribe request
     let unsubscribe = {
@@ -813,6 +827,8 @@ const subscribeTo = (sources: any) => {
 
 export { 
   sfutest,
+  mids,
+  slots,
   feeds,
   feedStreams, 
   localTracks, 

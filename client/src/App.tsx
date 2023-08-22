@@ -90,7 +90,7 @@ const App: React.FC = () => {
             }}>
               <Route exact path="/meme"  component={Meme} />
               <Route exact path="/map" component={Map} />
-              <Route exact path="/map/channel/:id" component={Channel} />
+              <Route exact path="/map/channel/:id/:mode" component={Channel} />
               <Route exact path="/deal" component={Deals} />
               <Route exact path="/deal/create" component={CreateDeal} />
               <Route exact path="/deal/deal/:id" component={Deal} />
