@@ -37,4 +37,9 @@ export class ChannelsService {
     });
     return this.channelsRepository.save(channel);
   }
+
+  async incrementLiveUserCount(id: number, delta: number) {
+    await this.channelsRepository.increment({ id }, 'liveUserCount', delta);
+    return this. channelsRepository.findOne({ where: { id }});
+  }
 }

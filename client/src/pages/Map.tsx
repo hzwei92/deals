@@ -3,41 +3,31 @@ import { IonButton, IonButtons, IonContent, IonPage, useIonRouter } from '@ionic
 import mapboxgl, { Map } from 'mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
 import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { activateChannel, addChannels, selectChannels } from '../slices/channelSlice';
+import { addChannels, selectChannels } from '../slices/channelSlice';
 import { selectAppUser } from '../slices/userSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel } from '../types/Channel';
+import { CHANNEL_FIELDS } from '../fragments/channel';
+import AppBar from '../components/AppBar';
+import AuthModal from '../components/AuthModal';
+import AccountModal from '../components/AccountModal';
 
 const GET_CHANNELS = gql`
   mutation GetChannels($lng: Float!, $lat: Float!) {
     getChannels(lng: $lng, lat: $lat) {
-      id
-      name
-      detail
-      ownerId
-      lat
-      lng
-      createdAt
-      updatedAt
-      deletedAt
+      ...ChannelFields
     }
   }
+  ${CHANNEL_FIELDS}
 `;
 
 const CREATE_CHANNEL = gql`
   mutation CreateChannel($lng: Float!, $lat: Float!) {
     createChannel(lng: $lng, lat: $lat) {
-      id
-      name
-      detail
-      ownerId
-      lat
-      lng
-      createdAt
-      updatedAt
-      deletedAt
+      ...ChannelFields
     }
   }
+  ${CHANNEL_FIELDS}
 `;
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
@@ -60,7 +50,16 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ channel, joinChannel }) => 
         flexDirection: 'row',
         justifyContent: 'center',
       }}>
-        { channel.name }
+        { channel.name } 
+      </div>
+      <div style={{
+        marginTop: 10,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        fontSize: 16
+      }}>
+        { channel.liveUserCount } people
       </div>
       <IonButtons style={{
         marginTop: 10,
@@ -123,7 +122,7 @@ const MapComponent: React.FC = () => {
       console.log(data);
 
       dispatch(addChannels([data.createChannel]));
-      router.push('/map/channel/' + data.createChannel.id + '/set');
+      router.push('/channel/' + data.createChannel.id + '/set');
     },
   });
 
@@ -150,7 +149,7 @@ const MapComponent: React.FC = () => {
   const [shouldAddSource, setShouldAddSource] = useState(false);
 
   const joinChannel = (id: number) => () => {
-    router.push('/map/channel/' + id + '/talk');
+    router.push('/channel/' + id + '/call');
   }
 
   useEffect(() => {

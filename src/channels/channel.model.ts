@@ -24,6 +24,9 @@ export class Channel {
   @Field(() => Float)
   lat: number;
 
+  @Field(() => Int)
+  liveUserCount: number;
+
   @Field()
   createdAt: Date;
 

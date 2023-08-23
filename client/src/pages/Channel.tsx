@@ -1,4 +1,4 @@
-import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonPage, useIonRouter } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonPage, isPlatform, useIonRouter } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { activateChannel, addChannels, selectChannel } from '../slices/channelSlice';
@@ -9,6 +9,9 @@ import VideoRoom from '../components/VideoRoom';
 import { arrowBackOutline, callOutline, chatboxEllipsesOutline, createOutline, globeOutline, settingsOutline } from 'ionicons/icons';
 import { Excalidraw } from '@excalidraw/excalidraw';
 import Tiptap from '../components/Tiptap';
+import AppBar from '../components/AppBar';
+import AuthModal from '../components/AuthModal';
+import AccountModal from '../components/AccountModal';
 
 const GET_CHANNEL = gql`
   mutation GetChannel($id: Int!) {
@@ -134,7 +137,12 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
 
   return (
     <IonPage>
-      <IonContent fullscreen>
+      <div style={{
+        marginTop: 50,
+        height: 'calc(100% - 50px)',
+        backgroundColor: 'var(--ion-color-light)',
+        overflowY: 'scroll',
+      }}>
         <div style={{ 
           display: 'flex',
           flexDirection: 'row',
@@ -177,8 +185,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           />
         </div>
         <div style={{
-          display: match.params.mode === 'talk' ? 'block' : 'none',
-          height: 'calc(100% - 40px)',
+          display: match.params.mode === 'call' ? 'block' : 'none',
         }}>
           <VideoRoom channel={channel} />
         </div>
@@ -191,33 +198,33 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           marginTop: 'calc(50vh - 120px)'
         }}>
           <IonFabButton size='small' color={match.params.mode === 'go' ? 'primary' : 'light'} onClick={() => {
-            router.push('/map/channel/' + channel.id + '/go');
+            router.push('/channel/' + channel.id + '/go');
           }}>
             <IonIcon icon={globeOutline} />
           </IonFabButton>
           <IonFabButton size='small' color={match.params.mode === 'draw' ? 'primary' : 'light'} onClick={() => {
-            router.push('/map/channel/' + channel.id + '/draw');
+            router.push('/channel/' + channel.id + '/draw');
           }}>
             <IonIcon icon={createOutline} />
           </IonFabButton>
-          <IonFabButton size='small' color={match.params.mode === 'talk' ? 'primary' : 'light'} onClick={() => {
-            router.push('/map/channel/' + channel.id + '/talk');
+          <IonFabButton size='small' color={match.params.mode === 'call' ? 'primary' : 'light'} onClick={() => {
+            router.push('/channel/' + channel.id + '/call');
 
           }}>
             <IonIcon icon={callOutline} />
           </IonFabButton>
           <IonFabButton size='small' color={match.params.mode === 'text' ? 'primary' : 'light'} onClick={() => {
-            router.push('/map/channel/' + channel.id + '/text');
+            router.push('/channel/' + channel.id + '/text');
           }}>
             <IonIcon icon={chatboxEllipsesOutline}/>
           </IonFabButton>
           <IonFabButton size='small' color={match.params.mode === 'set' ? 'primary' : 'light'} onClick={() => {
-            router.push('/map/channel/' + channel.id + '/set');
+            router.push('/channel/' + channel.id + '/set');
           }}>
             <IonIcon icon={settingsOutline} />
           </IonFabButton>
         </IonFab>
-      </IonContent>
+      </div>
     </IonPage>
   );
 };

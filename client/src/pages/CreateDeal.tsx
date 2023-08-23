@@ -6,6 +6,9 @@ import { Uint8ArrayFromBase64 } from '../utils';
 import { Preferences } from '@capacitor/preferences';
 import { ACCESS_TOKEN_KEY, DEV_SERVER_URI, PROD_SERVER_URI } from '../constants';
 import { cameraOutline } from 'ionicons/icons';
+import AppBar from '../components/AppBar';
+import AccountModal from '../components/AccountModal';
+import AuthModal from '../components/AuthModal';
 
 const CreateDeal: React.FC = () => {
   const router = useIonRouter();
@@ -55,7 +58,7 @@ const CreateDeal: React.FC = () => {
     }).then(res => {
       console.log(res);
       //setShouldGetDeals(true);
-      router.push('/home');
+      router.push('/deal');
     }).catch(err => {
       console.error(err);
     });

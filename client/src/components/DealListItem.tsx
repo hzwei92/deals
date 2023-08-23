@@ -25,7 +25,7 @@ const DealListItem: React.FC<DealListItemProps> = ({ deal }) => {
     }
   }, [])
 
-  const url = '/deal/deal/' + deal.id;
+  const url = '/deal/' + deal.id;
 
   return (
     <IonCard routerLink={url} style={{

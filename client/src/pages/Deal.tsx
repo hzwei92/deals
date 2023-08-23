@@ -15,6 +15,9 @@ import { selectAppUser } from '../slices/userSlice';
 import { Deal } from '../types/Deal';
 import Checkout from '../components/Checkout';
 import { arrowBackOutline } from 'ionicons/icons';
+import AppBar from '../components/AppBar';
+import AuthModal from '../components/AuthModal';
+import AccountModal from '../components/AccountModal';
 
 interface DealProps extends RouteComponentProps<{
   id: string;
@@ -90,7 +93,7 @@ const DealPage: React.FC<DealProps> = ({ match }) => {
             )
           }
         </div>
-    </IonContent>
+      </IonContent>
     </IonPage>
   );
 }

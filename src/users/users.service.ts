@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -46,6 +46,16 @@ export class UsersService {
       email,
       stripeCustomerId: stripeCustomer.id,
     })
+
+    return this.usersRepository.save(user);
+  }
+
+
+  async setLiveChannelId(id: number, channelId: number | null) {
+    const user = await this.findOne(id);
+    if (!user) throw new Error('User not found')
+
+    user.liveChannelId = channelId;
 
     return this.usersRepository.save(user);
   }

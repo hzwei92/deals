@@ -7,6 +7,9 @@ import { addDeals, selectDeals } from '../slices/dealSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { AppContext } from '../App';
 import { selectAppUser } from '../slices/userSlice';
+import AuthModal from '../components/AuthModal';
+import AccountModal from '../components/AccountModal';
+import AppBar from '../components/AppBar';
 
 const GET_DEALS = gql`
   mutation GetDeals {
@@ -24,7 +27,7 @@ const GET_DEALS = gql`
   }
 `;
 
-const Deals: React.FC = () => {
+const Trade: React.FC = () => {
   const router = useIonRouter();
 
   const dispatch = useAppDispatch();
@@ -51,7 +54,7 @@ const Deals: React.FC = () => {
 
   const handleClick = () => {
     if (user?.id) {
-      router.push('/deal/create')
+      router.push('/create-deal')
     }
     else { 
       authModal.current?.present();
@@ -87,4 +90,4 @@ const Deals: React.FC = () => {
   );
 };
 
-export default Deals;
+export default Trade;

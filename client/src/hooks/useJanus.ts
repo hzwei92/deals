@@ -5,7 +5,12 @@ import { useEffect, useState } from 'react';
 
 import adapter from 'webrtc-adapter';
 import { useAppDispatch } from '../store';
-import { activateChannel } from '../slices/channelSlice';
+import { activateChannel, addChannels } from '../slices/channelSlice';
+import { gql, useMutation } from '@apollo/client';
+import { error } from 'console';
+import { USER_FIELDS } from '../fragments/user';
+import { CHANNEL_FIELDS } from '../fragments/channel';
+import { addUsers } from '../slices/userSlice';
 
 let janus = null as Janus | null;
 let sfutest = null as JanusJS.PluginHandle | null;
@@ -38,9 +43,37 @@ let use_msid = false;
 
 let creatingSubscription = false;
 
+
+const JOIN_CHANNEL = gql`
+  mutation JoinChannel($channelId: Int) {
+    joinChannel(channelId: $channelId) {
+      user {
+        ...UserFields
+      }
+      channels {
+        ...ChannelFields
+      }
+    }
+  }
+  ${USER_FIELDS}
+  ${CHANNEL_FIELDS}
+`;
+
 const useJanus = () => {
   const dispatch = useAppDispatch();
   const [refresh, setRefresh] = useState(false);
+
+  const [joinChannel] = useMutation(JOIN_CHANNEL, {
+    onError: error => {
+      console.log(error);
+    },
+    onCompleted: data => {
+      console.log(data);
+      
+      dispatch(addUsers([data.joinChannel.user]));
+      dispatch(addChannels(data.joinChannel.channels));
+    },
+  })
   
   useEffect(() => {
     Janus.init({
@@ -65,10 +98,23 @@ const useJanus = () => {
       },
     });
 
+    const handleAppClose = () => {
+      joinChannel();
+    };
+
+    window.addEventListener('beforeunload', handleAppClose)
+
     return () => {
       janus?.destroy({});
+      window.removeEventListener('beforeunload', handleAppClose)
     }
   }, []);
+
+
+const joinRoom = (room: number, id: number, username: string) => {
+  myroom = room;
+  myid = id;
+  myusername = username;
 
   const registerRoom = () => {
     let register = {
@@ -125,14 +171,10 @@ const useJanus = () => {
     });
   }
 
-const joinRoom = (room: number, id: number, username: string) => {
-  myroom = room;
-  myid = id;
-  myusername = username;
-
   if (sfutest) {
     sfutest.hangup();
   }
+
   janus?.attach({
     plugin: 'janus.plugin.videoroom',
     opaqueId: 'videoroomtest',
@@ -173,7 +215,14 @@ const joinRoom = (room: number, id: number, username: string) => {
           myid = msg["id"];
           mypvtid = msg["private_id"];
           Janus.log("Successfully joined room " + msg["room"] + " with ID " + myid);
+
           dispatch(activateChannel(msg["room"]));
+          joinChannel({
+            variables: {
+              channelId: myroom,
+            }
+          });
+          
           if (subscriber_mode) {
 
           }

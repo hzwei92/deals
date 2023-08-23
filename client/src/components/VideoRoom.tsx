@@ -42,6 +42,9 @@ const VideoRoom = ({ channel }: VideoRoomProps) => {
     if (!channel) {
       return;
     }
+    if (activeChannel?.id !== channel.id) {
+      disconnect();
+    }
     joinRoom(channel.id, user.id, user.name || 'anon');
     setIsConnecting(true);
   }
@@ -113,7 +116,7 @@ const VideoRoom = ({ channel }: VideoRoomProps) => {
 
             if (mid === videoMid) {
               return (
-                <div key={'remote-' + slot} style={{
+                <div key={'remote-video-' + slot} style={{
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'stretch',
@@ -134,7 +137,7 @@ const VideoRoom = ({ channel }: VideoRoomProps) => {
               )
             }
             return (
-              <audio ref={attachVidSrc(stream as MediaStream)} playsInline={true} autoPlay={true}  style={{
+              <audio key={'remote-audio-' + slot} ref={attachVidSrc(stream as MediaStream)} playsInline={true} autoPlay={true}  style={{
                 display: 'none'
               }}/>
             )

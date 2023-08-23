@@ -33,6 +33,9 @@ export class User {
   @Column({ nullable: true })
   hashedRefreshToken: string;
 
+  @Column({ type: 'int', nullable: true })
+  liveChannelId: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

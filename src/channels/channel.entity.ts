@@ -24,6 +24,9 @@ export class Channel {
   @Column({ type: 'double precision', default: 0 })
   lat: number;
 
+  @Column({ type: 'int', default: 0 })
+  liveUserCount: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

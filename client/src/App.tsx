@@ -38,7 +38,7 @@ import './theme/main.css';
 
 import Meme from './pages/Meme';
 import Map from './pages/Map';
-import Deals from './pages/Deals';
+import Trade from './pages/Trade';
 import Deal from './pages/Deal';
 import AppBar from './components/AppBar';
 import AuthModal from './components/AuthModal';
@@ -82,40 +82,36 @@ const App: React.FC = () => {
       }}>
         <IonReactRouter>
           <AppBar />
+          <AuthModal />
+          <AccountModal />
           <IonTabs>
-            <IonRouterOutlet style={{
-              marginTop: isPlatform('ios') 
-                ? 95 
-                : 60,
-            }}>
+            <IonRouterOutlet>
               <Route exact path="/meme"  component={Meme} />
               <Route exact path="/map" component={Map} />
-              <Route exact path="/map/channel/:id/:mode" component={Channel} />
-              <Route exact path="/deal" component={Deals} />
-              <Route exact path="/deal/create" component={CreateDeal} />
-              <Route exact path="/deal/deal/:id" component={Deal} />
+              <Route exact path="/trade" component={Trade} />
+              <Route exact path="/channel/:id/:mode" component={Channel} />
+              <Route exact path="/deal/:id" component={Deal} />
+              <Route exact path="/create-deal" component={CreateDeal} />
               <Route exact path="/">
                 <Redirect to="/map" />
               </Route>
             </IonRouterOutlet>
-            <IonTabBar slot="bottom">
-              <IonTabButton tab="meme" href="/meme">
-                <IonIcon aria-hidden="true" icon={triangle} />
-                <IonLabel>MEME</IonLabel>
-              </IonTabButton>
-              <IonTabButton tab="map" href="/map">
-                <IonIcon aria-hidden="true" icon={ellipse} />
-                <IonLabel>MAP</IonLabel>
-              </IonTabButton>
-              <IonTabButton tab="deal" href="/deal">
-                <IonIcon aria-hidden="true" icon={square} />
-                <IonLabel>DEAL</IonLabel>
-              </IonTabButton>
-            </IonTabBar>
+              <IonTabBar slot="bottom">
+                <IonTabButton tab="meme" href="/meme">
+                  <IonIcon aria-hidden="true" icon={triangle} />
+                  <IonLabel>MEME</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="map" href="/map">
+                  <IonIcon aria-hidden="true" icon={ellipse} />
+                  <IonLabel>MAP</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="trade" href="/trade">
+                  <IonIcon aria-hidden="true" icon={square} />
+                  <IonLabel>TRADE</IonLabel>
+                </IonTabButton>
+              </IonTabBar>
           </IonTabs>
         </IonReactRouter>
-        <AuthModal />
-        <AccountModal />
       </AppContext.Provider>
     </IonApp>
   );
