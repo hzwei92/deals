@@ -75,6 +75,7 @@ type Mutation {
   facebookAuth(credential: String!): VerifyResult!
   getActiveChannels(lat: Float!, lng: Float!): [Channel!]!
   getChannel(id: Int!): Channel!
+  getChannels(lat: Float!, lng: Float!): [Channel!]!
   getDeals: [Deal!]!
   getMembershipsByUserId(userId: Int!): [Membership!]!
   googleAuth(credential: String!): VerifyResult!

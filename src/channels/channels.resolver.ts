@@ -25,6 +25,15 @@ export class ChannelsResolver {
     return this.channelsService.findOne(id);
   }
   
+  @Mutation(() => [Channel], {name: 'getChannels'})
+  async getChannels(
+    @Args('lng', { type: () => Float }) lng: number,
+    @Args('lat', { type: () => Float }) lat: number,
+    @CurrentUser() user: UserEntity
+  ) {
+    return this.channelsService.find();
+  }
+
   @Mutation(() => [Channel], {name: 'getActiveChannels'})
   async getActiveChannels(
     @Args('lng', { type: () => Float }) lng: number,
@@ -118,8 +127,11 @@ export class ChannelsResolver {
       if (!membership0) {
         throw new Error('Currently active membership not found');
       }
-      membership0 = await this.membershipService.setIsActive(membership0.id, false);
+      membership0 = await this.membershipService.setIsActive(membership0, false);
       memberships.push(membership0);
+
+      const channel0 = await this.channelsService.incrementActiveUserCount(user.activeChannelId, -1);
+      channels.push(channel0);
     }
 
     if (channelId) {
@@ -127,8 +139,11 @@ export class ChannelsResolver {
       if (!membership1) {
         throw new Error('Target membership to activate not found');
       }
-      membership1 = await this.membershipService.setIsActive(channelId, true);
+      membership1 = await this.membershipService.setIsActive(membership1, true);
       memberships.push(membership1);
+
+      const channel1 = await this.channelsService.incrementActiveUserCount(channelId, 1);
+      channels.push(channel1);
     }
 
     const user1 = await this.usersService.setActiveChannelId(user.id, channelId);

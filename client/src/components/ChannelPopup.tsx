@@ -27,7 +27,16 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ channel, joinChannel }) => 
         justifyContent: 'center',
         fontSize: 16
       }}>
-        { channel.activeUserCount } people
+        { channel.memberCount } members
+      </div>
+      <div style={{
+        marginTop: 10,
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        fontSize: 16
+      }}>
+        { channel.activeUserCount } live
       </div>
       <IonButtons style={{
         marginTop: 10,

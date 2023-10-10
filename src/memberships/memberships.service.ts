@@ -44,8 +44,8 @@ export class MembershipsService {
     return this.membershipsRepository.save(membership);
   }
 
-  async setIsActive(id: number, isActive: boolean) {
-    await this.membershipsRepository.update({ id }, { isActive });
-    return this.membershipsRepository.findOne({ where: { id }});
+  async setIsActive(membership: Membership, isActive: boolean) {
+    membership.isActive = isActive;
+    return this.membershipsRepository.save(membership);
   }
 }

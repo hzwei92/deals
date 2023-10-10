@@ -8,6 +8,7 @@ export const CHANNEL_FIELDS = gql`
     ownerId
     lat
     lng
+    memberCount
     activeUserCount
     createdAt
     updatedAt

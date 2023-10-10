@@ -3,9 +3,17 @@ import { CHANNEL_FIELDS } from "../fragments/channel";
 import { useAppDispatch } from "../store";
 import { addChannels } from "../slices/channelSlice";
 
-const GET_CHANNELS = gql`
+const GET_ACTIVE_CHANNELS = gql`
   mutation GetActiveChannels($lng: Float!, $lat: Float!) {
     getActiveChannels(lng: $lng, lat: $lat) {
+      ...ChannelFields
+    }
+  }
+  ${CHANNEL_FIELDS}
+`;
+const GET_CHANNELS = gql`
+  mutation GetChannels($lng: Float!, $lat: Float!) {
+    getChannels(lng: $lng, lat: $lat) {
       ...ChannelFields
     }
   }
@@ -22,7 +30,7 @@ const useGetChannels = (setShouldAddMapSource: (should: boolean) => void) => {
     },
     onCompleted: data => {
       console.log(data);
-      dispatch(addChannels(data.getActiveChannels));
+      dispatch(addChannels(data.getChannels));
       setShouldAddMapSource(true);
     },
   });
