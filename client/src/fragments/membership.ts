@@ -6,7 +6,6 @@ export const MEMBERSHIP_FIELDS = gql`
     channelId 
     userId
     isActive
-    isOnCall
     createdAt
     updatedAt
     deletedAt

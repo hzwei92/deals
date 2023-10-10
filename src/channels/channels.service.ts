@@ -20,6 +20,10 @@ export class ChannelsService {
     });
   }
 
+  async find(): Promise<Channel[]> {
+    return this.channelsRepository.find();
+  }
+
   async findActive(): Promise<Channel[]> {
     return this.channelsRepository.find({
       where: {
@@ -46,7 +50,7 @@ export class ChannelsService {
     await this.channelsRepository.increment({ id }, 'memberCount', delta);
     return this.channelsRepository.findOne({ where: { id }});
   }
-  
+
   async incrementActiveUserCount(id: number, delta: number) {
     await this.channelsRepository.increment({ id }, 'activeUserCount', delta);
     return this.channelsRepository.findOne({ where: { id }});
