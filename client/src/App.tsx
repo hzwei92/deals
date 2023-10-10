@@ -45,7 +45,7 @@ import AuthModal from './components/AuthModal';
 import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
 import Channel from './pages/Channel';
-import { createContext, useRef } from 'react';
+import { createContext, useRef, useState } from 'react';
 import useJanus from './hooks/useJanus';
 
 setupIonicReact();
@@ -57,17 +57,22 @@ export const AppContext = createContext({} as {
   unpublishOwnFeed: () => void;
   unsubscribeFrom: (id: string) => void;
   disconnect: () => void;
+  shouldAddMapSource: boolean;
+  setShouldAddMapSource: (shouldAddMapSource: boolean) => void;
 });
 
 const App: React.FC = () => {
+  const [shouldAddMapSource, setShouldAddMapSource] = useState(false);
+
   const { 
     refresh,
     joinRoom,
     unpublishOwnFeed,
     unsubscribeFrom,
     disconnect,
-  } = useJanus();
+  } = useJanus(shouldAddMapSource, setShouldAddMapSource);
 
+  
   const authModal = useRef<HTMLIonModalElement>(null);
 
   return (
@@ -79,6 +84,8 @@ const App: React.FC = () => {
         unpublishOwnFeed,
         unsubscribeFrom,
         disconnect,
+        shouldAddMapSource,
+        setShouldAddMapSource,
       }}>
         <IonReactRouter>
           <AppBar />

@@ -5,12 +5,8 @@ import { useEffect, useState } from 'react';
 
 import adapter from 'webrtc-adapter';
 import { useAppDispatch } from '../store';
-import { activateChannel, addChannels } from '../slices/channelSlice';
-import { gql, useMutation } from '@apollo/client';
-import { error } from 'console';
-import { USER_FIELDS } from '../fragments/user';
-import { CHANNEL_FIELDS } from '../fragments/channel';
-import { addUsers } from '../slices/userSlice';
+import { activateChannel } from '../slices/channelSlice';
+import useActivateChannel from './useActivateChannel';
 
 let janus = null as Janus | null;
 let sfutest = null as JanusJS.PluginHandle | null;
@@ -44,37 +40,13 @@ let use_msid = false;
 let creatingSubscription = false;
 
 
-const JOIN_CHANNEL = gql`
-  mutation JoinChannel($channelId: Int) {
-    joinChannel(channelId: $channelId) {
-      user {
-        ...UserFields
-      }
-      channels {
-        ...ChannelFields
-      }
-    }
-  }
-  ${USER_FIELDS}
-  ${CHANNEL_FIELDS}
-`;
-
-const useJanus = () => {
+const useJanus = (shouldAddMapSource: boolean, setShouldAddMapSource: (shouldAdd: boolean) => void) => {
   const dispatch = useAppDispatch();
+
   const [refresh, setRefresh] = useState(false);
 
-  const [joinChannel] = useMutation(JOIN_CHANNEL, {
-    onError: error => {
-      console.log(error);
-    },
-    onCompleted: data => {
-      console.log(data);
-      
-      dispatch(addUsers([data.joinChannel.user]));
-      dispatch(addChannels(data.joinChannel.channels));
-    },
-  })
-  
+  const activate = useActivateChannel(setShouldAddMapSource);
+
   useEffect(() => {
     Janus.init({
       debug: true,
@@ -99,7 +71,7 @@ const useJanus = () => {
     });
 
     const handleAppClose = () => {
-      joinChannel();
+      activate(null);
     };
 
     window.addEventListener('beforeunload', handleAppClose)
@@ -217,11 +189,8 @@ const joinRoom = (room: number, id: number, username: string) => {
           Janus.log("Successfully joined room " + msg["room"] + " with ID " + myid);
 
           dispatch(activateChannel(msg["room"]));
-          joinChannel({
-            variables: {
-              channelId: myroom,
-            }
-          });
+          
+          activate(myroom);
           
           if (subscriber_mode) {
 
@@ -426,6 +395,7 @@ const joinRoom = (room: number, id: number, username: string) => {
     oncleanup: () => {
       setRefresh(prev => !prev);
       Janus.log(" ::: Got a cleanup notification; we are unpublished now :::");
+      activate(null);
       mystream = null;
       delete feedStreams[myid];
       localTracks = {};

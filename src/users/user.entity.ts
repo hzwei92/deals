@@ -1,5 +1,7 @@
+import { Channel } from "src/channels/channel.entity";
 import { Deal } from "src/deals/deal.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Membership } from "src/memberships/membership.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class User {
@@ -18,8 +20,20 @@ export class User {
   @Column({ nullable: true })
   name?: string;
 
+  @OneToMany(() => Channel, channel => channel.owner)
+  channels: Channel[];
+
   @OneToMany(() => Deal, deal => deal.vendor)
   offers: Deal[];
+  
+  @OneToMany(() => Membership, membership => membership.user)
+  memberships: Membership[];
+
+  @Column({ nullable: true })
+  activeChannelId: number;
+
+  @OneToOne(() => Channel)
+  activeChannel: Channel;
 
   @Column({ default: false })
   isAdmin: boolean;
@@ -32,10 +46,7 @@ export class User {
 
   @Column({ nullable: true })
   hashedRefreshToken: string;
-
-  @Column({ type: 'int', nullable: true })
-  liveChannelId: number;
-
+  
   @CreateDateColumn()
   createdAt: Date;
 

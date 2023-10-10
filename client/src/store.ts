@@ -4,12 +4,14 @@ import authReducer from './slices/authSlice';
 import channelReducer from './slices/channelSlice';
 import dealReducer from './slices/dealSlice';
 import userReducer from './slices/userSlice';
+import membershipReducer from './slices/membershipSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     channel: channelReducer,
     deal: dealReducer,
+    membership: membershipReducer,
     user: userReducer,
   },
 })

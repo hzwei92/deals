@@ -14,6 +14,7 @@ import { StripeModule } from './stripe/stripe.module';
 import { OrdersModule } from './orders/orders.module';
 import { ChannelsModule } from './channels/channels.module';
 import { PubSubModule } from './pub-sub/pub-sub.module';
+import { MembershipsModule } from './memberships/memberships.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { PubSubModule } from './pub-sub/pub-sub.module';
     OrdersModule,
     ChannelsModule,
     PubSubModule,
+    MembershipsModule,
   ],
 })
 export class AppModule {}

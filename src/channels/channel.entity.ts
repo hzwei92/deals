@@ -1,5 +1,6 @@
+import { Membership } from "src/memberships/membership.entity";
 import { User } from "src/users/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Channel {
@@ -9,8 +10,11 @@ export class Channel {
   @Column()
   ownerId: number;
 
-  @ManyToOne(() => User, user => user.offers)
+  @ManyToOne(() => User, user => user.channels)
   owner: User;
+
+  @OneToMany(() => Membership, membership => membership.channel)
+  memberships: Membership[];
 
   @Column({ default: 'New Channel' })
   name: string;
@@ -24,8 +28,11 @@ export class Channel {
   @Column({ type: 'double precision', default: 0 })
   lat: number;
 
+  @Column({ type: 'int', default: 1 })
+  memberCount: number;
+  
   @Column({ type: 'int', default: 0 })
-  liveUserCount: number;
+  activeUserCount: number; 
 
   @CreateDateColumn()
   createdAt: Date;

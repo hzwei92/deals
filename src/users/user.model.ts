@@ -1,4 +1,7 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql";
+import { Channel } from "src/channels/channel.model";
+import { Deal } from "src/deals/deal.model";
+import { Membership } from "src/memberships/membership.model";
 
 @ObjectType()
 export class User {
@@ -15,8 +18,17 @@ export class User {
   name: string;
 
   @Field({ nullable: true })
-  liveChannelId: number;
+  activeChannelId: number;
+
+  @Field(() => Channel, { nullable: true })
+  activeChannel: Channel;
 
   @Field()
   isAdmin: boolean;
+
+  @Field(() => [Deal])
+  offers: Deal[]
+
+  @Field(() => [Membership])
+  memberships: Membership[]
 }

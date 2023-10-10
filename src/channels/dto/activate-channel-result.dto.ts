@@ -4,10 +4,13 @@ import { Channel } from "../channel.model";
 import { Membership } from "src/memberships/membership.model";
 
 @ObjectType()
-export class JoinChannelResult {
-  @Field(() => Channel)
-  channel: Channel;
+export class ActivateChannelResult {
+  @Field(() => User)
+  user: User;
 
-  @Field(() => Membership)
-  membership: Membership;
+  @Field(() => [Channel])
+  channels: Channel[];
+
+  @Field(() => [Membership])
+  memberships: Membership[];
 }

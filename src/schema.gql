@@ -2,14 +2,22 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type ActivateChannelResult {
+  channels: [Channel!]!
+  memberships: [Membership!]!
+  user: User!
+}
+
 type Channel {
+  activeUserCount: Int!
   createdAt: DateTime!
   deletedAt: DateTime
   detail: String!
   id: Int!
   lat: Float!
-  liveUserCount: Int!
   lng: Float!
+  memberCount: Int!
+  memberships: [Membership!]!
   name: String!
   owner: User!
   ownerId: Int!
@@ -43,20 +51,35 @@ type Image {
 }
 
 type JoinChannelResult {
-  channels: [Channel!]!
+  channel: Channel!
+  membership: Membership!
+}
+
+type Membership {
+  channel: Channel!
+  channelId: Int!
+  createdAt: DateTime!
+  deletedAt: DateTime
+  id: Int!
+  isActive: Boolean!
+  updatedAt: DateTime!
   user: User!
+  userId: Int!
 }
 
 type Mutation {
-  createChannel(lat: Float!, lng: Float!): Channel!
+  activateChannel(channelId: Int): ActivateChannelResult!
+  createChannel(lat: Float!, lng: Float!): JoinChannelResult!
   createPaymentIntent(price: Int!): String!
   emailLogin(email: String!): User!
   facebookAuth(credential: String!): VerifyResult!
+  getActiveChannels(lat: Float!, lng: Float!): [Channel!]!
   getChannel(id: Int!): Channel!
-  getChannels(lat: Float!, lng: Float!): [Channel!]!
   getDeals: [Deal!]!
+  getMembershipsByUserId(userId: Int!): [Membership!]!
   googleAuth(credential: String!): VerifyResult!
-  joinChannel(channelId: Int): JoinChannelResult!
+  joinChannel(channelId: Int!): JoinChannelResult!
+  leaveChannel(channelId: Int!): JoinChannelResult!
   logout: Boolean!
   phoneLogin(phone: String!): User!
   refresh(refreshToken: String!): RefreshTokentResult!
@@ -74,11 +97,14 @@ type RefreshTokentResult {
 }
 
 type User {
+  activeChannel: Channel
+  activeChannelId: Float
   email: String
   id: Int!
   isAdmin: Boolean!
-  liveChannelId: Float
+  memberships: [Membership!]!
   name: String
+  offers: [Deal!]!
   phone: String
 }
 

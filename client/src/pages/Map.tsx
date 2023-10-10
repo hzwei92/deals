@@ -1,139 +1,29 @@
-import { gql, useMutation } from '@apollo/client';
-import { IonButton, IonButtons, IonContent, IonPage, useIonRouter } from '@ionic/react';
+import { IonContent, IonPage, useIonRouter } from '@ionic/react';
 import mapboxgl, { Map } from 'mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { addChannels, selectChannels } from '../slices/channelSlice';
+import { selectChannels } from '../slices/channelSlice';
 import { selectAppUser } from '../slices/userSlice';
-import { useAppDispatch, useAppSelector } from '../store';
-import { Channel } from '../types/Channel';
-import { CHANNEL_FIELDS } from '../fragments/channel';
-import AppBar from '../components/AppBar';
-import AuthModal from '../components/AuthModal';
-import AccountModal from '../components/AccountModal';
-
-const GET_CHANNELS = gql`
-  mutation GetChannels($lng: Float!, $lat: Float!) {
-    getChannels(lng: $lng, lat: $lat) {
-      ...ChannelFields
-    }
-  }
-  ${CHANNEL_FIELDS}
-`;
-
-const CREATE_CHANNEL = gql`
-  mutation CreateChannel($lng: Float!, $lat: Float!) {
-    createChannel(lng: $lng, lat: $lat) {
-      ...ChannelFields
-    }
-  }
-  ${CHANNEL_FIELDS}
-`;
+import { useAppSelector } from '../store';
+import { AppContext } from '../App';
+import useGetChannels from '../hooks/useGetChannels';
+import useCreateChannel from '../hooks/useCreateChannel';
+import useGetMemberships from '../hooks/useGetMemberships';
+import ChannelPopup from '../components/ChannelPopup';
+import CreateChannelPopup from '../components/CreateChannelPopup';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
 
-interface ChannelPopupProps {
-  channel: Channel;
-  joinChannel: () => void;
-}
-
-const ChannelPopup: React.FC<ChannelPopupProps> = ({ channel, joinChannel }) => {
-  return (
-    <div className="popup" style={{
-      marginTop: 5
-    }}>
-      <div style={{
-        fontSize: 24,
-        fontWeight: 'bold',
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-      }}>
-        { channel.name } 
-      </div>
-      <div style={{
-        marginTop: 10,
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        fontSize: 16
-      }}>
-        { channel.liveUserCount } people
-      </div>
-      <IonButtons style={{
-        marginTop: 10,
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-      }}>
-        <IonButton onClick={joinChannel} style={{
-          color: 'var(--ion-color-primary)',
-          border: '1px solid var(--ion-color-primary)',
-          borderRadius: '5px',
-          fontWeight: 'bold',
-        }}>
-          JOIN CHANNEL
-        </IonButton>
-      </IonButtons>
-    </div>
-  )
-}
-
-
-interface PopupProps {
-  createChannel: () => void;
-}
-const Popup: React.FC<PopupProps> = ({ createChannel }) => {
-  return (
-    <div className="popup" style={{
-      marginTop: 5
-    }}>
-      <IonButtons style={{
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-      }}>
-        <IonButton onClick={createChannel} style={{
-          color: 'var(--ion-color-primary)',
-          border: '1px solid var(--ion-color-primary)',
-          borderRadius: '5px',
-          fontWeight: 'bold',
-        }}>
-          CREATE CHANNEL
-        </IonButton>
-      </IonButtons>
-    </div>
-  )
-}
-
 const MapComponent: React.FC = () => {
-  const dispatch = useAppDispatch();
+  const {
+    shouldAddMapSource,
+    setShouldAddMapSource,
+  } = useContext(AppContext);
 
   const router = useIonRouter();
 
   const user = useAppSelector(selectAppUser);
-
-  const [createChannel] = useMutation(CREATE_CHANNEL, {
-    onError: err => {
-      console.log(err);
-    },
-    onCompleted: data => {
-      console.log(data);
-
-      dispatch(addChannels([data.createChannel]));
-      router.push('/channel/' + data.createChannel.id + '/set');
-    },
-  });
-
-  const create = () => {
-    createChannel({
-      variables: {
-        lng: marker.current?.getLngLat().lng,
-        lat: marker.current?.getLngLat().lat,
-      },
-    });
-  }
 
   const [mapLng, setMapLng] = useState(-70.9);
   const [mapLat, setMapLat] = useState(42.35);
@@ -145,17 +35,124 @@ const MapComponent: React.FC = () => {
 
   const channels = useAppSelector(selectChannels);
 
+  const [channelId, setChannelId] = useState<number | null>(null);
+  const [channelPopup, setChannelPopup] = useState<mapboxgl.Popup | null>(null);
+
   const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [shouldAddSource, setShouldAddSource] = useState(false);
 
   const joinChannel = (id: number) => () => {
     router.push('/channel/' + id + '/call');
-  }
+  }  
+  
+  const getActiveChannels = useGetChannels(setShouldAddMapSource);
+  const createChannel = useCreateChannel(setShouldAddMapSource);
+  const { getMembershipsByUser } = useGetMemberships(setShouldAddMapSource);
 
+  // fetch active channels
   useEffect(() => {
-    console.log('adding source', map.current?.loaded(), shouldAddSource, map.current?.getSource('channels'));
+    getActiveChannels(mapLng, mapLat);
+    map.current?.resize();
+  }, []);
 
-    if (!map.current || !isMapLoaded || !shouldAddSource || map.current.getSource('channels')) return;
+  // fetch channels you are a member of
+  useEffect(() => {
+    if (user?.id) {
+      getMembershipsByUser(user.id);
+    }
+  }, [user?.id])
+
+  // initialize map
+  useEffect(() => {
+    if (map.current) return; // initialize map only once
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current!,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [mapLng, mapLat],
+      zoom: mapZoom,
+      trackResize: true,
+    });
+    map.current.on('load', function () {
+      console.log('map loaded');
+      map.current?.resize();
+      setIsMapLoaded(true);
+    });    
+    map.current.on('move', () => {
+      if (map.current) {
+        setMapLng(map.current.getCenter().lng);
+        setMapLat(map.current.getCenter().lat);
+        setMapZoom(map.current.getZoom());
+      }
+    });
+    map.current.on('click', (e) => {
+      setTimeout(() => {
+        if (e.clickOnLayer) {
+          return;
+        }
+  
+        console.log('click on map');
+        setChannelId(null);
+        setChannelPopup(null);
+
+        if (marker.current) {
+          marker.current.setLngLat(e.lngLat)
+          .addTo(map.current!)
+  
+          if (!marker.current.getPopup().isOpen()) {
+            marker.current.togglePopup();
+          }
+        }
+        else {
+          const popupNode = document.createElement('div');
+          const root = createRoot(popupNode);
+          root.render(<CreateChannelPopup createChannel={() => {
+            createChannel(e.lngLat.lng, e.lngLat.lat)
+          }} />);
+  
+          marker.current = new mapboxgl.Marker({
+            color: '#f4900c',
+          })
+          .setLngLat(e.lngLat)
+          .setPopup(
+            new mapboxgl.Popup({ 
+              offset: 40,
+              focusAfterOpen: true,
+              closeButton: false,
+            }) // add popups
+            .setDOMContent(popupNode)
+          )
+          .addTo(map.current!)
+          .togglePopup();
+  
+          marker.current.getElement().addEventListener('click', (e) => {
+            e.stopPropagation();
+            marker.current?.remove();
+          });
+        }
+      }, 100)
+    });
+  });
+
+  // load data as map source 
+  useEffect(() => {
+    console.log('adding source', map.current?.loaded(), shouldAddMapSource);
+
+    if (channelId && channelPopup) {
+      const channelPopupNode = document.createElement('div');
+      const root = createRoot(channelPopupNode);
+      root.render(<ChannelPopup channel={channels[channelId]} joinChannel={joinChannel(channelId)} />);
+
+      channelPopup
+        .setDOMContent(channelPopupNode)
+    }
+    if (!map.current || !isMapLoaded || !shouldAddMapSource) return;
+
+    if (map.current.getSource('channels')) {
+      map.current.removeLayer('clusters');
+      map.current.removeLayer('cluster-count');
+      map.current.removeLayer('unclustered-point');
+      map.current.removeSource('channels');
+    }
+
     map.current.addSource('channels', {
       type: 'geojson',
       data: {
@@ -229,6 +226,8 @@ const MapComponent: React.FC = () => {
     map.current.on('click', 'clusters', (e) => {
       e.clickOnLayer = true;
       marker.current?.remove();
+      setChannelId(null);
+      setChannelPopup(null);
       const features = map.current?.queryRenderedFeatures(e.point, {
         layers: ['clusters']
       });
@@ -260,12 +259,12 @@ const MapComponent: React.FC = () => {
       while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
         coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
       }
-       
+      
       const channelPopupNode = document.createElement('div');
       const root = createRoot(channelPopupNode);
       root.render(<ChannelPopup channel={channels[id]} joinChannel={joinChannel(id)} />);
 
-      new mapboxgl.Popup({
+      const popup = new mapboxgl.Popup({
         offset: 15,
         focusAfterOpen: true,
         closeButton: false,
@@ -273,6 +272,9 @@ const MapComponent: React.FC = () => {
       .setLngLat(coordinates)
       .setDOMContent(channelPopupNode)
       .addTo(map.current!);
+
+      setChannelId(id);
+      setChannelPopup(popup);
     });
 
     map.current.on('mouseenter', 'clusters', () => {
@@ -295,98 +297,13 @@ const MapComponent: React.FC = () => {
       map.current.getCanvas().style.cursor = '';
     });
 
-    setShouldAddSource(false);
-  }, [isMapLoaded, shouldAddSource, channels, map.current?.getSource('channels')])
-
-  const [getChannels] = useMutation(GET_CHANNELS, {
-    onError: err => {
-      console.log(err);
-    },
-    onCompleted: data => {
-      console.log(data);
-      setShouldAddSource(true);
-      dispatch(addChannels(data.getChannels));
-    },
-  });
-
-  useEffect(() => {
-    getChannels({
-      variables: {
-        lng: mapLng,
-        lat: mapLat,
-      },
-    });
-    map.current?.resize();
-  }, []);
+    setShouldAddMapSource(false);
+  }, [isMapLoaded, shouldAddMapSource, channels, map.current?.getSource('channels'), channelId, channelPopup])
 
   useEffect(() => {
     if (marker.current?.getPopup().isOpen()) return;
     marker.current?.togglePopup();
   }, [marker.current?.getPopup().isOpen()]);
-
-  
-  useEffect(() => {
-    if (map.current) return; // initialize map only once
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current!,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [mapLng, mapLat],
-      zoom: mapZoom,
-      trackResize: true,
-    });
-    map.current.on('load', function () {
-      console.log('map loaded');
-      map.current?.resize();
-      setIsMapLoaded(true);
-    });    
-    map.current.on('move', () => {
-      if (map.current) {
-        setMapLng(map.current.getCenter().lng);
-        setMapLat(map.current.getCenter().lat);
-        setMapZoom(map.current.getZoom());
-      }
-    });
-    map.current.on('click', (e) => {
-      setTimeout(() => {
-        console.log('click on map')
-        if (e.clickOnLayer) return;
-  
-        if (marker.current) {
-          marker.current.setLngLat(e.lngLat)
-          .addTo(map.current!)
-  
-          if (!marker.current.getPopup().isOpen()) {
-            marker.current.togglePopup();
-          }
-        }
-        else {
-          const popupNode = document.createElement('div');
-          const root = createRoot(popupNode);
-          root.render(<Popup createChannel={create} />);
-  
-          marker.current = new mapboxgl.Marker({
-            color: '#f4900c',
-          })
-          .setLngLat(e.lngLat)
-          .setPopup(
-            new mapboxgl.Popup({ 
-              offset: 40,
-              focusAfterOpen: true,
-              closeButton: false,
-            }) // add popups
-            .setDOMContent(popupNode)
-          )
-          .addTo(map.current!)
-          .togglePopup();
-  
-          marker.current.getElement().addEventListener('click', (e) => {
-            e.stopPropagation();
-            marker.current?.remove();
-          });
-        }
-      }, 100)
-    });
-  });
 
 
   return (

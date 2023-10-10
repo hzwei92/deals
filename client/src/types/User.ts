@@ -5,5 +5,5 @@ export type User = {
   phone?: string;
   name?: string;
   isAdmin: boolean;
-  liveChannelId: number;
+  activeChannelId: number;
 }

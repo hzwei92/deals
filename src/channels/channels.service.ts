@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { adjectives, uniqueNamesGenerator } from 'unique-names-generator';
 import { Channel } from './channel.entity';
 
@@ -20,8 +20,12 @@ export class ChannelsService {
     });
   }
 
-  async findAll(): Promise<Channel[]> {
-    return this.channelsRepository.find();
+  async findActive(): Promise<Channel[]> {
+    return this.channelsRepository.find({
+      where: {
+        activeUserCount: MoreThan(0),
+      }
+    });
   }
 
   async createOne(user: User, lng: number, lat: number): Promise<Channel> {
@@ -38,8 +42,13 @@ export class ChannelsService {
     return this.channelsRepository.save(channel);
   }
 
-  async incrementLiveUserCount(id: number, delta: number) {
-    await this.channelsRepository.increment({ id }, 'liveUserCount', delta);
-    return this. channelsRepository.findOne({ where: { id }});
+  async incrementMemberCount(id: number, delta: number) {
+    await this.channelsRepository.increment({ id }, 'memberCount', delta);
+    return this.channelsRepository.findOne({ where: { id }});
+  }
+  
+  async incrementActiveUserCount(id: number, delta: number) {
+    await this.channelsRepository.increment({ id }, 'activeUserCount', delta);
+    return this.channelsRepository.findOne({ where: { id }});
   }
 }

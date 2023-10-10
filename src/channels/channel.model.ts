@@ -1,4 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
+import { Membership } from "src/memberships/membership.model";
 import { User } from "src/users/user.model";
 
 @ObjectType()
@@ -12,6 +13,9 @@ export class Channel {
   @Field(() => User)
   owner: User;
 
+  @Field(() => [Membership])
+  memberships: Membership[];
+  
   @Field()
   name: string;
 
@@ -25,7 +29,10 @@ export class Channel {
   lat: number;
 
   @Field(() => Int)
-  liveUserCount: number;
+  memberCount: number;
+
+  @Field(() => Int)
+  activeUserCount: number;
 
   @Field()
   createdAt: Date;

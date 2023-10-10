@@ -1,7 +1,7 @@
 import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonPage, isPlatform, useIonRouter } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
-import { activateChannel, addChannels, selectChannel } from '../slices/channelSlice';
+import { addChannels, selectChannel } from '../slices/channelSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
 import { gql, useMutation } from '@apollo/client';
@@ -9,26 +9,18 @@ import VideoRoom from '../components/VideoRoom';
 import { arrowBackOutline, callOutline, chatboxEllipsesOutline, createOutline, globeOutline, settingsOutline } from 'ionicons/icons';
 import { Excalidraw } from '@excalidraw/excalidraw';
 import Tiptap from '../components/Tiptap';
-import AppBar from '../components/AppBar';
-import AuthModal from '../components/AuthModal';
-import AccountModal from '../components/AccountModal';
+import { CHANNEL_FIELDS } from '../fragments/channel';
+import { selectMembershipByChannelIdAndUserId } from '../slices/membershipSlice';
+import { selectAppUser } from '../slices/userSlice';
 
 const GET_CHANNEL = gql`
   mutation GetChannel($id: Int!) {
     getChannel(id: $id) {
-      id
-      name
-      detail
-      ownerId
-      lat
-      lng
-      createdAt
-      updatedAt
-      deletedAt
+      ...ChannelFields
     }
   }
+  ${CHANNEL_FIELDS}
 `;
-
 
 interface ChannelProps extends RouteComponentProps<{
   id: string;
@@ -39,8 +31,10 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   const router = useIonRouter();
 
   const dispatch = useAppDispatch();
+  const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(state => selectChannel(state, parseInt(match.params.id))) as ChannelType | null; 
-
+  const membership = useAppSelector(state => selectMembershipByChannelIdAndUserId(state, parseInt(match.params.id), user?.id || -1));
+  
   const [isLoaded, setIsLoaded] = useState(false);
 
   const [getChannel] = useMutation(GET_CHANNEL, {
@@ -55,15 +49,22 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   });
 
   useEffect(() => {
-    if (!channel) {
+    if (channel) {
+      setIsLoaded(true);
+    }
+    else {
       getChannel({
         variables: {
           id: parseInt(match.params.id),
         }
       });
     }
+
+    if (membership) {
+      // set membership.isActive to true
+    }
     else {
-      setIsLoaded(true);
+      // create membership
     }
   }, [match.params.id]);
 
@@ -193,6 +194,11 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           display: match.params.mode === 'text' ? 'block' : 'none',
         }}>
           <Tiptap />
+        </div>
+        <div style={{
+          display: match.params.mode === 'set' ? 'block' : 'none',
+        }}>
+          settings
         </div>
         <IonFab slot='fixed' vertical='top' horizontal='end' style={{
           marginTop: 'calc(50vh - 120px)'

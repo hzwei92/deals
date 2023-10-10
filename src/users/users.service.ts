@@ -50,12 +50,11 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-
-  async setLiveChannelId(id: number, channelId: number | null) {
+  async setActiveChannelId(id: number, channelId: number | null) {
     const user = await this.findOne(id);
     if (!user) throw new Error('User not found')
 
-    user.liveChannelId = channelId;
+    user.activeChannelId = channelId;
 
     return this.usersRepository.save(user);
   }

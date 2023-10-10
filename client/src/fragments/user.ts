@@ -6,6 +6,6 @@ export const USER_FIELDS = gql`
     email
     phone
     isAdmin
-    liveChannelId
+    activeChannelId
   }
 `;

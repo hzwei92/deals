@@ -8,7 +8,7 @@ export type Channel = {
   detail: string;
   lng: number;
   lat: number;
-  liveUserCount: number;
+  activeUserCount: number;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date;

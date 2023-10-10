@@ -2,6 +2,7 @@ import { createSelector, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { Channel } from '../types/Channel'
 import { RootState } from '../store'
+import { addMemberships } from './membershipSlice'
 
 export interface ChannelState {
   channels: Record<number, Channel>
@@ -25,6 +26,15 @@ export const channelSlice = createSlice({
     activateChannel: (state, action: PayloadAction<number | null>) => {
       state.channelId = action.payload
     },
+  },
+  extraReducers: builder => {
+    builder.addCase(addMemberships, (state, action) => {
+      action.payload.forEach((membership) => {
+        if (membership.channel?.id) {
+          state.channels[membership.channel.id] = membership.channel;
+        }
+      })
+    });
   },
 })
 
