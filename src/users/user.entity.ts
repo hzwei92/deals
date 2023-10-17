@@ -17,6 +17,7 @@ export class User {
   phone?: string;
 
   @Index({ unique: true, where: '"deletedAt" IS NOT NULL' })
+  @Column()
   name: string;
 
   @OneToMany(() => Channel, channel => channel.owner)

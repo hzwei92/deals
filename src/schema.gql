@@ -107,7 +107,7 @@ type User {
   id: Int!
   isAdmin: Boolean!
   memberships: [Membership!]!
-  name: String
+  name: String!
   offers: [Deal!]!
   phone: String
 }
