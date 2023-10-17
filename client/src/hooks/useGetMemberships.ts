@@ -4,9 +4,9 @@ import { CHANNEL_FIELDS } from "../fragments/channel";
 import { useAppDispatch } from "../store";
 import { addMemberships } from "../slices/membershipSlice";
 
-const GET_MEMBERSHIPS_BY_USER = gql`
-  mutation GetMembershipsByUserId($userId: Int!) {
-    getMembershipsByUserId(userId: $userId) {
+const GET_MEMBERSHIPS = gql`
+  mutation GetMemberships {
+    getMemberships {
       ...MembershipFields
       channel {
         ...ChannelFields
@@ -19,30 +19,24 @@ const GET_MEMBERSHIPS_BY_USER = gql`
 
 const useGetMemberships = (setShouldAddMapSource: (should: boolean) => void) => {
   const dispatch = useAppDispatch();
-  const [getByUser] = useMutation(GET_MEMBERSHIPS_BY_USER, {
+  const [get] = useMutation(GET_MEMBERSHIPS, {
     onError: err => {
       console.log(err);
     },
     onCompleted: data => {
       console.log(data);
 
-      dispatch(addMemberships(data.getMembershipsByUserId));
+      dispatch(addMemberships(data.getMemberships));
 
       setShouldAddMapSource(true);
     },
   });
 
-  const getMembershipsByUser = (userId: number) => {
-    getByUser({
-      variables: {
-        userId,
-      }
-    });
+  const getMemberships = () => {
+    get();
   };
 
-  return {
-    getMembershipsByUser,
-  }
+  return getMemberships
 }
 
 export default useGetMemberships;

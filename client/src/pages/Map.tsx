@@ -1,9 +1,9 @@
 import { IonContent, IonPage, useIonRouter } from '@ionic/react';
 import mapboxgl, { Map } from 'mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
 import { useContext, useEffect, useRef, useState } from 'react';
-import { createRoot } from 'react-dom/client';
+import { Root, createRoot } from 'react-dom/client';
 import { selectChannels } from '../slices/channelSlice';
-import { selectAppUser } from '../slices/userSlice';
+import { selectAppUser, selectUsers } from '../slices/userSlice';
 import { useAppSelector } from '../store';
 import { AppContext } from '../App';
 import useGetChannels from '../hooks/useGetChannels';
@@ -11,6 +11,8 @@ import useCreateChannel from '../hooks/useCreateChannel';
 import useGetMemberships from '../hooks/useGetMemberships';
 import ChannelPopup from '../components/ChannelPopup';
 import CreateChannelPopup from '../components/CreateChannelPopup';
+import { selectMembershipsByChannelId, selectMembershipsByUserId } from '../slices/membershipSlice';
+import useGetChannelMemberships from '../hooks/useGetChannelMemberships';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
@@ -33,10 +35,16 @@ const MapComponent: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<Map | null>(null);
 
+  const users = useAppSelector(selectUsers);
   const channels = useAppSelector(selectChannels);
+
+  const memberships = useAppSelector(state => selectMembershipsByUserId(state, user?.id ?? -1));
 
   const [channelId, setChannelId] = useState<number | null>(null);
   const [channelPopup, setChannelPopup] = useState<mapboxgl.Popup | null>(null);
+  const [channelPopupRoot, setChannelPopupRoot] = useState<Root | null>(null);
+
+  const channelMemberships = useAppSelector(state => selectMembershipsByChannelId(state, channelId ?? -1));
 
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
@@ -44,20 +52,22 @@ const MapComponent: React.FC = () => {
     router.push('/channel/' + id + '/call');
   }  
   
-  const getActiveChannels = useGetChannels(setShouldAddMapSource);
-  const createChannel = useCreateChannel(setShouldAddMapSource);
-  const { getMembershipsByUser } = useGetMemberships(setShouldAddMapSource);
+  const getChannelMemberships = useGetChannelMemberships();
+  const getMemberships = useGetMemberships(setShouldAddMapSource);
 
-  // fetch active channels
+  const getChannels = useGetChannels(setShouldAddMapSource);
+  const createChannel = useCreateChannel(setShouldAddMapSource);
+
+  // fetch channels
   useEffect(() => {
-    getActiveChannels(mapLng, mapLat);
+    getChannels(mapLng, mapLat);
     map.current?.resize();
   }, []);
 
-  // fetch channels you are a member of
+  // fetch memberships
   useEffect(() => {
     if (user?.id) {
-      getMembershipsByUser(user.id);
+      getMemberships();
     }
   }, [user?.id])
 
@@ -88,8 +98,8 @@ const MapComponent: React.FC = () => {
         if (e.clickOnLayer) {
           return;
         }
-  
-        console.log('click on map');
+
+        channelPopup?.remove();
         setChannelId(null);
         setChannelPopup(null);
 
@@ -132,19 +142,19 @@ const MapComponent: React.FC = () => {
     });
   });
 
-  // load data as map source 
   useEffect(() => {
-    console.log('adding source', map.current?.loaded(), shouldAddMapSource);
-
-    if (channelId && channelPopup) {
-      const channelPopupNode = document.createElement('div');
-      const root = createRoot(channelPopupNode);
-      root.render(<ChannelPopup channel={channels[channelId]} joinChannel={joinChannel(channelId)} />);
-
-      channelPopup
-        .setDOMContent(channelPopupNode)
+    if (channelId && channelPopup && channelPopupRoot) {
+      // update channel popup
+      channelPopupRoot.render(<ChannelPopup 
+        channel={channels[channelId]} 
+        joinChannel={joinChannel(channelId)} 
+        channelMemberships={channelMemberships}
+        users={users} 
+      />);
     }
+
     if (!map.current || !isMapLoaded || !shouldAddMapSource) return;
+    // load channel data as map source 
 
     if (map.current.getSource('channels')) {
       map.current.removeLayer('clusters');
@@ -161,6 +171,8 @@ const MapComponent: React.FC = () => {
           type: 'Feature',
           properties: {
             id: channel.id,
+            memberCount: channel.memberCount,
+            activeUserCount: channel.activeUserCount,
           },
           geometry: {
             type: 'Point',
@@ -171,6 +183,10 @@ const MapComponent: React.FC = () => {
       cluster: true,
       clusterMaxZoom: 14,
       clusterRadius: 30,
+      clusterProperties: {
+        memberCount: ['+', ['get', 'memberCount']],
+        activeUserCount: ['+', ['get', 'activeUserCount']],
+      },
     });
     map.current.addLayer({
       id: 'clusters',
@@ -179,11 +195,10 @@ const MapComponent: React.FC = () => {
       filter: ['has', 'point_count'],
       paint: {
         'circle-color': [
-          'step',
-          ['get', 'point_count'],
+          'case',
+          ['>', ['get', 'activeUserCount'], 0],
           '#f4900c',
-          10,
-          '#f4900c',
+          'grey',
         ],
         'circle-radius': [
           'step',
@@ -196,6 +211,8 @@ const MapComponent: React.FC = () => {
           1000,
           50,
         ],
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff'
       }
     });
     map.current.addLayer({
@@ -204,28 +221,32 @@ const MapComponent: React.FC = () => {
       source: 'channels',
       filter: ['has', 'point_count'],
       layout: {
-        'text-field': ['get', 'point_count'],
+        'text-field': ['get', 'point_count_abbreviated'],
         'text-font': ['Open Sans Semibold'],
         'text-size': 12,
       },
     });
 
     map.current.addLayer({
-      id: 'unclustered-point',
+      id: 'unclustered-point',                   
       type: 'circle',
       source: 'channels',
       filter: ['!', ['has', 'point_count']],
       paint: {
-        'circle-color': '#f4900c',
+        'circle-color':  [
+          'case',
+          ['>', ['get', 'activeUserCount'], 0],
+          '#f4900c',
+          'grey',
+        ],
         'circle-radius': 10,
-        'circle-stroke-width': 1,
-        'circle-stroke-color': '#fff'
-      }
-    });
+        'circle-stroke-width': 2,
+        'circle-stroke-color': '#ffffff' 
+      } 
+    });  
 
     map.current.on('click', 'clusters', (e) => {
       e.clickOnLayer = true;
-      marker.current?.remove();
       setChannelId(null);
       setChannelPopup(null);
       const features = map.current?.queryRenderedFeatures(e.point, {
@@ -252,6 +273,8 @@ const MapComponent: React.FC = () => {
       if (!e.features) return;
       const coordinates = (e.features[0].geometry as any).coordinates.slice();
       const id = e.features[0].properties?.id;
+
+      getChannelMemberships(id);
        
       // Ensure that if the map is zoomed out such that
       // multiple copies of the feature are visible, the
@@ -260,21 +283,39 @@ const MapComponent: React.FC = () => {
         coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
       }
       
-      const channelPopupNode = document.createElement('div');
-      const root = createRoot(channelPopupNode);
-      root.render(<ChannelPopup channel={channels[id]} joinChannel={joinChannel(id)} />);
+      if (channelPopup && channelPopupRoot) {
+        channelPopupRoot.render(<ChannelPopup 
+          channel={channels[id]} 
+          joinChannel={joinChannel(id)} 
+          channelMemberships={channelMemberships}
+          users={users} 
+        />);
 
-      const popup = new mapboxgl.Popup({
-        offset: 15,
-        focusAfterOpen: true,
-        closeButton: false,
-      })
-      .setLngLat(coordinates)
-      .setDOMContent(channelPopupNode)
-      .addTo(map.current!);
+        channelPopup
+          .setLngLat(coordinates);
+      }
+      else {
+        const channelPopupNode = document.createElement('div');
+        const root = createRoot(channelPopupNode);
+        root.render(<ChannelPopup 
+          channel={channels[id]} 
+          joinChannel={joinChannel(id)} 
+          channelMemberships={channelMemberships}
+          users={users} />);
 
-      setChannelId(id);
-      setChannelPopup(popup);
+        const popup = new mapboxgl.Popup({
+          offset: 15,
+          focusAfterOpen: true,
+          closeButton: false,
+        })
+        .setLngLat(coordinates)
+        .setDOMContent(channelPopupNode)
+        .addTo(map.current!);       
+
+        setChannelId(id);
+        setChannelPopup(popup);
+        setChannelPopupRoot(root);
+      }
     });
 
     map.current.on('mouseenter', 'clusters', () => {
@@ -298,7 +339,17 @@ const MapComponent: React.FC = () => {
     });
 
     setShouldAddMapSource(false);
-  }, [isMapLoaded, shouldAddMapSource, channels, map.current?.getSource('channels'), channelId, channelPopup])
+  }, [
+    isMapLoaded, 
+    shouldAddMapSource, 
+    channels, 
+    memberships,
+    map.current?.getSource('channels'), 
+    channelId, 
+    channelPopup, 
+    channelMemberships,
+    users,
+  ])
 
   useEffect(() => {
     if (marker.current?.getPopup().isOpen()) return;

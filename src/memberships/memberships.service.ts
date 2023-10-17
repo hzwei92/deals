@@ -29,6 +29,14 @@ export class MembershipsService {
     });
   }
 
+  async findByChannelId(channelId: number): Promise<Membership[]> {
+    return this.membershipsRepository.find({
+      where: {
+        channelId,
+      },
+    });
+  }
+
   async createOne(user: User, channel: Channel) {
     const membership = await this.membershipsRepository.create({
       userId: user.id,

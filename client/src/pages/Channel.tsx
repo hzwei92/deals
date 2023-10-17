@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
 import { gql, useMutation } from '@apollo/client';
 import VideoRoom from '../components/VideoRoom';
-import { arrowBackOutline, callOutline, chatboxEllipsesOutline, createOutline, globeOutline, settingsOutline } from 'ionicons/icons';
+import { arrowBackOutline, callOutline, chatboxEllipsesOutline, createOutline, globeOutline, linkOutline, navigateCircleOutline, pinOutline, radioOutline, settingsOutline, textOutline, videocamOutline } from 'ionicons/icons';
 import { Excalidraw } from '@excalidraw/excalidraw';
 import Tiptap from '../components/Tiptap';
 import { CHANNEL_FIELDS } from '../fragments/channel';
@@ -73,23 +73,12 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
       <IonContent fullscreen>
         <div style={{ 
           display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'start',
+          flexDirection: 'column',
           marginLeft: 5,
           marginTop: 5,
         }}>
-          <IonButtons style={{
-            display: 'inline-flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}>
-            <IonButton routerLink='/map' style={{
-            }}>
-              <IonIcon icon={arrowBackOutline} />
-            </IonButton>
-          </IonButtons>
           <div style={{
-            display: 'inline-flex',
+            display: 'flex',
             fontSize: 32,
             fontWeight: 'bold',
             flexDirection: 'column',
@@ -97,6 +86,13 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           }}>
             LOADING...
           </div>
+          <IonButtons style={{
+          }}>
+            <IonButton routerLink='/map' style={{
+            }}>
+              <IonIcon icon={arrowBackOutline} />
+            </IonButton>
+          </IonButtons>
         </div>
       </IonContent>
     </IonPage>
@@ -107,21 +103,10 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
       <IonContent fullscreen>
         <div style={{ 
           display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'start',
+          flexDirection: 'column',
           marginLeft: 5,
           marginTop: 5,
         }}>
-          <IonButtons style={{
-            display: 'inline-flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}>
-            <IonButton routerLink='/map' style={{
-            }}>
-              <IonIcon icon={arrowBackOutline} />
-            </IonButton>
-          </IonButtons>
           <div style={{
             display: 'inline-flex',
             fontSize: 32,
@@ -131,6 +116,13 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           }}>
             NOT FOUND...
           </div>
+          <IonButtons style={{
+          }}>
+            <IonButton routerLink='/map' style={{
+            }}>
+              <IonIcon icon={arrowBackOutline} />
+            </IonButton>
+          </IonButtons>
         </div>
       </IonContent>
     </IonPage>
@@ -146,45 +138,68 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
       }}>
         <div style={{ 
           display: 'flex',
-          flexDirection: 'row',
+          flexDirection: 'column',
           justifyContent: 'start',
           marginLeft: 5,
-          marginTop: 5,
+          marginTop: 10,
         }}>
-          <IonButtons style={{
-            display: 'inline-flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}>
-            <IonButton routerLink='/map' style={{
-            }}>
-              <IonIcon icon={arrowBackOutline} />
-            </IonButton>
-          </IonButtons>
           <div style={{
-            display: 'inline-flex',
             fontSize: 32,
             fontWeight: 'bold',
-            flexDirection: 'column',
-            justifyContent: 'center',
           }}>
             { channel.name }
           </div>
+          <IonButtons style={{
+            marginTop: 10,
+            display: 'flex',
+            flexDirection: 'row',
+            justiyContent: 'space-between',
+          }}>
+            <IonButton routerLink={`/channel/${channel.id}/call`} style={{
+              border: '1px solid',
+              borderRadius: 5,
+              fontSize: 12,
+              backgroundColor: match.params.mode === 'call' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
+              color: match.params.mode === 'call' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
+            }}>
+              <IonIcon icon={videocamOutline} />
+              &nbsp;CALL
+            </IonButton>
+            <IonButton routerLink={`/channel/${channel.id}/text`} style={{
+              border: '1px solid',
+              borderRadius: 5,
+              fontSize: 12,
+              backgroundColor: match.params.mode === 'text' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
+              color: match.params.mode === 'text' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
+            }}>
+              <IonIcon icon={chatboxEllipsesOutline} />
+              &nbsp;TEXT
+            </IonButton>
+            <IonButton routerLink={`/channel/${channel.id}/move`} style={{
+              border: '1px solid',
+              borderRadius: 5,
+              fontSize: 12,
+              backgroundColor: match.params.mode === 'move' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
+              color: match.params.mode === 'move' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
+            }}>
+              <IonIcon icon={navigateCircleOutline} />
+              &nbsp;MOVE
+            </IonButton>
+            <IonButton routerLink={`/channel/${channel.id}/settings`} style={{
+              border: '1px solid',
+              borderRadius: 5,
+              fontSize: 12,
+              backgroundColor: match.params.mode === 'settings' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
+              color: match.params.mode === 'settings' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
+            }}>
+              <IonIcon icon={settingsOutline} />
+              &nbsp;SETTINGS
+            </IonButton>
+          </IonButtons>
+
         </div>
 
-        <div style={{
-          display: match.params.mode === 'go' ? 'block' : 'none',
-        }}>
-          
-        </div>
-        <div style={{
-          height: 'calc(100% - 40px)',
-          display: match.params.mode === 'draw' ? 'block' : 'none'
-        }}>
-          <Excalidraw
-            theme={'dark'}
-          />
-        </div>
+
         <div style={{
           display: match.params.mode === 'call' ? 'block' : 'none',
         }}>
@@ -196,40 +211,15 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           <Tiptap />
         </div>
         <div style={{
+          display: match.params.mode === 'go' ? 'block' : 'none',
+        }}>
+          move
+        </div>
+        <div style={{
           display: match.params.mode === 'set' ? 'block' : 'none',
         }}>
           settings
         </div>
-        <IonFab slot='fixed' vertical='top' horizontal='end' style={{
-          marginTop: 'calc(50vh - 120px)'
-        }}>
-          <IonFabButton size='small' color={match.params.mode === 'go' ? 'primary' : 'light'} onClick={() => {
-            router.push('/channel/' + channel.id + '/go');
-          }}>
-            <IonIcon icon={globeOutline} />
-          </IonFabButton>
-          <IonFabButton size='small' color={match.params.mode === 'draw' ? 'primary' : 'light'} onClick={() => {
-            router.push('/channel/' + channel.id + '/draw');
-          }}>
-            <IonIcon icon={createOutline} />
-          </IonFabButton>
-          <IonFabButton size='small' color={match.params.mode === 'call' ? 'primary' : 'light'} onClick={() => {
-            router.push('/channel/' + channel.id + '/call');
-
-          }}>
-            <IonIcon icon={callOutline} />
-          </IonFabButton>
-          <IonFabButton size='small' color={match.params.mode === 'text' ? 'primary' : 'light'} onClick={() => {
-            router.push('/channel/' + channel.id + '/text');
-          }}>
-            <IonIcon icon={chatboxEllipsesOutline}/>
-          </IonFabButton>
-          <IonFabButton size='small' color={match.params.mode === 'set' ? 'primary' : 'light'} onClick={() => {
-            router.push('/channel/' + channel.id + '/set');
-          }}>
-            <IonIcon icon={settingsOutline} />
-          </IonFabButton>
-        </IonFab>
       </div>
     </IonPage>
   );

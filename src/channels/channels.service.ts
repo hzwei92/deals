@@ -47,12 +47,20 @@ export class ChannelsService {
   }
 
   async incrementMemberCount(id: number, delta: number) {
-    await this.channelsRepository.increment({ id }, 'memberCount', delta);
-    return this.channelsRepository.findOne({ where: { id }});
+    const channel = await this.findOne(id);
+    channel.memberCount += delta;
+    if (channel.memberCount < 0) {
+      channel.memberCount = 0;
+    }
+    return this.channelsRepository.save(channel);
   }
 
   async incrementActiveUserCount(id: number, delta: number) {
-    await this.channelsRepository.increment({ id }, 'activeUserCount', delta);
-    return this.channelsRepository.findOne({ where: { id }});
+    const channel = await this.findOne(id);
+    channel.activeUserCount += delta;
+    if (channel.activeUserCount < 0) {
+      channel.activeUserCount = 0;
+    }
+    return this.channelsRepository.save(channel);
   }
 }

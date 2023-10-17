@@ -17,7 +17,7 @@ export class ChannelsResolver {
     private readonly membershipService: MembershipsService,
   ) {}
 
-  @Mutation(() => Channel, {name: 'getChannel'})
+  @Mutation(() => Channel, {name: 'getChannel', nullable: true})
   async getChannel(
     @Args('id', {type: () => Int }) id: number,
     @CurrentUser() user: UserEntity
@@ -111,6 +111,8 @@ export class ChannelsResolver {
     @Args('channelId', { type: () => Int, nullable: true }) channelId: number,
     @CurrentUser() user: UserEntity,
   ) {
+    console.log('activateChannel', user.activeChannelId, channelId);
+
     const channels = [];
     const memberships = [];
 
@@ -122,10 +124,12 @@ export class ChannelsResolver {
       };
     }
 
+    const user1 = await this.usersService.setActiveChannelId(user.id, channelId);
+
     if (user.activeChannelId) {
       let membership0 = await this.membershipService.findOneByUserIdAndChannelId(user.id, user.activeChannelId);
       if (!membership0) {
-        throw new Error('Currently active membership not found');
+        throw new Error('Prev active membership not found');
       }
       membership0 = await this.membershipService.setIsActive(membership0, false);
       memberships.push(membership0);
@@ -137,7 +141,7 @@ export class ChannelsResolver {
     if (channelId) {
       let membership1 = await this.membershipService.findOneByUserIdAndChannelId(user.id, channelId);
       if (!membership1) {
-        throw new Error('Target membership to activate not found');
+        throw new Error('Next active membership not found');
       }
       membership1 = await this.membershipService.setIsActive(membership1, true);
       memberships.push(membership1);
@@ -145,8 +149,6 @@ export class ChannelsResolver {
       const channel1 = await this.channelsService.incrementActiveUserCount(channelId, 1);
       channels.push(channel1);
     }
-
-    const user1 = await this.usersService.setActiveChannelId(user.id, channelId);
     
     return {
       user: user1,

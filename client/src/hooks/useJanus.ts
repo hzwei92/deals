@@ -77,8 +77,8 @@ const useJanus = (shouldAddMapSource: boolean, setShouldAddMapSource: (shouldAdd
     window.addEventListener('beforeunload', handleAppClose)
 
     return () => {
-      janus?.destroy({});
       window.removeEventListener('beforeunload', handleAppClose)
+      janus?.destroy({});
     }
   }, []);
 

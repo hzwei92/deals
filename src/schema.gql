@@ -74,10 +74,12 @@ type Mutation {
   emailLogin(email: String!): User!
   facebookAuth(credential: String!): VerifyResult!
   getActiveChannels(lat: Float!, lng: Float!): [Channel!]!
-  getChannel(id: Int!): Channel!
+  getChannel(id: Int!): Channel
+  getChannelMemberships(channelId: Int!): [Membership!]!
   getChannels(lat: Float!, lng: Float!): [Channel!]!
   getDeals: [Deal!]!
-  getMembershipsByUserId(userId: Int!): [Membership!]!
+  getMemberships: [Membership!]!
+  getUserMemberships(userId: Int!): [Membership!]!
   googleAuth(credential: String!): VerifyResult!
   joinChannel(channelId: Int!): JoinChannelResult!
   leaveChannel(channelId: Int!): JoinChannelResult!

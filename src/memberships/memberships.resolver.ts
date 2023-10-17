@@ -2,9 +2,12 @@ import { Args, Int, Mutation, Parent, ResolveField, Resolver } from '@nestjs/gra
 import { Membership } from './membership.model';
 import { MembershipsService } from './memberships.service';
 import { UsersService } from 'src/users/users.service';
-import { BadRequestException } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { Channel } from 'src/channels/channel.model';
 import { ChannelsService } from 'src/channels/channels.service';
+import { AuthGuard, CurrentUser } from 'src/auth/gql-auth.guard';
+import { User as UserEntity } from 'src/users/user.entity';
+import { User } from 'src/users/user.model';
 
 @Resolver(() => Membership)
 export class MembershipsResolver {
@@ -14,6 +17,13 @@ export class MembershipsResolver {
     private readonly channelsService: ChannelsService,
   ) {}
 
+  @ResolveField(() => User, { name: 'user' }) 
+  getUser(
+    @Parent() membership: Membership
+  ) {
+    return this.usersService.findOne(membership.userId);
+  } 
+
   @ResolveField(() => Channel, { name: 'channel' })
   getChannel(
     @Parent() membership: Membership
@@ -21,16 +31,27 @@ export class MembershipsResolver {
     return this.channelsService.findOne(membership.channelId);
   }
 
-  @Mutation(() => [Membership], { name: 'getMembershipsByUserId' })
-  getMembershipsByUserId(
-    @Args('userId', { type: () => Int }) userId: number
+  @UseGuards(AuthGuard)
+  @Mutation(() => [Membership], { name: 'getMemberships' })
+  getMemberships(
+    @CurrentUser() user: UserEntity
   ) {
-    const user = this.usersService.findOne(userId);
-    if (!user) {
-      throw new BadRequestException('User not found')
-    }
-    // TODO check the permissions?
+    return this.membershipsService.findByUserId(user.id);
+  }
+  
+  @UseGuards(AuthGuard)
+  @Mutation(() => [Membership], { name: 'getUserMemberships' })
+  getUserMemberships(
+    @Args('userId', { type: () => Int}) userId:  number,
+  ) {
+    return this.membershipsService.findByChannelId(userId);
+  }
 
-    return this.membershipsService.findByUserId(userId);
+  @UseGuards(AuthGuard)
+  @Mutation(() => [Membership], { name: 'getChannelMemberships' })
+  getChannelMembershipsByChannel(
+    @Args('channelId', { type: () => Int}) channelId:  number,
+  ) {
+    return this.membershipsService.findByChannelId(channelId);
   }
 }

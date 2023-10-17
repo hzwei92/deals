@@ -8,7 +8,7 @@ export type Membership = {
   channel?: Channel;
   userId: number;
   user?: User;
-  isOnCall: boolean;
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date;
