@@ -14,7 +14,7 @@ export class User {
   @Field({ nullable: true })
   phone: string;
 
-  @Field({ nullable: true })
+  @Field()
   name: string;
 
   @Field({ nullable: true })

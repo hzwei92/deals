@@ -16,9 +16,8 @@ export class User {
   @Column({ nullable: true })
   phone?: string;
 
-  @Index({ unique: true, where: '"deletedAt" IS NOT NULL AND name IS NOT NULL' })
-  @Column({ nullable: true })
-  name?: string;
+  @Index({ unique: true, where: '"deletedAt" IS NOT NULL' })
+  name: string;
 
   @OneToMany(() => Channel, channel => channel.owner)
   channels: Channel[];

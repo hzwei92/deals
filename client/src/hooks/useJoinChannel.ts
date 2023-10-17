@@ -6,7 +6,7 @@ import { MEMBERSHIP_FIELDS } from "../fragments/membership";
 import { addMemberships } from "../slices/membershipSlice";
 
 const JOIN_CHANNEL = gql`
-  mutation JoinChannel($channelId: Int) {
+  mutation JoinChannel($channelId: Int!) {
     joinChannel(channelId: $channelId) {
       channel {
         ...ChannelFields
@@ -21,7 +21,7 @@ const JOIN_CHANNEL = gql`
 `;
 
 
-const useJoinChannel = (setShouldAddMapSource: (shouldAdd: boolean) => void) => {
+const useJoinChannel = () => {
   const dispatch = useAppDispatch();
 
   const [join] = useMutation(JOIN_CHANNEL, {
@@ -33,8 +33,6 @@ const useJoinChannel = (setShouldAddMapSource: (shouldAdd: boolean) => void) => 
       
       dispatch(addChannels([data.joinChannel.channels]));
       dispatch(addMemberships([data.joinChannel.memberships]));
-
-      setShouldAddMapSource(true);
     },
   })
 

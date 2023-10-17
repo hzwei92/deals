@@ -19,8 +19,9 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
 const MapComponent: React.FC = () => {
   const {
-    shouldAddMapSource,
-    setShouldAddMapSource,
+    authModal,
+    shouldUpdateMapData,
+    setShouldUpdateMapData,
   } = useContext(AppContext);
 
   const router = useIonRouter();
@@ -44,6 +45,7 @@ const MapComponent: React.FC = () => {
   const [channelPopup, setChannelPopup] = useState<mapboxgl.Popup | null>(null);
   const [channelPopupRoot, setChannelPopupRoot] = useState<Root | null>(null);
 
+  const [createChannelPopupRoot, setCreateChannelPopupRoot] = useState<Root | null>(null);
   const channelMemberships = useAppSelector(state => selectMembershipsByChannelId(state, channelId ?? -1));
 
   const [isMapLoaded, setIsMapLoaded] = useState(false);
@@ -53,10 +55,10 @@ const MapComponent: React.FC = () => {
   }  
   
   const getChannelMemberships = useGetChannelMemberships();
-  const getMemberships = useGetMemberships(setShouldAddMapSource);
+  const getMemberships = useGetMemberships(setShouldUpdateMapData);
 
-  const getChannels = useGetChannels(setShouldAddMapSource);
-  const createChannel = useCreateChannel(setShouldAddMapSource);
+  const getChannels = useGetChannels(setShouldUpdateMapData);
+  const createChannel = useCreateChannel(setShouldUpdateMapData);
 
   // fetch channels
   useEffect(() => {
@@ -73,7 +75,6 @@ const MapComponent: React.FC = () => {
 
   // initialize map
   useEffect(() => {
-    if (map.current) return; // initialize map only once
     map.current = new mapboxgl.Map({
       container: mapContainer.current!,
       style: 'mapbox://styles/mapbox/streets-v12',
@@ -93,6 +94,7 @@ const MapComponent: React.FC = () => {
         setMapZoom(map.current.getZoom());
       }
     });
+    console.log('map initialized', user);
     map.current.on('click', (e) => {
       setTimeout(() => {
         if (e.clickOnLayer) {
@@ -103,7 +105,18 @@ const MapComponent: React.FC = () => {
         setChannelId(null);
         setChannelPopup(null);
 
-        if (marker.current) {
+        const handleCreate = () => {
+          if (user?.id) {
+            marker.current?.remove();
+            createChannel(e.lngLat.lng, e.lngLat.lat)
+          }
+          else {
+            authModal.current?.present();
+          }
+        }
+        if (marker.current && createChannelPopupRoot) {
+          createChannelPopupRoot.render(<CreateChannelPopup createChannel={handleCreate} />);
+
           marker.current.setLngLat(e.lngLat)
           .addTo(map.current!)
   
@@ -114,9 +127,9 @@ const MapComponent: React.FC = () => {
         else {
           const popupNode = document.createElement('div');
           const root = createRoot(popupNode);
-          root.render(<CreateChannelPopup createChannel={() => {
-            createChannel(e.lngLat.lng, e.lngLat.lat)
-          }} />);
+          root.render(<CreateChannelPopup createChannel={handleCreate} />);
+
+          setCreateChannelPopupRoot(root);
   
           marker.current = new mapboxgl.Marker({
             color: '#f4900c',
@@ -140,7 +153,7 @@ const MapComponent: React.FC = () => {
         }
       }, 100)
     });
-  });
+  }, [user?.id]);
 
   useEffect(() => {
     if (channelId && channelPopup && channelPopupRoot) {
@@ -153,7 +166,7 @@ const MapComponent: React.FC = () => {
       />);
     }
 
-    if (!map.current || !isMapLoaded || !shouldAddMapSource) return;
+    if (!map.current || !isMapLoaded || !shouldUpdateMapData) return;
     // load channel data as map source 
 
     if (map.current.getSource('channels')) {
@@ -338,10 +351,10 @@ const MapComponent: React.FC = () => {
       map.current.getCanvas().style.cursor = '';
     });
 
-    setShouldAddMapSource(false);
+    setShouldUpdateMapData(false);
   }, [
     isMapLoaded, 
-    shouldAddMapSource, 
+    shouldUpdateMapData, 
     channels, 
     memberships,
     map.current?.getSource('channels'), 

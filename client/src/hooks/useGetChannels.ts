@@ -21,7 +21,7 @@ const GET_CHANNELS = gql`
 `;
 
 
-const useGetChannels = (setShouldAddMapSource: (should: boolean) => void) => {
+const useGetChannels = (setShouldUpdateMapData: (should: boolean) => void) => {
   const dispatch = useAppDispatch();
 
   const [get] = useMutation(GET_CHANNELS, {
@@ -31,7 +31,7 @@ const useGetChannels = (setShouldAddMapSource: (should: boolean) => void) => {
     onCompleted: data => {
       console.log(data);
       dispatch(addChannels(data.getChannels));
-      setShouldAddMapSource(true);
+      setShouldUpdateMapData(true);
     },
   });
 

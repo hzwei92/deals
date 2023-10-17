@@ -5,6 +5,7 @@ export const USER_FIELDS = gql`
     id
     email
     phone
+    name
     isAdmin
     activeChannelId
   }

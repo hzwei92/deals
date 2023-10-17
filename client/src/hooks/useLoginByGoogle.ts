@@ -20,7 +20,7 @@ const GOOGLE_AUTH = gql`
   }
   ${USER_FIELDS}
 `;
-const useGoogleAuth = () => {
+const useLoginByGoogle = () => {
   const dispatch = useAppDispatch();
 
   const { authModal } = useContext(AppContext)
@@ -63,4 +63,4 @@ const useGoogleAuth = () => {
   return googleAuth;
 }
 
-export default useGoogleAuth;
+export default useLoginByGoogle;

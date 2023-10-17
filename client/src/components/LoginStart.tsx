@@ -1,33 +1,16 @@
-import { gql, useMutation } from "@apollo/client";
 import { IonButton, IonButtons, IonContent, IonIcon, IonInput } from "@ionic/react"
 import { useContext, useState } from "react";
 import { User } from "../types/User";
 import { GoogleLogin } from "@react-oauth/google";
-import useGoogleAuth from "../hooks/useGoogleAuth";
+import useLoginByGoogle from "../hooks/useLoginByGoogle";
 import FacebookLogin from "react-facebook-login";
 import { FACEBOOK_APP_ID } from "../constants";
 import { AppContext } from "../App";
-import useFacebookAuth from "../hooks/useFacebookAuth";
-import { USER_FIELDS } from "../fragments/user";
+import useLoginByFacebook from "../hooks/useLoginByFacebook";
 import { send } from "ionicons/icons";
+import useLoginByPhone from "../hooks/useLoginByPhone";
+import useLoginByEmail from "../hooks/useLoginByEmail";
 
-const PHONE_LOGIN = gql`
-  mutation phoneLogin($phone: String!) {
-    phoneLogin(phone: $phone) {
-      ...UserFields
-    }
-  }
-  ${USER_FIELDS}
-`;
-
-const EMAIL_LOGIN = gql`
-  mutation emailLogin($email: String!) {
-    emailLogin(email: $email) {
-      ...UserFields
-    }
-  }
-  ${USER_FIELDS}
-`;
 
 interface LoginStartProps {
   setPendingUser: (user: User | null) => void;
@@ -43,45 +26,19 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
 
   const { authModal } = useContext(AppContext);
 
-  const googleAuth = useGoogleAuth();
+  const googleAuth = useLoginByGoogle();
+  const facebookAuth = useLoginByFacebook();
 
-  const facebookAuth = useFacebookAuth();
-
-  const [emailLogin] = useMutation(EMAIL_LOGIN, {
-    onError: (err) => {
-      console.log(err);
-      setIsLoading(false);
-    },
-    onCompleted: (data) => {
-      console.log(data);
-
-      setIsLoading(false);
-
-      if (data.emailLogin.id) {
-        setEmail('');
-        setTel('');
-        setPendingUser(data.emailLogin);
-      }
-    },
-  });
-
-  const [phoneLogin] = useMutation(PHONE_LOGIN, {
-    onError: (err) => {
-      console.log(err);
-      setIsLoading(false);
-    },
-    onCompleted: (data) => {
-      console.log(data);
-
-      setIsLoading(false);
-
-      if (data.phoneLogin.id) {  
-        setEmail('');
-        setTel('');
-        setPendingUser(data.phoneLogin);
-      }
+  const completeLogin = (user: User) => {
+    setIsLoading(false);
+    if (user?.id) {
+      setEmail('');
+      setTel('');
+      setPendingUser(user);
     }
-  });
+  }
+  const phoneLogin = useLoginByPhone(completeLogin);
+  const emailLogin = useLoginByEmail(completeLogin);
 
   const onEmailInput = (e: Event) => {
     const val = (e.target as HTMLIonInputElement).value as string;
@@ -117,14 +74,14 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
     setIsLoading(true);
 
     const email1 = email.trim();
-    emailLogin({ variables: { email: email1 } });
+    emailLogin(email1);
   }
 
   const onPhoneSubmit = () => {
     setIsLoading(true);
 
     const tel1 = tel.replace(/[^0-9]/g, '');
-    phoneLogin({ variables: { phone: tel1 } });
+    phoneLogin(tel1);
   }
 
   const handleBack = () => {
@@ -137,23 +94,6 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
       padding: 30,
       paddingTop: 0,
     }}>
-      <IonButtons style={{
-        marginBottom: 40,
-      }}>
-        <IonButton onClick={handleBack} style={{
-          border: '1px solid',
-          borderRadius: 5,
-          fontSize: 20,
-          fontWeight: 'bold',
-          height: 40,
-        }}>
-          <span style={{
-            padding: 10,
-          }}>
-            BACK
-          </span>
-        </IonButton>
-      </IonButtons>
       <div style={{
         textAlign: 'center'
       }}>
@@ -253,6 +193,23 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
         />
       </div>
     </div>
+    <IonButtons style={{
+      margin: 20,
+    }}>
+      <IonButton onClick={handleBack} style={{
+        border: '1px solid',
+        borderRadius: 5,
+        fontSize: 20,
+        fontWeight: 'bold',
+        height: 40,
+      }}>
+        <span style={{
+          padding: 10,
+        }}>
+          BACK
+        </span>
+      </IonButton>
+    </IonButtons>
   </IonContent>
   )
 }

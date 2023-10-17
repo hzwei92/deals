@@ -28,7 +28,7 @@ export class AuthGuard implements CanActivate {
           secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET')
         }
       );
-      const user = await this.usersService.findOneByPhone(payload.phone);
+      const user = await this.usersService.findOne(payload.id);
       ctx.getContext().user = user;
     } catch (e) {
       console.log('error', e)

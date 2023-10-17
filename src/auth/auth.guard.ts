@@ -33,7 +33,7 @@ export class AuthGuard implements CanActivate {
         }
       );
       console.log('payload', payload)
-      const user = await this.usersService.findOneByPhone(payload.phone);
+      const user = await this.usersService.findOne(payload.id);
       console.log('user', user)
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers

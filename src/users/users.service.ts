@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
 import { StripeService } from 'src/stripe/stripe.service';
+import { adjectives, animals, uniqueNamesGenerator } from 'unique-names-generator';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +27,10 @@ export class UsersService {
     return this.usersRepository.findOneBy({ email });
   }
 
+  async findOneByName(name: string): Promise<User | null> {
+    return this.usersRepository.findOneBy({ name });
+  }
+
   async createOne({phone, email}: {phone?: string, email?: string}): Promise<User> {
     if (!phone && !email) {
       throw new Error('Must provide either phone or email');
@@ -41,9 +46,22 @@ export class UsersService {
       email
     });
  
+    let name = null;
+    let user0 = null;
+    do {
+      name = uniqueNamesGenerator({
+        dictionaries: [animals],
+        style: 'upperCase',
+      }) + '-' + Math.random().toString().substring(2, 5);
+  
+      user0 = await this.findOneByName(name);
+    } while (user0)
+
+
     const user = await this.usersRepository.create({
       phone,
       email,
+      name,
       stripeCustomerId: stripeCustomer.id,
     })
 
@@ -99,5 +117,17 @@ export class UsersService {
     else {
       return null;
     }
+  }
+
+
+  async changeName(user: User, name: string): Promise<User> {
+    const user0 = await this.findOneByName(name);
+    if (user0) {
+      console.log(user0);
+      throw new Error('Name already taken');
+    }
+
+    user.name = name;
+    return this.usersRepository.save(user);
   }
 }

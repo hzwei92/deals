@@ -22,7 +22,7 @@ const CREATE_CHANNEL = gql`
 `;
 
 
-const useCreateChannel = (setShouldReloadMapSource: (should: boolean) => void) => {
+const useCreateChannel = (setShouldReloadMapData: (should: boolean) => void) => {
   const router = useIonRouter();
 
   const dispatch = useAppDispatch();
@@ -38,7 +38,7 @@ const useCreateChannel = (setShouldReloadMapSource: (should: boolean) => void) =
       dispatch(addMemberships([data.createChannel.membership]));
 
       router.push('/channel/' + data.createChannel.membership.channelId + '/call');
-      setShouldReloadMapSource(true);
+      setShouldReloadMapData(true);
     },
   });
 

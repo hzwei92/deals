@@ -34,7 +34,7 @@ const AuthModal: React.FC = () => {
   }, [isInitialized]);
   
   return (
-    <IonModal trigger='auth-modal-button' ref={authModal} backdropDismiss={false}>
+    <IonModal trigger='auth-modal-button' ref={authModal}>
       <IonHeader style={{
         fontWeight: 'bold',
         fontSize: 40,

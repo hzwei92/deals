@@ -69,6 +69,7 @@ type Membership {
 
 type Mutation {
   activateChannel(channelId: Int): ActivateChannelResult!
+  changeName(name: String!): User!
   createChannel(lat: Float!, lng: Float!): JoinChannelResult!
   createPaymentIntent(price: Int!): String!
   emailLogin(email: String!): User!

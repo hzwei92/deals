@@ -40,12 +40,12 @@ let use_msid = false;
 let creatingSubscription = false;
 
 
-const useJanus = (shouldAddMapSource: boolean, setShouldAddMapSource: (shouldAdd: boolean) => void) => {
+const useJanus = (shouldUpdateMapData: boolean, setShouldUpdateMapData: (shouldAdd: boolean) => void) => {
   const dispatch = useAppDispatch();
 
   const [refresh, setRefresh] = useState(false);
 
-  const activate = useActivateChannel(setShouldAddMapSource);
+  const activate = useActivateChannel(setShouldUpdateMapData);
 
   useEffect(() => {
     Janus.init({

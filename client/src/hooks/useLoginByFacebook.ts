@@ -20,7 +20,7 @@ const FB_AUTH = gql`
   }
   ${USER_FIELDS}
 `;
-const useFacebookAuth = () => {
+const useLoginByFacebook = () => {
   const dispatch = useAppDispatch();
 
   const { authModal } = useContext(AppContext)
@@ -63,4 +63,4 @@ const useFacebookAuth = () => {
   return facebookAuth;
 }
 
-export default useFacebookAuth;
+export default useLoginByFacebook;

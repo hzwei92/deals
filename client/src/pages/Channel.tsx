@@ -12,6 +12,7 @@ import Tiptap from '../components/Tiptap';
 import { CHANNEL_FIELDS } from '../fragments/channel';
 import { selectMembershipByChannelIdAndUserId } from '../slices/membershipSlice';
 import { selectAppUser } from '../slices/userSlice';
+import useJoinChannel from '../hooks/useJoinChannel';
 
 const GET_CHANNEL = gql`
   mutation GetChannel($id: Int!) {
@@ -48,6 +49,8 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     },
   });
 
+  const joinChannel = useJoinChannel();
+
   useEffect(() => {
     if (channel) {
       setIsLoaded(true);
@@ -60,11 +63,8 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
       });
     }
 
-    if (membership) {
-      // set membership.isActive to true
-    }
-    else {
-      // create membership
+    if (!membership) {
+      joinChannel(parseInt(match.params.id));
     }
   }, [match.params.id]);
 

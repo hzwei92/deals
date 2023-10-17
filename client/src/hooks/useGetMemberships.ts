@@ -17,7 +17,7 @@ const GET_MEMBERSHIPS = gql`
   ${CHANNEL_FIELDS}
 `;
 
-const useGetMemberships = (setShouldAddMapSource: (should: boolean) => void) => {
+const useGetMemberships = (setShouldUpdateMapData: (should: boolean) => void) => {
   const dispatch = useAppDispatch();
   const [get] = useMutation(GET_MEMBERSHIPS, {
     onError: err => {
@@ -28,7 +28,7 @@ const useGetMemberships = (setShouldAddMapSource: (should: boolean) => void) => 
 
       dispatch(addMemberships(data.getMemberships));
 
-      setShouldAddMapSource(true);
+      setShouldUpdateMapData(true);
     },
   });
 

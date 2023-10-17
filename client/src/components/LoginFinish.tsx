@@ -1,27 +1,10 @@
 import { gql, useMutation } from "@apollo/client";
-import { Preferences } from "@capacitor/preferences";
 import { IonButton, IonButtons, IonContent, IonInput } from "@ionic/react"
-import { useContext, useState } from "react";
-import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../constants";
-import useToken from "../hooks/useToken";
-import { addUsers, setAppUserId } from "../slices/userSlice";
-import { useAppDispatch } from "../store";
+import { useState } from "react";
 import { User } from "../types/User";
-import { AppContext } from "../App";
 import { USER_FIELDS } from "../fragments/user";
+import useLoginVerification from "../hooks/useLoginVerification";
 
-const VERIFY = gql`
-  mutation Verify($id: Int!, $code: String!) {
-    verify(id: $id, code: $code) {
-      user {
-        ...UserFields
-      }
-      accessToken
-      refreshToken
-    }
-  }
-  ${USER_FIELDS}
-`;
 
 const RESEND = gql`
   mutation Resend($phone: String, $email: String) {
@@ -38,45 +21,21 @@ interface LoginFinishProps {
 };
 
 const LoginFinish: React.FC<LoginFinishProps> = ({ pendingUser, setPendingUser }) => {
-  const dispatch = useAppDispatch();
-
-  const { authModal } = useContext(AppContext);
-
   const [code, setCode] = useState<string>('');
   const [isCodeInvalid, setIsCodeInvalid] = useState<boolean>(false);
-  const { refreshTokenInterval } = useToken()
 
-  const [verify] = useMutation(VERIFY, {
-    onError: (err) => {
-      console.log(err);
+  const verify = useLoginVerification(
+    (err) => {
       if (err.message === 'Invalid verification code') {
         setIsCodeInvalid(true);
       }
-    },
-    onCompleted: async (data) => {
-      console.log(data);
-      if (data.verify.user.id) {
+    }, 
+    (user?: User) => {
+      if (user?.id) {
         setPendingUser(null);
-        
-        authModal.current?.dismiss();
-        
-        dispatch(addUsers([data.verify.user]));
-        dispatch(setAppUserId(data.verify.user.id));
-
-        await Preferences.set({
-          key: ACCESS_TOKEN_KEY,
-          value: data.verify.accessToken,
-        });
-        
-        await Preferences.set({
-          key: REFRESH_TOKEN_KEY,
-          value: data.verify.refreshToken,
-        })
-
-        refreshTokenInterval();
       }
     }
-  });
+  )
 
   const [showResent, setShowResent] = useState<boolean>(false);
   const [resend] = useMutation(RESEND, {
@@ -102,12 +61,7 @@ const LoginFinish: React.FC<LoginFinishProps> = ({ pendingUser, setPendingUser }
 
   const handleVerify = () => {
     const code1 = code.replace(/[^0-9]/g, '').trim();
-    verify({ 
-      variables: { 
-        id: pendingUser.id, 
-        code: code1 
-      }
-    });
+    verify(pendingUser.id, code1);
   }
 
   const handleResend = () => {

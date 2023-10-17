@@ -57,12 +57,12 @@ export const AppContext = createContext({} as {
   unpublishOwnFeed: () => void;
   unsubscribeFrom: (id: string) => void;
   disconnect: () => void;
-  shouldAddMapSource: boolean;
-  setShouldAddMapSource: (shouldAddMapSource: boolean) => void;
+  shouldUpdateMapData: boolean;
+  setShouldUpdateMapData: (shouldUpdateMapData: boolean) => void;
 });
 
 const App: React.FC = () => {
-  const [shouldAddMapSource, setShouldAddMapSource] = useState(false);
+  const [shouldUpdateMapData, setShouldUpdateMapData] = useState(false);
 
   const { 
     refresh,
@@ -70,7 +70,7 @@ const App: React.FC = () => {
     unpublishOwnFeed,
     unsubscribeFrom,
     disconnect,
-  } = useJanus(shouldAddMapSource, setShouldAddMapSource);
+  } = useJanus(shouldUpdateMapData, setShouldUpdateMapData);
 
   
   const authModal = useRef<HTMLIonModalElement>(null);
@@ -84,8 +84,8 @@ const App: React.FC = () => {
         unpublishOwnFeed,
         unsubscribeFrom,
         disconnect,
-        shouldAddMapSource,
-        setShouldAddMapSource,
+        shouldUpdateMapData,
+        setShouldUpdateMapData,
       }}>
         <IonReactRouter>
           <AppBar />
