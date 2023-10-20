@@ -1,23 +1,23 @@
 import { gql, useMutation } from "@apollo/client";
-import { MEMBERSHIP_FIELDS } from "../fragments/membership";
+import { POST_FIELDS } from "../fragments/post";
 import { useAppDispatch } from "../store";
-import { addMemberships } from "../slices/membershipSlice";
+import { addPosts } from "../slices/postSlice";
 import { USER_FIELDS } from "../fragments/user";
 
 const GET_CHANNEL_MEMBERSHIPS = gql`
-  mutation GetChannelMemberships($channelId: Int!) {
-    getChannelMemberships(channelId: $channelId) {
-      ...MembershipFields
+  mutation GetChannelPosts($channelId: Int!) {
+    getChannelPosts(channelId: $channelId) {
+      ...PostFields
       user {
         id
         name
       }
     }
   }
-  ${MEMBERSHIP_FIELDS}
+  ${POST_FIELDS}
 `;
 
-const useGetChannelMemberships = () => {
+const useGetChannelPosts = () => {
   const dispatch = useAppDispatch();
   const [get] = useMutation(GET_CHANNEL_MEMBERSHIPS, {
     onError: err => {
@@ -26,11 +26,11 @@ const useGetChannelMemberships = () => {
     onCompleted: data => {
       console.log(data);
 
-      dispatch(addMemberships(data.getChannelMemberships));
+      dispatch(addPosts(data.getChannelPosts));
     },
   });
 
-  const getChannelMemberships = (channelId: number) => {
+  const getChannelPosts = (channelId: number) => {
     get({
       variables: {
         channelId,
@@ -38,7 +38,7 @@ const useGetChannelMemberships = () => {
     });
   };
 
-  return getChannelMemberships
+  return getChannelPosts
 }
 
-export default useGetChannelMemberships;
+export default useGetChannelPosts;

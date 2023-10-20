@@ -31,8 +31,8 @@ const useJoinChannel = () => {
     onCompleted: data => {
       console.log(data);
       
-      dispatch(addChannels([data.joinChannel.channels]));
-      dispatch(addMemberships([data.joinChannel.memberships]));
+      dispatch(addChannels([data.joinChannel.channel]));
+      dispatch(addMemberships([data.joinChannel.membership]));
     },
   })
 

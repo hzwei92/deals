@@ -72,11 +72,13 @@ type Mutation {
   changeName(name: String!): User!
   createChannel(lat: Float!, lng: Float!): JoinChannelResult!
   createPaymentIntent(price: Int!): String!
+  createPost(channelId: Int!, text: String!): Post!
   emailLogin(email: String!): User!
   facebookAuth(credential: String!): VerifyResult!
   getActiveChannels(lat: Float!, lng: Float!): [Channel!]!
   getChannel(id: Int!): Channel
   getChannelMemberships(channelId: Int!): [Membership!]!
+  getChannelPosts(channelId: Int!, limit: Int, maxDate: DateTime): [Post!]!
   getChannels(lat: Float!, lng: Float!): [Channel!]!
   getDeals: [Deal!]!
   getMemberships: [Membership!]!
@@ -89,6 +91,18 @@ type Mutation {
   refresh(refreshToken: String!): RefreshTokentResult!
   resend(email: String, phone: String): User!
   verify(code: String!, id: Int!): VerifyResult!
+}
+
+type Post {
+  channel: Channel!
+  channelId: Int!
+  createdAt: DateTime!
+  deletedAt: DateTime
+  id: Int!
+  text: String!
+  updatedAt: DateTime!
+  user: User!
+  userId: Int!
 }
 
 type Query {

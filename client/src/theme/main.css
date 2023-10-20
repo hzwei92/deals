@@ -8,4 +8,11 @@
   label[title="Library"] {
     display: none !important;
   }
+
+
+  .tiptap {
+    padding: 5px;
+    border-radius: 5px;
+  }
+
 }

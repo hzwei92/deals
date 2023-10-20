@@ -1,4 +1,4 @@
-import { IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonIcon, IonPage, isPlatform, useIonRouter } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonIcon, IonPage, useIonRouter } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { addChannels, selectChannel } from '../slices/channelSlice';
@@ -6,13 +6,12 @@ import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
 import { gql, useMutation } from '@apollo/client';
 import VideoRoom from '../components/VideoRoom';
-import { arrowBackOutline, callOutline, chatboxEllipsesOutline, createOutline, globeOutline, linkOutline, navigateCircleOutline, pinOutline, radioOutline, settingsOutline, textOutline, videocamOutline } from 'ionicons/icons';
-import { Excalidraw } from '@excalidraw/excalidraw';
-import Tiptap from '../components/Tiptap';
+import { arrowBackOutline, chatboxEllipsesOutline, navigateCircleOutline, settingsOutline, videocamOutline } from 'ionicons/icons';
 import { CHANNEL_FIELDS } from '../fragments/channel';
 import { selectMembershipByChannelIdAndUserId } from '../slices/membershipSlice';
 import { selectAppUser } from '../slices/userSlice';
 import useJoinChannel from '../hooks/useJoinChannel';
+import TextThread from '../components/TextThread';
 
 const GET_CHANNEL = gql`
   mutation GetChannel($id: Int!) {
@@ -134,14 +133,20 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
         marginTop: 50,
         height: 'calc(100% - 50px)',
         backgroundColor: 'var(--ion-color-light)',
-        overflowY: 'scroll',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'stretch',
       }}>
         <div style={{ 
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'start',
-          marginLeft: 5,
+          marginLeft: 10,
           marginTop: 10,
+          position: 'fixed',
+          top: 50,
+          left: 0,
+          zIndex: 10,
         }}>
           <div style={{
             fontSize: 32,
@@ -155,10 +160,20 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
             flexDirection: 'row',
             justiyContent: 'space-between',
           }}>
+            <IonButton routerLink={`/channel/${channel.id}/main`} style={{
+              border: '1px solid',
+              borderRadius: 5,
+              fontSize: 16,
+              backgroundColor: match.params.mode === 'main' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
+              color: match.params.mode === 'main' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
+            }}>
+              <IonIcon icon={navigateCircleOutline} />
+              &nbsp;MAIN
+            </IonButton>
             <IonButton routerLink={`/channel/${channel.id}/call`} style={{
               border: '1px solid',
               borderRadius: 5,
-              fontSize: 12,
+              fontSize: 16,
               backgroundColor: match.params.mode === 'call' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
               color: match.params.mode === 'call' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
             }}>
@@ -168,27 +183,17 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
             <IonButton routerLink={`/channel/${channel.id}/text`} style={{
               border: '1px solid',
               borderRadius: 5,
-              fontSize: 12,
+              fontSize: 16,
               backgroundColor: match.params.mode === 'text' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
               color: match.params.mode === 'text' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
             }}>
               <IonIcon icon={chatboxEllipsesOutline} />
               &nbsp;TEXT
             </IonButton>
-            <IonButton routerLink={`/channel/${channel.id}/move`} style={{
-              border: '1px solid',
-              borderRadius: 5,
-              fontSize: 12,
-              backgroundColor: match.params.mode === 'move' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
-              color: match.params.mode === 'move' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
-            }}>
-              <IonIcon icon={navigateCircleOutline} />
-              &nbsp;MOVE
-            </IonButton>
             <IonButton routerLink={`/channel/${channel.id}/settings`} style={{
               border: '1px solid',
               borderRadius: 5,
-              fontSize: 12,
+              fontSize: 16,
               backgroundColor: match.params.mode === 'settings' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
               color: match.params.mode === 'settings' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
             }}>
@@ -196,30 +201,19 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
               &nbsp;SETTINGS
             </IonButton>
           </IonButtons>
+        </div>
+        {
+            match.params.mode === 'call'
+              ? <VideoRoom channel={channel} />
+              : match.params.mode === 'text'
+                ? <TextThread channel={channel} />
+                : match.params.mode === 'go'
+                  ? null
+                  : match.params.mode === 'settings'
+                    ? null
+                    : null
 
-        </div>
-
-
-        <div style={{
-          display: match.params.mode === 'call' ? 'block' : 'none',
-        }}>
-          <VideoRoom channel={channel} />
-        </div>
-        <div style={{
-          display: match.params.mode === 'text' ? 'block' : 'none',
-        }}>
-          <Tiptap />
-        </div>
-        <div style={{
-          display: match.params.mode === 'go' ? 'block' : 'none',
-        }}>
-          move
-        </div>
-        <div style={{
-          display: match.params.mode === 'set' ? 'block' : 'none',
-        }}>
-          settings
-        </div>
+        }
       </div>
     </IonPage>
   );

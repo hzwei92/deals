@@ -15,6 +15,7 @@ import { OrdersModule } from './orders/orders.module';
 import { ChannelsModule } from './channels/channels.module';
 import { PubSubModule } from './pub-sub/pub-sub.module';
 import { MembershipsModule } from './memberships/memberships.module';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { MembershipsModule } from './memberships/memberships.module';
     ChannelsModule,
     PubSubModule,
     MembershipsModule,
+    PostsModule,
   ],
 })
 export class AppModule {}

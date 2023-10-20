@@ -33,6 +33,7 @@
     "@reduxjs/toolkit": "^1.9.5",
     "@stripe/react-stripe-js": "^2.1.1",
     "@stripe/stripe-js": "^1.54.1",
+    "@tiptap/extension-history": "^2.1.12",
     "@tiptap/pm": "^2.0.4",
     "@tiptap/react": "^2.0.4",
     "@tiptap/starter-kit": "^2.0.4",

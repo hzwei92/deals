@@ -5,6 +5,7 @@ import channelReducer from './slices/channelSlice';
 import dealReducer from './slices/dealSlice';
 import userReducer from './slices/userSlice';
 import membershipReducer from './slices/membershipSlice';
+import postReducer from './slices/postSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     channel: channelReducer,
     deal: dealReducer,
     membership: membershipReducer,
+    post: postReducer,
     user: userReducer,
   },
 })
