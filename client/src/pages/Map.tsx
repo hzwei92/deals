@@ -36,6 +36,8 @@ const MapComponent: React.FC = () => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<Map | null>(null);
 
+  const creationPopupRoot = useRef<Root | null>(null);
+
   const users = useAppSelector(selectUsers);
   const channels = useAppSelector(selectChannels);
 
@@ -114,11 +116,13 @@ const MapComponent: React.FC = () => {
             authModal.current?.present();
           }
         }
-        if (marker.current && createChannelPopupRoot) {
-          createChannelPopupRoot.render(<CreateChannelPopup createChannel={handleCreate} />);
+
+        console.log(marker.current, creationPopupRoot.current);
+        if (marker.current && creationPopupRoot.current) {
+          creationPopupRoot.current.render(<CreateChannelPopup createChannel={handleCreate} />);
 
           marker.current.setLngLat(e.lngLat)
-          .addTo(map.current!)
+          //.addTo(map.current!)
   
           if (!marker.current.getPopup().isOpen()) {
             marker.current.togglePopup();
@@ -128,6 +132,8 @@ const MapComponent: React.FC = () => {
           const popupNode = document.createElement('div');
           const root = createRoot(popupNode);
           root.render(<CreateChannelPopup createChannel={handleCreate} />);
+
+          creationPopupRoot.current = root;
 
           setCreateChannelPopupRoot(root);
   
