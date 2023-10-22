@@ -1,17 +1,18 @@
 import { IonButton, IonButtons, IonContent, IonIcon, IonPage, useIonRouter } from '@ionic/react';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { addChannels, selectChannel } from '../slices/channelSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
 import { gql, useMutation } from '@apollo/client';
 import VideoRoom from '../components/VideoRoom';
-import { arrowBackOutline, chatboxEllipsesOutline, navigateCircleOutline, settingsOutline, videocamOutline } from 'ionicons/icons';
+import { airplaneOutline, arrowBackOutline, caretBack, caretBackOutline, caretDown, caretDownOutline, caretForward, chatboxEllipsesOutline, navigateCircleOutline, settingsOutline, videocamOutline } from 'ionicons/icons';
 import { CHANNEL_FIELDS } from '../fragments/channel';
 import { selectMembershipByChannelIdAndUserId } from '../slices/membershipSlice';
 import { selectAppUser } from '../slices/userSlice';
 import useJoinChannel from '../hooks/useJoinChannel';
 import TextThread from '../components/TextThread';
+import { AppContext } from '../App';
 
 const GET_CHANNEL = gql`
   mutation GetChannel($id: Int!) {
@@ -30,12 +31,19 @@ interface ChannelProps extends RouteComponentProps<{
 const Channel: React.FC<ChannelProps> = ({ match }) => {
   const router = useIonRouter();
 
+  const {
+    channelId, 
+    setChannelId,
+  } = useContext(AppContext);
+
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(state => selectChannel(state, parseInt(match.params.id))) as ChannelType | null; 
   const membership = useAppSelector(state => selectMembershipByChannelIdAndUserId(state, parseInt(match.params.id), user?.id || -1));
   
   const [isLoaded, setIsLoaded] = useState(false);
+
+  const [showInfo, setShowInfo] = useState(true);
 
   const [getChannel] = useMutation(GET_CHANNEL, {
     onError: (error) => {
@@ -62,8 +70,8 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
       });
     }
 
-    if (!membership) {
-      joinChannel(parseInt(match.params.id));
+    if (channelId !== parseInt(match.params.id)) {
+      setChannelId(parseInt(match.params.id));
     }
   }, [match.params.id]);
 
@@ -85,13 +93,6 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           }}>
             LOADING...
           </div>
-          <IonButtons style={{
-          }}>
-            <IonButton routerLink='/map' style={{
-            }}>
-              <IonIcon icon={arrowBackOutline} />
-            </IonButton>
-          </IonButtons>
         </div>
       </IonContent>
     </IonPage>
@@ -115,13 +116,6 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           }}>
             NOT FOUND...
           </div>
-          <IonButtons style={{
-          }}>
-            <IonButton routerLink='/map' style={{
-            }}>
-              <IonIcon icon={arrowBackOutline} />
-            </IonButton>
-          </IonButtons>
         </div>
       </IonContent>
     </IonPage>
@@ -151,34 +145,36 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           <div style={{
             fontSize: 32,
             fontWeight: 'bold',
+            display: 'flex',
+            flexDirection: 'row',
           }}>
-            { channel.name }
+            <IonButtons>
+              <IonButton onClick={() => setShowInfo(prev => !prev)} style={{
+                color: 'var(--ion-color-dark)',
+              }}>
+                <IonIcon icon={showInfo ? caretDown : caretForward} />
+              </IonButton>
+            </IonButtons>
+            <div>
+              { channel.name }
+            </div>
           </div>
           <IonButtons style={{
             marginTop: 10,
             display: 'flex',
             flexDirection: 'row',
-            justiyContent: 'space-between',
+            marginLeft: 38,
           }}>
-            <IonButton routerLink={`/channel/${channel.id}/main`} style={{
+
+            <IonButton routerLink={`/channel/${channel.id}/talk`} style={{
               border: '1px solid',
               borderRadius: 5,
               fontSize: 16,
-              backgroundColor: match.params.mode === 'main' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
-              color: match.params.mode === 'main' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
-            }}>
-              <IonIcon icon={navigateCircleOutline} />
-              &nbsp;MAIN
-            </IonButton>
-            <IonButton routerLink={`/channel/${channel.id}/call`} style={{
-              border: '1px solid',
-              borderRadius: 5,
-              fontSize: 16,
-              backgroundColor: match.params.mode === 'call' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
-              color: match.params.mode === 'call' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
+              backgroundColor: match.params.mode === 'talk' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
+              color: match.params.mode === 'talk' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
             }}>
               <IonIcon icon={videocamOutline} />
-              &nbsp;CALL
+              &nbsp;TALK
             </IonButton>
             <IonButton routerLink={`/channel/${channel.id}/text`} style={{
               border: '1px solid',
@@ -190,20 +186,20 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
               <IonIcon icon={chatboxEllipsesOutline} />
               &nbsp;TEXT
             </IonButton>
-            <IonButton routerLink={`/channel/${channel.id}/settings`} style={{
+            <IonButton routerLink={`/channel/${channel.id}/roam`} style={{
               border: '1px solid',
               borderRadius: 5,
               fontSize: 16,
               backgroundColor: match.params.mode === 'settings' ? 'var(--ion-color-primary)' : 'var(--ion-color-light)',
               color: match.params.mode === 'settings' ? 'var(--ion-color-light)' : 'var(--ion-color-primary)',
             }}>
-              <IonIcon icon={settingsOutline} />
-              &nbsp;SETTINGS
+              <IonIcon icon={airplaneOutline} />
+              &nbsp;ROAM
             </IonButton>
           </IonButtons>
         </div>
         {
-            match.params.mode === 'call'
+            match.params.mode === 'talk'
               ? <VideoRoom channel={channel} />
               : match.params.mode === 'text'
                 ? <TextThread channel={channel} />

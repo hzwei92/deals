@@ -48,9 +48,12 @@ export class ChannelsResolver {
   async createChannel(
     @Args('lng', { type: () => Float }) lng: number,
     @Args('lat', { type: () => Float }) lat: number,
+    @Args('name', { type: () => String }) name: string,
+    @Args('url', { type: () => String }) url: string,
+    @Args('desc', { type: () => String }) desc: string,
     @CurrentUser() user: UserEntity
   ) {
-    const channel = await this.channelsService.createOne(user, lng, lat);
+    const channel = await this.channelsService.createOne(user, lng, lat, name, url, desc);
     const membership = await this.membershipService.createOne(user, channel);
 
     return {

@@ -34,6 +34,7 @@ const useGetChannelPosts = () => {
     get({
       variables: {
         channelId,
+        
       }
     });
   };

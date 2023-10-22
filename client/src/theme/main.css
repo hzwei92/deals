@@ -15,4 +15,12 @@
     border-radius: 5px;
   }
 
+  .tiptap .is-empty::before {
+    content: attr(data-placeholder);
+    float: left;
+    color: dimgrey;
+    pointer-events: none;
+    height: 0;
+  }
+
 }

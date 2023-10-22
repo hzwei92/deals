@@ -1,6 +1,6 @@
 import { Membership } from "src/memberships/membership.entity";
 import { User } from "src/users/user.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Channel {
@@ -16,8 +16,12 @@ export class Channel {
   @OneToMany(() => Membership, membership => membership.channel)
   memberships: Membership[];
 
-  @Column({ default: 'New Channel' })
+  @Column()
   name: string;
+
+  @Index({ unique: true })
+  @Column()
+  url: string;
 
   @Column({ default: '' })
   detail: string;

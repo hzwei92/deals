@@ -47,7 +47,6 @@ export class MembershipsResolver {
     return this.membershipsService.findByChannelId(userId);
   }
 
-  @UseGuards(AuthGuard)
   @Mutation(() => [Membership], { name: 'getChannelMemberships' })
   getChannelMembershipsByChannel(
     @Args('channelId', { type: () => Int}) channelId:  number,

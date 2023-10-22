@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/users/user.entity';
 import { MoreThan, Repository } from 'typeorm';
@@ -20,6 +20,14 @@ export class ChannelsService {
     });
   }
 
+  async findOneByUrl(url: string): Promise<Channel> {
+    return this.channelsRepository.findOne({
+      where: {
+        url,
+      },
+    });
+  }
+
   async find(): Promise<Channel[]> {
     return this.channelsRepository.find();
   }
@@ -32,13 +40,16 @@ export class ChannelsService {
     });
   }
 
-  async createOne(user: User, lng: number, lat: number): Promise<Channel> {
-    const name = uniqueNamesGenerator({
-      dictionaries: [adjectives],
-      style: 'upperCase',
-    }) + '-' + Math.random().toString().substring(2, 5);
+  async createOne(user: User, lng: number, lat: number, name: string, url: string, detail: string): Promise<Channel> {
+    const channel0 = await this.findOneByUrl(url);
+    if (channel0) {
+      throw new BadRequestException('URL already in use');
+    }
+    
     const channel = await this.channelsRepository.create({
       name,
+      url,
+      detail,
       ownerId: user.id,
       lng,
       lat,

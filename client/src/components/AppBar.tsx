@@ -1,11 +1,10 @@
-import { IonAvatar, IonButton, IonButtons, IonHeader, IonIcon, IonTitle, IonToolbar, isPlatform, useIonRouter } from "@ionic/react"
+import { IonAvatar, IonButton, IonButtons, IonHeader, IonIcon, useIonRouter } from "@ionic/react"
 import md5 from "md5";
 import { selectAppUser } from "../slices/userSlice";
 import { useAppSelector } from "../store";
-import { personCircleOutline } from "ionicons/icons";
-import { localTracks } from "../hooks/useJanus";
+import { micOffOutline, micOutline, personCircleOutline, videocamOffOutline, videocamOutline, volumeHighOutline, volumeMuteOutline } from "ionicons/icons";
 import { selectActiveChannel } from "../slices/channelSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const AppBar: React.FC = () => {
   const router = useIonRouter();
@@ -18,15 +17,33 @@ const AppBar: React.FC = () => {
     const match = router.routeInfo.pathname.match(pattern)
     if (match) {
       const id = match[1];
-      router.push('/channel/' + id + '/call');
+      router.push('/channel/' + id + '/talk');
     }
   }, [router.routeInfo.pathname]);
 
-  const handleClick = () => {
+  const [camOn, setCamOn] = useState(true);
+  const [micOn, setMicOn] = useState(true);
+  const [speakerOn, setSpeakerOn] = useState(true);
+
+  const [callTime, setCallTime] = useState(0);
+
+  const handleChannelClick = () => {
     if (!channel) return;
-    
-    router.push('/channel/' + channel.id + '/call')
+    if (router.routeInfo.pathname === '/channel/' + channel.id + '/talk') return;
+    router.push('/channel/' + channel.id + '/talk')
   }
+
+  useEffect(() => {
+    if (channel?.id) {
+      setCallTime(0);
+      const interval = setInterval(() => {
+        setCallTime(prev => prev + 1);
+      }, 1000);
+      return () => {
+        clearInterval(interval);
+      }
+    }
+  }, [channel?.id])
   return (
       <IonHeader style={{
       }}>
@@ -39,30 +56,61 @@ const AppBar: React.FC = () => {
           flexDirection: 'row',
           justifyContent: 'space-between',
         }}>
-          <div style={{
-            fontSize: 32,
-            fontWeight: 'bold',
-            padding: 5,
-            paddingLeft: 10,
-          }}>JAMN</div>
-
+          <IonButtons>
+            <IonButton>
+              <img src={'/icon.png'} style={{
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+              }} />
+            </IonButton>
+          </IonButtons>
           <IonButtons style={{
+            display: 'flex',
+            flexDirection: 'row',
           }}>
+            <IonButton onClick={handleChannelClick} style={{
+              display: channel?.id ? 'block' : 'none',
+              borderRadius: 5,
+              minWidth: 60,
+              backgroundColor: 'green',
+              color: 'var(--ion-color-dark)',
+              marginRight: 10,
+            }}>
+              { Math.floor(callTime  / 60 ).toString().padStart(2, '0') }:{ (callTime % 60).toString().padStart(2, '0') } 
+            </IonButton>
+            <IonButton onClick={() => setCamOn(prev => !prev)}style={{
+              color: channel?.id && camOn ? 'green' : 'var(--ion-color-dark)',
+              marginRight: 5,
+            }}> 
             {
-              channel?.id
-                ?  (
-                  <IonButton onClick={handleClick} color={'dark'} style={{
-                    backgroundColor: 'green',
-                    borderRadius: 10,
-                    padding: 5,
-                    whiteSpace: 'nowrap',
-                    marginLeft: 'auto',
-                  }}>
-                    { channel.name }
-                  </IonButton>
-                )
-                : null
+              camOn
+                ? <IonIcon icon={videocamOutline} />
+                : <IonIcon icon={videocamOffOutline} />
+                
             }
+            </IonButton>
+            <IonButton onClick={() => setMicOn(prev => !prev)} style={{
+              color: channel?.id && micOn ? 'green' : 'var(--ion-color-dark)',
+              marginRight: 3,
+            }}> 
+            {
+              micOn
+                ? <IonIcon icon={micOutline} />
+                : <IonIcon icon={micOffOutline} />
+
+            }
+            </IonButton>
+            <IonButton onClick={() => setSpeakerOn(prev => !prev)} style={{
+              color: channel?.id && speakerOn ? 'green' : 'var(--ion-color-dark)',
+              marginRight: 10,
+            }}> 
+            {
+              speakerOn 
+                ? <IonIcon icon={volumeHighOutline} />
+                : <IonIcon icon={volumeMuteOutline} />
+            }
+            </IonButton>
             <IonButton id='auth-modal-button' style={{
               display: user?.id ? 'none' : 'block',
             }}>

@@ -50,8 +50,9 @@ export class UsersService {
     let user0 = null;
     do {
       name = uniqueNamesGenerator({
-        dictionaries: [animals],
-        style: 'upperCase',
+        dictionaries: [adjectives, animals],
+        style: 'lowerCase',
+        separator: '-',
       }) + '-' + Math.random().toString().substring(2, 5);
   
       user0 = await this.findOneByName(name);

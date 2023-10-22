@@ -19,7 +19,7 @@ const CreateChannelPopup: React.FC<CreateChannelPopupProps> = ({ createChannel }
           borderRadius: '5px',
           fontWeight: 'bold',
         }}>
-          CREATE CHANNEL
+          NEW CHANNEL
         </IonButton>
       </IonButtons>
     </div>

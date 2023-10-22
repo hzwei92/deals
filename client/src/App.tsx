@@ -45,24 +45,35 @@ import AuthModal from './components/AuthModal';
 import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
 import Channel from './pages/Channel';
-import { createContext, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, createContext, useRef, useState } from 'react';
 import useJanus from './hooks/useJanus';
+import CreateChannel from './pages/CreateChannel';
+import mapboxgl from 'mapbox-gl';
 
 setupIonicReact();
 
 export const AppContext = createContext({} as {
+  // auth
   authModal: React.MutableRefObject<HTMLIonModalElement | null>;
+  // janus 
   refresh: boolean;
   joinRoom: (room: number, id: number, username: string) => void;
   unpublishOwnFeed: () => void;
   unsubscribeFrom: (id: string) => void;
   disconnect: () => void;
+  // map
   shouldUpdateMapData: boolean;
-  setShouldUpdateMapData: (shouldUpdateMapData: boolean) => void;
+  setShouldUpdateMapData: Dispatch<SetStateAction<boolean>>;
+  newChannelLngLat: mapboxgl.LngLat | null;
+  setNewChannelLngLat: Dispatch<SetStateAction<mapboxgl.LngLat | null>>;
+  channelId: number | null;
+  setChannelId: Dispatch<SetStateAction<number | null>>;
 });
 
 const App: React.FC = () => {
   const [shouldUpdateMapData, setShouldUpdateMapData] = useState(false);
+  const [newChannelLngLat, setNewChannelLngLat] = useState<mapboxgl.LngLat | null>(null);
+  const [channelId, setChannelId] = useState<number | null>(null);
 
   const { 
     refresh,
@@ -86,6 +97,10 @@ const App: React.FC = () => {
         disconnect,
         shouldUpdateMapData,
         setShouldUpdateMapData,
+        newChannelLngLat,
+        setNewChannelLngLat,
+        channelId,
+        setChannelId,
       }}>
         <IonReactRouter>
           <AppBar />
@@ -93,12 +108,13 @@ const App: React.FC = () => {
           <AccountModal />
           <IonTabs>
             <IonRouterOutlet>
-              <Route exact path="/meme"  component={Meme} />
-              <Route exact path="/map" component={Map} />
-              <Route exact path="/trade" component={Trade} />
               <Route exact path="/channel/:id/:mode" component={Channel} />
-              <Route exact path="/deal/:id" component={Deal} />
+              <Route exact path="/create-channel" component={CreateChannel} />
               <Route exact path="/create-deal" component={CreateDeal} />
+              <Route exact path="/deal/:id" component={Deal} />
+              <Route exact path="/trade" component={Trade} />
+              <Route exact path="/map" component={Map} />
+              <Route exact path="/meme"  component={Meme} />
               <Route exact path="/">
                 <Redirect to="/map" />
               </Route>
