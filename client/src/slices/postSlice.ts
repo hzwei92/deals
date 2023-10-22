@@ -17,7 +17,10 @@ export const postSlice = createSlice({
   reducers: {
     addPosts: (state, action: PayloadAction<Post[]>) => {
       action.payload.forEach((post) => {
-        state.posts[post.id] = post
+        state.posts[post.id] = {
+          ...state.posts[post.id],
+          ...post,
+        }
       })
     },
   },

@@ -2,6 +2,7 @@ import { createSelector, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { User } from '../types/User'
 import { RootState } from '../store'
+import { addMemberships } from './membershipSlice';
 
 export interface UserState {
   users: Record<number, User>;
@@ -25,6 +26,18 @@ export const userSlice = createSlice({
     setAppUserId: (state, action: PayloadAction<number | null>) => {
       state.userId = action.payload
     },
+  },
+  extraReducers: builder => {
+    builder.addCase(addMemberships, (state, action) => {
+      action.payload.forEach((membership) => {
+        if (membership.user?.id) {
+          state.users[membership.user.id] = {
+            ...state.users[membership.user.id],
+            ...membership.user,
+          };
+        }
+      })
+    });
   },
 })
 

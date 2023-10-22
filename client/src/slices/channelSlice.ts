@@ -20,7 +20,10 @@ export const channelSlice = createSlice({
   reducers: {
     addChannels: (state, action: PayloadAction<Channel[]>) => {
       action.payload.forEach((channel) => {
-        state.channels[channel.id] = channel
+        state.channels[channel.id] = {
+          ...state.channels[channel.id],
+          ...channel,
+        }
       })
     },
     activateChannel: (state, action: PayloadAction<number | null>) => {

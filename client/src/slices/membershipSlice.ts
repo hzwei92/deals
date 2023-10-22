@@ -17,7 +17,10 @@ export const membershipSlice = createSlice({
   reducers: {
     addMemberships: (state, action: PayloadAction<Membership[]>) => {
       action.payload.forEach((membership) => {
-        state.memberships[membership.id] = membership;
+        state.memberships[membership.id] = {
+          ...state.memberships[membership.id],
+          ...membership,
+        };
       })
     },
   },

@@ -19,7 +19,10 @@ export const dealSlice = createSlice({
   reducers: {
     addDeals: (state, action: PayloadAction<Deal[]>) => {
       action.payload.forEach((deal) => {
-        state.deals[deal.id] = deal
+        state.deals[deal.id] = {
+          ...state.deals[deal.id],
+          ...deal,
+        }
       })
     },
   },
