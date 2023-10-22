@@ -34,7 +34,10 @@ export const channelSlice = createSlice({
     builder.addCase(addMemberships, (state, action) => {
       action.payload.forEach((membership) => {
         if (membership.channel?.id) {
-          state.channels[membership.channel.id] = membership.channel;
+          state.channels[membership.channel.id] = {
+            ...state.channels[membership.channel.id],
+            ...membership.channel
+          };
         }
       })
     });

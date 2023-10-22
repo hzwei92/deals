@@ -20,7 +20,10 @@ export const userSlice = createSlice({
   reducers: {
     addUsers: (state, action: PayloadAction<User[]>) => {
       action.payload.forEach((user) => {
-        state.users[user.id] = user
+        state.users[user.id] = {
+          ...state.users[user.id],
+          ...user,
+        };
       })
     },
     setAppUserId: (state, action: PayloadAction<number | null>) => {
