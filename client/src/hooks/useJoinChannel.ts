@@ -36,7 +36,7 @@ const useJoinChannel = () => {
     },
   })
 
-  const joinChannel = (channelId: number | null) => {
+  const joinChannel = (channelId: number) => {
     join({
       variables: {
         channelId,

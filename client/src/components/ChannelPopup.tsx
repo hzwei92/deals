@@ -6,14 +6,14 @@ import md5 from "md5";
 import { flashOutline, videocamOutline } from "ionicons/icons";
 
 interface ChannelPopupProps {
+  userId: number;
   channel: Channel;
-  joinChannel: () => void;
+  enterChannel: (mode: string) => () => void;
   channelMemberships: any;
   users: Record<number, User>;
 }
 
-const ChannelPopup: React.FC<ChannelPopupProps> = ({ channel, joinChannel, channelMemberships, users }) => {
-  console.log('channelPopup', channel, channelMemberships, users)
+const ChannelPopup: React.FC<ChannelPopupProps> = ({ userId, channel, enterChannel, channelMemberships, users }) => {
   return (
     <div className="popup" style={{
     }}>
@@ -46,6 +46,8 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ channel, joinChannel, chann
         {
           channelMemberships
             .sort((a: Membership, b: Membership) => {
+              if (a.userId ===  userId) return -1;
+              if (b.userId === userId) return 1;
               if (a.isActive && !b.isActive) return -1;
               if (!a.isActive && b.isActive) return 1;
               return a.createdAt < b.createdAt ? -1 : 1;
@@ -114,7 +116,7 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ channel, joinChannel, chann
         flexDirection: 'row',
         justifyContent: 'center',
       }}>
-        <IonButton onClick={joinChannel} style={{
+        <IonButton onClick={enterChannel('talk')} style={{
           color: 'var(--ion-color-primary)',
           border: '1px solid var(--ion-color-primary)',
           borderRadius: '5px',
@@ -122,7 +124,7 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ channel, joinChannel, chann
         }}>
           TALK
         </IonButton>
-        <IonButton onClick={joinChannel} style={{
+        <IonButton onClick={enterChannel('text')} style={{
           color: 'var(--ion-color-primary)',
           border: '1px solid var(--ion-color-primary)',
           borderRadius: '5px',
@@ -130,7 +132,7 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ channel, joinChannel, chann
         }}>
           TEXT
         </IonButton>
-        <IonButton onClick={joinChannel} style={{
+        <IonButton onClick={enterChannel('roam')} style={{
           color: 'var(--ion-color-primary)',
           border: '1px solid var(--ion-color-primary)',
           borderRadius: '5px',

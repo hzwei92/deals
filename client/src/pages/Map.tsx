@@ -12,6 +12,7 @@ import ChannelPopup from '../components/ChannelPopup';
 import NewChannelPopup from '../components/NewChannelPopup';
 import { selectMembershipsByChannelId, selectMembershipsByUserId } from '../slices/membershipSlice';
 import useGetChannelMemberships from '../hooks/useGetChannelMemberships';
+import useJoinChannel from '../hooks/useJoinChannel';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
@@ -53,20 +54,28 @@ const MapComponent: React.FC = () => {
 
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
-
-  const createChannel = () => {
-    router.push('/create-channel');
-  };
-
-  const joinChannel = (id: number) => () => {
-    router.push('/channel/' + id + '/call');
-  }
+  const joinChannel = useJoinChannel();
   
   const getChannelMemberships = useGetChannelMemberships();
   const getMemberships = useGetMemberships(setShouldUpdateMapData);
 
   const getChannels = useGetChannels(setShouldUpdateMapData);
 
+  const createChannel = () => {
+    if (user?.id) {
+      router.push('/create-channel');
+    }
+    else {
+      authModal?.current?.present();
+    }
+  };
+
+  const enterChannel = (id: number) => (mode: string) => () => {
+    router.push('/channel/' + id + '/' + mode);
+    if (!memberships.some(membership => membership.channelId === id)) {
+      joinChannel(id);
+    }
+  }
   // fetch channels
   useEffect(() => {
     getChannels(mapLng, mapLat);
@@ -285,13 +294,11 @@ const MapComponent: React.FC = () => {
     if (channelId) {
       setNewChannelLngLat(null);
 
-      getChannelMemberships(channelId);
-
       if (channelPopup && channelPopupRoot) {
-        console.log('update channel popup', channelId, channelPopup, channelPopupRoot)
         channelPopupRoot.render(<ChannelPopup 
+          userId={user?.id ?? -1}
           channel={channels[channelId]} 
-          joinChannel={joinChannel(channelId)} 
+          enterChannel={enterChannel(channelId)} 
           channelMemberships={channelMemberships}
           users={users} 
         />);
@@ -304,8 +311,9 @@ const MapComponent: React.FC = () => {
         const channelPopupNode = document.createElement('div');
         const root = createRoot(channelPopupNode);
         root.render(<ChannelPopup 
+          userId={user?.id ?? - 1}
           channel={channels[channelId]} 
-          joinChannel={joinChannel(channelId)} 
+          enterChannel={enterChannel(channelId)} 
           channelMemberships={channelMemberships}
           users={users} />);
 
@@ -326,7 +334,7 @@ const MapComponent: React.FC = () => {
       channelPopup?.remove();
       setChannelPopup(null);
     }
-  }, [channelId]);
+  }, [channelId, channels, memberships, users]);
 
   // update new channel marker/popup
   useEffect(() => {
@@ -377,13 +385,12 @@ const MapComponent: React.FC = () => {
       marker.current?.remove();
     }
   }, [newChannelLngLat]);
-  
-  // useEffect(() => {
-  //   if (!marker.current?.getPopup().isOpen()) {
-  //     marker.current?.togglePopup();
-  //   }
-  // }, [marker.current?.getPopup().isOpen()]);
 
+  useEffect(() => {
+    if (channelId) {
+      getChannelMemberships(channelId);
+    }
+  }, [channelId])
 
   return (
     <IonPage>
