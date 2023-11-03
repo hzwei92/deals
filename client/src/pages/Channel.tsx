@@ -1,17 +1,16 @@
 import { IonButton, IonButtons, IonContent, IonIcon, IonPage, useIonRouter } from '@ionic/react';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
-import { addChannels, selectChannel } from '../slices/channelSlice';
+import { addChannels, selectChannel, selectFocusChannel, setFocusChannelId } from '../slices/channelSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
 import { gql, useMutation } from '@apollo/client';
 import VideoRoom from '../components/VideoRoom';
-import { airplaneOutline, caretDown, caretForward, chatboxEllipsesOutline, navigateCircleOutline, videocamOutline } from 'ionicons/icons';
+import { airplaneOutline, chatboxEllipsesOutline, navigateCircleOutline, videocamOutline } from 'ionicons/icons';
 import { CHANNEL_FIELDS } from '../fragments/channel';
 import { selectMembershipByChannelIdAndUserId } from '../slices/membershipSlice';
 import { selectAppUser } from '../slices/userSlice';
 import TextThread from '../components/TextThread';
-import { AppContext } from '../App';
 
 const GET_CHANNEL = gql`
   mutation GetChannel($id: Int!) {
@@ -30,19 +29,11 @@ interface ChannelProps extends RouteComponentProps<{
 const Channel: React.FC<ChannelProps> = ({ match }) => {
   const router = useIonRouter();
 
-  const {
-    channelId, 
-    setChannelId,
-  } = useContext(AppContext);
-
   const dispatch = useAppDispatch();
-  const user = useAppSelector(selectAppUser);
-  const channel = useAppSelector(state => selectChannel(state, parseInt(match.params.id))) as ChannelType | null; 
-  const membership = useAppSelector(state => selectMembershipByChannelIdAndUserId(state, parseInt(match.params.id), user?.id || -1));
-  
-  const [isLoaded, setIsLoaded] = useState(false);
 
-  const [showInfo, setShowInfo] = useState(true);
+  const channel = useAppSelector(selectFocusChannel);
+
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [getChannel] = useMutation(GET_CHANNEL, {
     onError: (error) => {
@@ -56,7 +47,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   });
 
   useEffect(() => {
-    if (channel) {
+    if (channel?.id === parseInt(match.params.id)) {
       setIsLoaded(true);
     }
     else {
@@ -65,10 +56,8 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           id: parseInt(match.params.id),
         }
       });
-    }
 
-    if (channelId !== parseInt(match.params.id)) {
-      setChannelId(parseInt(match.params.id));
+      dispatch(setFocusChannelId(parseInt(match.params.id)));
     }
   }, [match.params.id]);
 

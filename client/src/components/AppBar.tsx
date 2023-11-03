@@ -3,14 +3,16 @@ import md5 from "md5";
 import { selectAppUser } from "../slices/userSlice";
 import { useAppSelector } from "../store";
 import { micOffOutline, micOutline, personCircleOutline, videocamOffOutline, videocamOutline, volumeHighOutline, volumeMuteOutline } from "ionicons/icons";
-import { selectActiveChannel } from "../slices/channelSlice";
 import { useEffect, useState } from "react";
+import { useSetUserCam } from "../hooks/useSetUserCam";
+import { useSetUserMic } from "../hooks/useSetUserMic";
+import { selectFocusChannel } from "../slices/channelSlice";
 
 const AppBar: React.FC = () => {
   const router = useIonRouter();
 
   const user = useAppSelector(selectAppUser);
-  const channel = useAppSelector(selectActiveChannel);
+  const channel = useAppSelector(selectFocusChannel);
 
   useEffect(() => {
     const pattern = /\/map\/channel\/(\d+)$/;
@@ -21,20 +23,16 @@ const AppBar: React.FC = () => {
     }
   }, [router.routeInfo.pathname]);
 
-  const [camOn, setCamOn] = useState(true);
-  const [micOn, setMicOn] = useState(true);
-  const [speakerOn, setSpeakerOn] = useState(true);
-
   const [callTime, setCallTime] = useState(0);
 
   const handleChannelClick = () => {
-    if (!channel) return;
-    if (router.routeInfo.pathname === '/channel/' + channel.id + '/talk') return;
-    router.push('/channel/' + channel.id + '/talk')
+    if (user?.activeChannelId && channel?.id && user.activeChannelId !== channel.id) {
+      router.push('/channel/' + user.activeChannelId + '/talk')
+    };
   }
 
   useEffect(() => {
-    if (channel?.id) {
+    if (user?.activeChannelId) {
       setCallTime(0);
       const interval = setInterval(() => {
         setCallTime(prev => prev + 1);
@@ -43,7 +41,22 @@ const AppBar: React.FC = () => {
         clearInterval(interval);
       }
     }
-  }, [channel?.id])
+  }, [user?.activeChannelId]);
+
+  const setUserCam = useSetUserCam();
+  const setUserMic = useSetUserMic();
+
+  const handleCamClick = () => {
+    if (!user?.id) return;
+    setUserCam(!user.isCamOn);
+  }
+
+  const handleMicClick = () => {
+    if (!user) return;
+    setUserMic(!user.isMicOn);
+  }
+
+
   return (
       <IonHeader style={{
       }}>
@@ -70,7 +83,7 @@ const AppBar: React.FC = () => {
             flexDirection: 'row',
           }}>
             <IonButton onClick={handleChannelClick} style={{
-              display: channel?.id ? 'block' : 'none',
+              display: user?.activeChannelId ? 'block' : 'none',
               borderRadius: 5,
               minWidth: 60,
               backgroundColor: 'green',
@@ -79,34 +92,37 @@ const AppBar: React.FC = () => {
             }}>
               { Math.floor(callTime  / 60 ).toString().padStart(2, '0') }:{ (callTime % 60).toString().padStart(2, '0') } 
             </IonButton>
-            <IonButton onClick={() => setCamOn(prev => !prev)}style={{
-              color: channel?.id && camOn ? 'green' : 'var(--ion-color-dark)',
+            <IonButton onClick={handleCamClick}style={{
+              display: user?.id ? 'block' : 'none',
+              color: user?.activeChannelId && user?.isCamOn ? 'green' : 'var(--ion-color-dark)',
               marginRight: 5,
             }}> 
             {
-              camOn
+              user?.isCamOn
                 ? <IonIcon icon={videocamOutline} />
                 : <IonIcon icon={videocamOffOutline} />
                 
             }
             </IonButton>
-            <IonButton onClick={() => setMicOn(prev => !prev)} style={{
-              color: channel?.id && micOn ? 'green' : 'var(--ion-color-dark)',
+            <IonButton onClick={handleMicClick} style={{
+              display: user?.id ? 'block' : 'none',
+              color: user?.activeChannelId && user?.isMicOn ? 'green' : 'var(--ion-color-dark)',
               marginRight: 3,
             }}> 
             {
-              micOn
+              user?.isMicOn
                 ? <IonIcon icon={micOutline} />
                 : <IonIcon icon={micOffOutline} />
 
             }
             </IonButton>
-            <IonButton onClick={() => setSpeakerOn(prev => !prev)} style={{
-              color: channel?.id && speakerOn ? 'green' : 'var(--ion-color-dark)',
+            <IonButton onClick={() => {}} style={{
+              display: user?.id ? 'block' : 'none',
+              color: user?.activeChannelId && true ? 'green' : 'var(--ion-color-dark)',
               marginRight: 10,
             }}> 
             {
-              speakerOn 
+              user?.isSoundOn 
                 ? <IonIcon icon={volumeHighOutline} />
                 : <IonIcon icon={volumeMuteOutline} />
             }

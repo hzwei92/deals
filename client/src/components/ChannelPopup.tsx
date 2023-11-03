@@ -1,146 +1,108 @@
-import { IonAvatar, IonButton, IonButtons, IonCard, IonIcon } from "@ionic/react";
-import { Channel } from "../types/Channel";
-import { User } from "../types/User";
-import { Membership } from "../types/Membership";
-import md5 from "md5";
-import { flashOutline, videocamOutline } from "ionicons/icons";
+import {IonButton, IonButtons, IonIcon, UseIonRouterResult } from "@ionic/react";
+import { useAppDispatch, useAppSelector } from "../store";
+import { selectAppUser } from "../slices/userSlice";
+import { useState } from "react";
+import ChannelPopupTalk from "./ChannelPopupTalk";
+import { selectFocusChannel } from "../slices/channelSlice";
+import ChannelPopupText from "./ChannelPopupText";
+import ChannelPopupRoam from "./ChannelPopupRoam";
+import { close, closeOutline, removeOutline, squareOutline } from "ionicons/icons";
 
 interface ChannelPopupProps {
-  userId: number;
-  channel: Channel;
-  enterChannel: (mode: string) => () => void;
-  channelMemberships: any;
-  users: Record<number, User>;
+  router: UseIonRouterResult;
+  authModal: React.RefObject<HTMLIonModalElement>;
+  streams: Record<number, any>;
 }
 
-const ChannelPopup: React.FC<ChannelPopupProps> = ({ userId, channel, enterChannel, channelMemberships, users }) => {
+const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams }) => {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectAppUser);
+  const channel = useAppSelector(selectFocusChannel);
+
+  console.log('channel', channel)
+
+  const [mode, setMode] = useState('talk');
+
   return (
     <div className="popup" style={{
     }}>
       <div style={{
+        marginTop: 5,
         fontSize: 24,
         fontWeight: 'bold',
         display: 'flex',
-        justifyContent: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
       }}>
-        { channel.name } 
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+        }}>
+        { channel?.name } 
+        </div>
+        <IonButtons style={{
+        }}>
+          <IonButton>
+            <IonIcon icon={removeOutline} size="small" />
+          </IonButton>
+          <IonButton>
+            <IonIcon icon={squareOutline} size="small" />
+          </IonButton>
+          <IonButton>
+            <IonIcon icon={closeOutline} size="small"/>
+          </IonButton>
+        </IonButtons>
       </div>
       <div style={{
         marginTop: 10,
-        textAlign: 'center',
+        textAlign: 'left',
         fontSize: 14,
         color: 'var(--ion-color-medium)'
       }}>
-        { channel.detail }
-      </div>
-      <div style={{
-        width: 220,
-        maxHeight: 200,
-        overflowY: 'scroll',
-      }}>
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        padding: 2,
-      }}>
-        {
-          channelMemberships
-            .sort((a: Membership, b: Membership) => {
-              if (a.userId ===  userId) return -1;
-              if (b.userId === userId) return 1;
-              if (a.isActive && !b.isActive) return -1;
-              if (!a.isActive && b.isActive) return 1;
-              return a.createdAt < b.createdAt ? -1 : 1;
-            })
-            .map((membership: Membership) => {
-              return (
-                <IonCard key={membership.id} style={{
-                  margin: 0,
-                  marginBottom: 5,
-                  padding: 5,
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'start',
-                    fontSize: 12,
-                  }}>
-                    <IonAvatar style={{
-                      paddingTop: 1,
-                      width: 20,
-                      height: 20,
-                      cursor: 'pointer',
-                    }}>
-                      <img src={`https://www.gravatar.com/avatar/${md5(membership.userId.toString() || '')}?d=retro`} />
-                    </IonAvatar>
-                    <div style={{
-                      paddingLeft: 5,
-                      width: 170,
-                    }}>
-                      { users[membership.userId].name }
-                      {
-                        membership.userId === channel.ownerId 
-                          ? <IonIcon icon={flashOutline} style={{
-                              paddingTop: 3,
-                              paddingLeft: 3,
-                              color: 'var(--ion-color-primary)'
-                            }}/>
-                          : null
-                      }
-                    </div>
-                  </div>
-                  <div style={{
-                  }}>
-                    {
-                      membership.isActive 
-                        ? <IonIcon icon={videocamOutline} style={{
-                            marginTop: 2,
-                            marginLeft: 2,
-                            color: 'green'
-                          }}/>
-                        : null
-                    }
-                  </div>
-                </IonCard>
-              )
-            })
-        }
-      </div>
+        { channel?.detail }
       </div>
       <IonButtons style={{
-        marginTop: 15,
+        marginTop: 5,
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
       }}>
-        <IonButton onClick={enterChannel('talk')} style={{
-          color: 'var(--ion-color-primary)',
-          border: '1px solid var(--ion-color-primary)',
-          borderRadius: '5px',
+        <IonButton onClick={() => setMode('talk')} style={{
+          color: mode === 'talk' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+          borderBottom: mode === 'talk' ? '4px solid var(--ion-color-primary)' : 'none',
           fontWeight: 'bold',
         }}>
           TALK
         </IonButton>
-        <IonButton onClick={enterChannel('text')} style={{
-          color: 'var(--ion-color-primary)',
-          border: '1px solid var(--ion-color-primary)',
-          borderRadius: '5px',
+        <IonButton onClick={() => setMode('text')} style={{
+          color: mode === 'text' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+          borderBottom: mode === 'text' ? '4px solid var(--ion-color-primary)' : 'none',
           fontWeight: 'bold',
         }}>
           TEXT
         </IonButton>
-        <IonButton onClick={enterChannel('roam')} style={{
-          color: 'var(--ion-color-primary)',
-          border: '1px solid var(--ion-color-primary)',
-          borderRadius: '5px',
+        <IonButton onClick={() => setMode('roam')} style={{
+          color: mode === 'roam' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+          borderBottom: mode === 'roam' ? '4px solid var(--ion-color-primary)' : 'none',
           fontWeight: 'bold',
         }}>
           ROAM
         </IonButton>
       </IonButtons>
+      <div style={{
+        marginTop: 10,
+      }}>
+        {
+          mode === 'talk'
+            ? <ChannelPopupTalk authModal={authModal} streams={streams} />
+            : mode === 'text'
+              ? <ChannelPopupText />
+              : mode === 'roam'
+                ? <ChannelPopupRoam />
+                : null
+        }
+      </div>
     </div>
   )
 }

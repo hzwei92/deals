@@ -142,15 +142,15 @@ export class ChannelsResolver {
     }
 
     if (channelId) {
+      const channel1 = await this.channelsService.incrementActiveUserCount(channelId, 1);
+      channels.push(channel1);
+
       let membership1 = await this.membershipService.findOneByUserIdAndChannelId(user.id, channelId);
       if (!membership1) {
-        throw new Error('Next active membership not found');
+        membership1 = await this.membershipService.createOne(user, channel1);
       }
       membership1 = await this.membershipService.setIsActive(membership1, true);
       memberships.push(membership1);
-
-      const channel1 = await this.channelsService.incrementActiveUserCount(channelId, 1);
-      channels.push(channel1);
     }
     
     return {

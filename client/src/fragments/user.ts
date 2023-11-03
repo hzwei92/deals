@@ -7,6 +7,9 @@ export const USER_FIELDS = gql`
     phone
     name
     isAdmin
+    isCamOn
+    isMicOn
+    isSoundOn
     activeChannelId
   }
 `;

@@ -26,6 +26,15 @@ export class User {
   @Field()
   isAdmin: boolean;
 
+  @Field()
+  isCamOn: boolean;
+
+  @Field()
+  isMicOn: boolean;
+
+  @Field()
+  isSoundOn: boolean;
+
   @Field(() => [Deal])
   offers: Deal[]
 

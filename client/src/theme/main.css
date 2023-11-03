@@ -11,8 +11,13 @@
 
 
   .tiptap {
-    padding: 5px;
+    padding: 2px; 
     border-radius: 5px;
+  }
+
+  .titap p {
+    margin-block-start: 5px !important;
+    margin-block-end: 5px;
   }
 
   .tiptap .is-empty::before {
@@ -22,5 +27,4 @@
     pointer-events: none;
     height: 0;
   }
-
 }

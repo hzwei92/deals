@@ -6,7 +6,7 @@ import { selectAppUser } from '../slices/userSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import { Channel } from '../types/Channel';
 import { IonButton, IonButtons } from '@ionic/react';
-import { activateChannel, selectActiveChannel } from '../slices/channelSlice';
+import useActivateChannel from '../hooks/useActivateChannel';
 
 const getConnectedDevices = async (type: MediaDeviceKind) => {
   const devices = await navigator.mediaDevices.enumerateDevices();
@@ -20,19 +20,17 @@ interface VideoRoomProps {
 const VideoRoom = ({ channel }: VideoRoomProps) => {
   const dispatch = useAppDispatch();
   const {
-    joinRoom,
-    disconnect,
     authModal,
-    refresh,
   } = useContext(AppContext);
 
   const user = useAppSelector(selectAppUser);
-  const activeChannel = useAppSelector(selectActiveChannel);
   
   const [cams, setCams] = useState<MediaDeviceInfo[]>([]);
   const [mics, setMics] = useState<MediaDeviceInfo[]>([]);
 
   const [isConnecting, setIsConnecting] = useState(false);
+
+  const activateChannel = useActivateChannel();
 
   const handleClick = () => {
     if (!user) {
@@ -42,16 +40,11 @@ const VideoRoom = ({ channel }: VideoRoomProps) => {
     if (!channel) {
       return;
     }
-    if (activeChannel?.id !== channel.id) {
-      disconnect();
-    }
-    joinRoom(channel.id, user.id, user.name || 'anon');
-    setIsConnecting(true);
+    activateChannel(channel.id);
   }
 
   const handleDisconnect = () => {
-    disconnect();
-    dispatch(activateChannel(null));
+    activateChannel(null);
   }
   
   useEffect(() => {
@@ -74,7 +67,7 @@ const VideoRoom = ({ channel }: VideoRoomProps) => {
       <div style={{
         width: '100%',
         height: '100%',
-        display: channel.id === activeChannel?.id 
+        display: channel.id === user?.activeChannelId 
           ? 'flex'
           : 'none',
         flexDirection: 'row',
@@ -168,7 +161,7 @@ const VideoRoom = ({ channel }: VideoRoomProps) => {
         justifyContent: 'center',
       }}>
         {
-          activeChannel?.id === channel.id
+          user?.activeChannelId === channel.id
             ? (
               <IonButton onClick={handleDisconnect} style={{
                 borderRadius: 20,

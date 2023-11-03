@@ -2,35 +2,37 @@ import { IonCard, IonContent, IonPage, isPlatform, useIonRouter } from '@ionic/r
 import mapboxgl, { Map } from 'mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Root, createRoot } from 'react-dom/client';
-import { selectChannels } from '../slices/channelSlice';
+import { selectChannels, selectFocusChannel, setFocusChannelId, toggleFocusChannelId } from '../slices/channelSlice';
 import { selectAppUser, selectUsers } from '../slices/userSlice';
-import { useAppSelector } from '../store';
+import { useAppDispatch, useAppSelector } from '../store';
 import { AppContext } from '../App';
 import useGetChannels from '../hooks/useGetChannels';
-import useGetMemberships from '../hooks/useGetMemberships';
 import ChannelPopup from '../components/ChannelPopup';
 import NewChannelPopup from '../components/NewChannelPopup';
-import { selectMembershipsByChannelId, selectMembershipsByUserId } from '../slices/membershipSlice';
-import useGetChannelMemberships from '../hooks/useGetChannelMemberships';
-import useJoinChannel from '../hooks/useJoinChannel';
+import { selectMembershipsByUserId } from '../slices/membershipSlice';
+import { Provider } from 'react-redux';
+import { store } from '../store';
+import { ApolloProvider } from '@apollo/client';
+import { client } from '../main';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
-
 const MapComponent: React.FC = () => {
+  const dispatch = useAppDispatch();
+
   const {
+    streams,
     authModal,
     shouldUpdateMapData,
     setShouldUpdateMapData,
     newChannelLngLat,
     setNewChannelLngLat,
-    channelId,
-    setChannelId,
   } = useContext(AppContext);
 
   const router = useIonRouter();
 
   const user = useAppSelector(selectAppUser);
+  const channel = useAppSelector(selectFocusChannel);
 
   const [mapLng, setMapLng] = useState(-70.9);
   const [mapLat, setMapLat] = useState(42.35);
@@ -50,14 +52,7 @@ const MapComponent: React.FC = () => {
   const [channelPopup, setChannelPopup] = useState<mapboxgl.Popup | null>(null);
   const [channelPopupRoot, setChannelPopupRoot] = useState<Root | null>(null);
 
-  const channelMemberships = useAppSelector(state => selectMembershipsByChannelId(state, channelId ?? -1));
-
   const [isMapLoaded, setIsMapLoaded] = useState(false);
-
-  const joinChannel = useJoinChannel();
-  
-  const getChannelMemberships = useGetChannelMemberships();
-  const getMemberships = useGetMemberships(setShouldUpdateMapData);
 
   const getChannels = useGetChannels(setShouldUpdateMapData);
 
@@ -70,24 +65,11 @@ const MapComponent: React.FC = () => {
     }
   };
 
-  const enterChannel = (id: number) => (mode: string) => () => {
-    router.push('/channel/' + id + '/' + mode);
-    if (!memberships.some(membership => membership.channelId === id)) {
-      joinChannel(id);
-    }
-  }
   // fetch channels
   useEffect(() => {
     getChannels(mapLng, mapLat);
     map.current?.resize();
   }, []);
-
-  // fetch memberships
-  useEffect(() => {
-    if (user?.id) {
-      getMemberships();
-    }
-  }, [user?.id])
 
   // initialize map
   useEffect(() => {
@@ -119,7 +101,7 @@ const MapComponent: React.FC = () => {
         console.log('map click', e.lngLat);
 
         setNewChannelLngLat(e.lngLat);
-        setChannelId(null);
+        dispatch(setFocusChannelId(null));
       }, 100)
     });
   }, [user?.id]);
@@ -223,7 +205,7 @@ const MapComponent: React.FC = () => {
     map.current.on('click', 'clusters', (e) => {
       e.clickOnLayer = true;
 
-      setChannelId(null);
+      dispatch(setFocusChannelId(null));
 
       const features = map.current?.queryRenderedFeatures(e.point, {
         layers: ['clusters']
@@ -249,9 +231,7 @@ const MapComponent: React.FC = () => {
       if (!e.features) return;
       const id = e.features[0].properties?.id;
 
-      setChannelId(prev => {
-        return prev === id ? null : id;
-      });
+      dispatch(toggleFocusChannelId(id));
     });
 
     map.current.on('mouseenter', 'clusters', () => {
@@ -281,48 +261,46 @@ const MapComponent: React.FC = () => {
     channels, 
     memberships,
     map.current?.getSource('channels'), 
-    channelId, 
     !!channelPopup, 
     !!channelPopupRoot,
-    channelMemberships,
     users,
   ])
 
   // update channel popup
   useEffect(() => {
-    // update channel popup
-    if (channelId) {
+    if (channel?.id) {
       setNewChannelLngLat(null);
 
       if (channelPopup && channelPopupRoot) {
-        channelPopupRoot.render(<ChannelPopup 
-          userId={user?.id ?? -1}
-          channel={channels[channelId]} 
-          enterChannel={enterChannel(channelId)} 
-          channelMemberships={channelMemberships}
-          users={users} 
-        />);
+        channelPopupRoot.render(
+          <ApolloProvider client={client}>
+            <Provider store={store}>
+              <ChannelPopup router={router} authModal={authModal} streams={streams} />
+            </Provider>
+          </ApolloProvider>
+        );
 
         channelPopup
-          .setLngLat([channels[channelId].lng, channels[channelId].lat])
+          .setLngLat([channels[channel.id].lng, channels[channel.id].lat])
           .addTo(map.current!);
       }
       else {
         const channelPopupNode = document.createElement('div');
         const root = createRoot(channelPopupNode);
-        root.render(<ChannelPopup 
-          userId={user?.id ?? - 1}
-          channel={channels[channelId]} 
-          enterChannel={enterChannel(channelId)} 
-          channelMemberships={channelMemberships}
-          users={users} />);
+        root.render(
+          <ApolloProvider client={client}>
+            <Provider store={store}>
+              <ChannelPopup router={router} authModal={authModal} streams={streams}/>
+            </Provider>
+          </ApolloProvider>
+        );
 
         const popup = new mapboxgl.Popup({
           offset: 15,
           focusAfterOpen: true,
           closeButton: false,
         })
-        .setLngLat([channels[channelId].lng, channels[channelId].lat])
+        .setLngLat([channels[channel.id].lng, channels[channel.id].lat])
         .setDOMContent(channelPopupNode)
         .addTo(map.current!);       
 
@@ -334,13 +312,13 @@ const MapComponent: React.FC = () => {
       channelPopup?.remove();
       setChannelPopup(null);
     }
-  }, [channelId, channels, memberships, users]);
+  }, [channel?.id, streams]);
 
   // update new channel marker/popup
   useEffect(() => {
     if (newChannelLngLat) {
 
-      setChannelId(null);
+      dispatch(setFocusChannelId(null));
 
       if (marker.current && creationPopupRoot.current) {
         creationPopupRoot.current.render(<NewChannelPopup createChannel={createChannel}/>);
@@ -386,12 +364,6 @@ const MapComponent: React.FC = () => {
     }
   }, [newChannelLngLat]);
 
-  useEffect(() => {
-    if (channelId) {
-      getChannelMemberships(channelId);
-    }
-  }, [channelId])
-
   return (
     <IonPage>
       <IonContent fullscreen style={{
@@ -411,8 +383,8 @@ const MapComponent: React.FC = () => {
           padding: 10,
         }}>
           {
-            channelId
-              ? channels[channelId].lng.toPrecision(6) + ', ' + channels[channelId].lat.toPrecision(6)
+            channel?.id
+              ? channels[channel.id].lng.toPrecision(6) + ', ' + channels[channel.id].lat.toPrecision(6)
               : newChannelLngLat
                 ? newChannelLngLat?.lng.toPrecision(6) + ', ' + newChannelLngLat?.lat.toPrecision(6)
                 : mapLng.toPrecision(6) + ', ' + mapLat.toPrecision(6) 

@@ -27,7 +27,7 @@ const ACTIVATE_CHANNEL = gql`
 `;
 
 
-const useActivateChannel = (setShouldUpdateMapData: (x: boolean) => void) => {
+const useActivateChannel = () => {
   const dispatch = useAppDispatch();
 
   const [activateChannel] = useMutation(ACTIVATE_CHANNEL, {
@@ -40,8 +40,6 @@ const useActivateChannel = (setShouldUpdateMapData: (x: boolean) => void) => {
       dispatch(addUsers([data.activateChannel.user]));
       dispatch(addChannels(data.activateChannel.channels));
       dispatch(addMemberships(data.activateChannel.memberships));
-
-      setShouldUpdateMapData(true);
     },
   })
   

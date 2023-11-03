@@ -131,4 +131,14 @@ export class UsersService {
     user.name = name;
     return this.usersRepository.save(user);
   }
+
+  async updateCamStatus(user: User, isCamOn: boolean): Promise<User> {
+    user.isCamOn = isCamOn;
+    return this.usersRepository.save(user);
+  }
+
+  async updateMicStatus(user: User, isMicOn: boolean): Promise<User> {
+    user.isMicOn = isMicOn;
+    return this.usersRepository.save(user);
+  }
 }

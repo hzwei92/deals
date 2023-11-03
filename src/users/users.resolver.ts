@@ -25,7 +25,26 @@ export class UsersResolver {
     @CurrentUser() user: UserEntity,
     @Args('name') name: string,
   ) {
-    console.log(user, name);
     return this.usersService.changeName(user, name);
   }
+
+  @UseGuards(AuthGuard)
+  @Mutation(() => User, { name: 'setUserCam' })
+  async updateCamStatus(
+    @CurrentUser() user: UserEntity,
+    @Args('isCamOn') isCamOn: boolean,
+  ) {
+    return this.usersService.updateCamStatus(user, isCamOn);
+  }
+
+  @UseGuards(AuthGuard)
+  @Mutation(() => User, { name: 'setUserMic' })
+  async updateMicStatus(
+    @CurrentUser() user: UserEntity,
+    @Args('isMicOn') isMicOn: boolean,
+  ) {
+    return this.usersService.updateMicStatus(user, isMicOn);
+  }
+
+  
 }

@@ -38,6 +38,15 @@ export class User {
   @Column({ default: false })
   isAdmin: boolean;
 
+  @Column({ default: true })
+  isCamOn: boolean;
+
+  @Column({ default: true })
+  isMicOn: boolean;
+
+  @Column({ default: true })
+  isSoundOn: boolean;
+
   @Column()
   stripeCustomerId: string;
 

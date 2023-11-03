@@ -45,62 +45,67 @@ import AuthModal from './components/AuthModal';
 import AccountModal from './components/AccountModal';
 import CreateDeal from './pages/CreateDeal';
 import Channel from './pages/Channel';
-import { Dispatch, SetStateAction, createContext, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, createContext, useEffect, useRef, useState } from 'react';
 import useJanus from './hooks/useJanus';
 import CreateChannel from './pages/CreateChannel';
 import mapboxgl from 'mapbox-gl';
+import { useAppSelector } from './store';
+import { selectAppUser } from './slices/userSlice';
+import { selectFocusChannel } from './slices/channelSlice';
+import useGetMemberships from './hooks/useGetMemberships';
+import useGetChannelMemberships from './hooks/useGetChannelMemberships';
 
 setupIonicReact();
 
 export const AppContext = createContext({} as {
   // auth
   authModal: React.MutableRefObject<HTMLIonModalElement | null>;
-  // janus 
-  refresh: boolean;
-  joinRoom: (room: number, id: number, username: string) => void;
-  unpublishOwnFeed: () => void;
-  unsubscribeFrom: (id: string) => void;
-  disconnect: () => void;
+  // janus
+  streams: Record<number, any>;
   // map
   shouldUpdateMapData: boolean;
   setShouldUpdateMapData: Dispatch<SetStateAction<boolean>>;
   newChannelLngLat: mapboxgl.LngLat | null;
   setNewChannelLngLat: Dispatch<SetStateAction<mapboxgl.LngLat | null>>;
-  channelId: number | null;
-  setChannelId: Dispatch<SetStateAction<number | null>>;
 });
 
 const App: React.FC = () => {
+  const user = useAppSelector(selectAppUser);
+  const channel = useAppSelector(selectFocusChannel);
+
   const [shouldUpdateMapData, setShouldUpdateMapData] = useState(false);
   const [newChannelLngLat, setNewChannelLngLat] = useState<mapboxgl.LngLat | null>(null);
-  const [channelId, setChannelId] = useState<number | null>(null);
 
   const { 
-    refresh,
-    joinRoom,
-    unpublishOwnFeed,
-    unsubscribeFrom,
-    disconnect,
-  } = useJanus(shouldUpdateMapData, setShouldUpdateMapData);
-
+    streams,
+  } = useJanus();
   
   const authModal = useRef<HTMLIonModalElement>(null);
+
+  const getMemberships = useGetMemberships(setShouldUpdateMapData);
+  const getChannelMemberships = useGetChannelMemberships();
+
+  useEffect(() => {
+    if (user?.id) {
+      getMemberships();
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (channel?.id) {
+      getChannelMemberships(channel.id);
+    }
+  }, [channel?.id]);
 
   return (
     <IonApp>
       <AppContext.Provider value={{
         authModal,
-        refresh,
-        joinRoom,
-        unpublishOwnFeed,
-        unsubscribeFrom,
-        disconnect,
+        streams,
         shouldUpdateMapData,
         setShouldUpdateMapData,
         newChannelLngLat,
         setNewChannelLngLat,
-        channelId,
-        setChannelId,
       }}>
         <IonReactRouter>
           <AppBar />

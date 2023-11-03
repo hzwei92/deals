@@ -90,6 +90,8 @@ type Mutation {
   phoneLogin(phone: String!): User!
   refresh(refreshToken: String!): RefreshTokentResult!
   resend(email: String, phone: String): User!
+  setUserCam(isCamOn: Boolean!): User!
+  setUserMic(isMicOn: Boolean!): User!
   verify(code: String!, id: Int!): VerifyResult!
 }
 
@@ -120,6 +122,9 @@ type User {
   email: String
   id: Int!
   isAdmin: Boolean!
+  isCamOn: Boolean!
+  isMicOn: Boolean!
+  isSoundOn: Boolean!
   memberships: [Membership!]!
   name: String!
   offers: [Deal!]!

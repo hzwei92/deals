@@ -26,8 +26,15 @@ export const channelSlice = createSlice({
         }
       })
     },
-    activateChannel: (state, action: PayloadAction<number | null>) => {
+    setFocusChannelId: (state, action: PayloadAction<number | null>) => {
       state.channelId = action.payload
+    },
+    toggleFocusChannelId: (state, action: PayloadAction<number>) => {
+      if (state.channelId === action.payload) {
+        state.channelId = null;
+      } else {
+        state.channelId = action.payload;
+      }
     },
   },
   extraReducers: builder => {
@@ -47,7 +54,8 @@ export const channelSlice = createSlice({
 // Action creators are generated for each case reducer function
 export const { 
   addChannels,
-  activateChannel,
+  setFocusChannelId,
+  toggleFocusChannelId,
  } = channelSlice.actions
 
 export default channelSlice.reducer
@@ -61,6 +69,6 @@ export const selectChannel = createSelector(
   (channels, id) => channels[id]
 )
 
-export const selectActiveChannel = (state: RootState) => state.channel.channelId
+export const selectFocusChannel = (state: RootState) => state.channel.channelId
   ? state.channel.channels[state.channel.channelId]
   : null;
