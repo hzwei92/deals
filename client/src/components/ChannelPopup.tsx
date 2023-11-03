@@ -6,7 +6,7 @@ import ChannelPopupTalk from "./ChannelPopupTalk";
 import { selectFocusChannel } from "../slices/channelSlice";
 import ChannelPopupText from "./ChannelPopupText";
 import ChannelPopupRoam from "./ChannelPopupRoam";
-import { close, closeOutline, removeOutline, squareOutline } from "ionicons/icons";
+import { close, closeOutline, removeOutline, squareOutline, stopOutline } from "ionicons/icons";
 
 interface ChannelPopupProps {
   router: UseIonRouterResult;
@@ -22,6 +22,14 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams 
   console.log('channel', channel)
 
   const [mode, setMode] = useState('talk');
+
+  const handleMaximizeClick = () => {
+    router.push('/channel/' + channel?.id + '/' + mode, 'none');
+  }
+
+  const handleCloseClick = () => {
+    router.push('/map', 'none');
+  }
 
   return (
     <div className="popup" style={{
@@ -46,10 +54,10 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams 
           <IonButton>
             <IonIcon icon={removeOutline} size="small" />
           </IonButton>
-          <IonButton>
-            <IonIcon icon={squareOutline} size="small" />
+          <IonButton onClick={handleMaximizeClick}>
+            <IonIcon icon={stopOutline} size="small" />
           </IonButton>
-          <IonButton>
+          <IonButton onClick={handleCloseClick}>
             <IonIcon icon={closeOutline} size="small"/>
           </IonButton>
         </IonButtons>

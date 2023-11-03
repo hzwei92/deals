@@ -7,7 +7,6 @@ import userReducer from './slices/userSlice';
 import membershipReducer from './slices/membershipSlice';
 import postReducer from './slices/postSlice';
 
-console.log('inside store')
 export const store = configureStore({
   reducer: {
     auth: authReducer,

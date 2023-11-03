@@ -1,27 +1,19 @@
 import { IonAvatar, IonButton, IonButtons, IonHeader, IonIcon, useIonRouter } from "@ionic/react"
 import md5 from "md5";
 import { selectAppUser } from "../slices/userSlice";
-import { useAppSelector } from "../store";
+import { useAppDispatch, useAppSelector } from "../store";
 import { micOffOutline, micOutline, personCircleOutline, videocamOffOutline, videocamOutline, volumeHighOutline, volumeMuteOutline } from "ionicons/icons";
 import { useEffect, useState } from "react";
 import { useSetUserCam } from "../hooks/useSetUserCam";
 import { useSetUserMic } from "../hooks/useSetUserMic";
-import { selectFocusChannel } from "../slices/channelSlice";
+import { selectFocusChannel, setFocusChannelId } from "../slices/channelSlice";
 
 const AppBar: React.FC = () => {
+  const dispatch = useAppDispatch();
   const router = useIonRouter();
 
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectFocusChannel);
-
-  useEffect(() => {
-    const pattern = /\/map\/channel\/(\d+)$/;
-    const match = router.routeInfo.pathname.match(pattern)
-    if (match) {
-      const id = match[1];
-      router.push('/channel/' + id + '/talk');
-    }
-  }, [router.routeInfo.pathname]);
 
   const [callTime, setCallTime] = useState(0);
 

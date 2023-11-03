@@ -1,4 +1,4 @@
-import { IonCard, IonContent, IonPage, isPlatform, useIonRouter } from '@ionic/react';
+import { IonButton, IonButtons, IonCard, IonContent, IonIcon, IonPage, isPlatform, useIonRouter } from '@ionic/react';
 import mapboxgl, { Map } from 'mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Root, createRoot } from 'react-dom/client';
@@ -14,10 +14,14 @@ import { Provider } from 'react-redux';
 import { store } from '../store';
 import { ApolloProvider } from '@apollo/client';
 import { client } from '../main';
+import { RouteComponentProps } from 'react-router';
+import { menuOutline, removeOutline } from 'ionicons/icons';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
-const MapComponent: React.FC = () => {
+interface MapComponentProps {}
+
+const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   const dispatch = useAppDispatch();
 
   const {
@@ -64,6 +68,25 @@ const MapComponent: React.FC = () => {
       authModal?.current?.present();
     }
   };
+  
+  // set focus channel based on routing
+  useEffect(() => {
+    const pattern = /^\/map\/(\d+)/;
+    const match = router.routeInfo.pathname.match(pattern)
+    if (match) {
+      const id = parseInt(match[1]);
+      if (id !== channel?.id) {
+        dispatch(setFocusChannelId(id));
+      }
+    }
+    else {
+      if (router.routeInfo.pathname === '/map') {
+        if (channel?.id) {
+          dispatch(setFocusChannelId(null));
+        }
+      }
+    }
+  }, [router.routeInfo.pathname]);
 
   // fetch channels
   useEffect(() => {
@@ -101,7 +124,9 @@ const MapComponent: React.FC = () => {
         console.log('map click', e.lngLat);
 
         setNewChannelLngLat(e.lngLat);
-        dispatch(setFocusChannelId(null));
+        if (router.routeInfo.pathname !== '/map') {
+          router.push('/map', 'none')
+        }
       }, 100)
     });
   }, [user?.id]);
@@ -205,7 +230,9 @@ const MapComponent: React.FC = () => {
     map.current.on('click', 'clusters', (e) => {
       e.clickOnLayer = true;
 
-      dispatch(setFocusChannelId(null));
+      if (router.routeInfo.pathname !== '/map') {
+        router.push('/map', 'none')
+      }
 
       const features = map.current?.queryRenderedFeatures(e.point, {
         layers: ['clusters']
@@ -231,7 +258,18 @@ const MapComponent: React.FC = () => {
       if (!e.features) return;
       const id = e.features[0].properties?.id;
 
-      dispatch(toggleFocusChannelId(id));
+      const pattern = /^\/map\/(\d+)/;
+      const match = router.routeInfo.pathname.match(pattern)
+
+      console.log('click', id, match)
+      if (match) {
+        const id1 = match[1];
+        if (id === parseInt(id1)) {
+          router.push('/map', 'none')
+          return;
+        }
+      }
+      router.push('/map/' + id), 'none';
     });
 
     map.current.on('mouseenter', 'clusters', () => {
@@ -318,7 +356,9 @@ const MapComponent: React.FC = () => {
   useEffect(() => {
     if (newChannelLngLat) {
 
-      dispatch(setFocusChannelId(null));
+      if (router.routeInfo.pathname !== '/map') {
+        router.push('/map', 'none')
+      }
 
       if (marker.current && creationPopupRoot.current) {
         creationPopupRoot.current.render(<NewChannelPopup createChannel={createChannel}/>);
@@ -389,6 +429,19 @@ const MapComponent: React.FC = () => {
                 ? newChannelLngLat?.lng.toPrecision(6) + ', ' + newChannelLngLat?.lat.toPrecision(6)
                 : mapLng.toPrecision(6) + ', ' + mapLat.toPrecision(6) 
           }
+        </IonCard>
+        <IonCard style={{
+          position: 'fixed',
+          borderRadius: 3,
+          zIndex: 10,
+          left: isPlatform('ios') ? -10 : 0,
+          top: isPlatform('ios') ? 72 : 92,
+        }}>
+          <IonButtons>
+            <IonButton>
+              <IonIcon icon={menuOutline} size='small' />
+            </IonButton>
+          </IonButtons>
         </IonCard>
       </IonContent>
     </IonPage>

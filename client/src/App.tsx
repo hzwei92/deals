@@ -118,7 +118,7 @@ const App: React.FC = () => {
               <Route exact path="/create-deal" component={CreateDeal} />
               <Route exact path="/deal/:id" component={Deal} />
               <Route exact path="/trade" component={Trade} />
-              <Route exact path="/map" component={Map} />
+              <Route path="/map" component={Map} />
               <Route exact path="/meme"  component={Meme} />
               <Route exact path="/">
                 <Redirect to="/map" />
