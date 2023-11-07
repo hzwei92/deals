@@ -789,14 +789,20 @@ const useJanus = () => {
               // No video, at least for now: show a placeholder
             }
           }
+          setStreams(prev => {
+            const newStreams = { ...prev };
+            if (newStreams[sub?.feed_id]) {
+              delete newStreams[sub?.feed_id][track?.kind];
+
+              if (Object.keys(newStreams[sub?.feed_id]).length === 0) {
+                delete newStreams[sub?.feed_id];
+              }
+            }
+            return newStreams;
+          })
           delete remoteTracks[mid];
           delete slots[mid];
           delete mids[slot];
-          setStreams(prev => {
-            const newStreams = { ...prev };
-            delete newStreams[sub.feed_id][track.kind];
-            return newStreams;
-          })
           return;
         }
         // If we're here, a new track was added

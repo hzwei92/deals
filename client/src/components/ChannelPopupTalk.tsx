@@ -25,7 +25,6 @@ const ChannelPopupTalk: React.FC<ChannelPopupTalkProps> = ({ authModal, streams 
   const channel = useAppSelector(selectFocusChannel);
 
   const memberships = useAppSelector(state => selectMembershipsByChannelId(state, channel?.id ?? -1));
-  console.log(streams, memberships, channel?.id);
 
   const users = useAppSelector(selectUsers);
 

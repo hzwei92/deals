@@ -116,6 +116,10 @@ type RefreshTokentResult {
   user: User!
 }
 
+type Subscription {
+  membershipUpdated(channelIds: [Int!]!): Membership!
+}
+
 type User {
   activeChannel: Channel
   activeChannelId: Float

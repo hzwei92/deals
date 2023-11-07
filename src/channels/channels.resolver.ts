@@ -1,4 +1,4 @@
-import { BadRequestException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
 import { Args, Float, Int, Mutation, Resolver } from '@nestjs/graphql';
 import { AuthGuard, CurrentUser } from 'src/auth/gql-auth.guard';
 import { User as UserEntity } from 'src/users/user.entity';
@@ -8,6 +8,8 @@ import { ChannelsService } from './channels.service';
 import { JoinChannelResult } from './dto/join-channel-result.dto';
 import { MembershipsService } from 'src/memberships/memberships.service';
 import { ActivateChannelResult } from './dto/activate-channel-result.dto';
+import { PUB_SUB } from 'src/pub-sub/pub-sub.module';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 @Resolver(() => Channel)
 export class ChannelsResolver {
@@ -15,6 +17,8 @@ export class ChannelsResolver {
     private readonly channelsService: ChannelsService,
     private readonly usersService: UsersService,
     private readonly membershipService: MembershipsService,
+    @Inject(PUB_SUB)
+    private readonly pubSub: RedisPubSub,
   ) {}
 
   @Mutation(() => Channel, {name: 'getChannel', nullable: true})
@@ -137,6 +141,10 @@ export class ChannelsResolver {
       membership0 = await this.membershipService.setIsActive(membership0, false);
       memberships.push(membership0);
 
+      this.pubSub.publish('membershipUpdated', {
+        membershipUpdated: membership0,
+      });
+
       const channel0 = await this.channelsService.incrementActiveUserCount(user.activeChannelId, -1);
       channels.push(channel0);
     }
@@ -151,6 +159,10 @@ export class ChannelsResolver {
       }
       membership1 = await this.membershipService.setIsActive(membership1, true);
       memberships.push(membership1);
+
+      this.pubSub.publish('membershipUpdated', {
+        membershipUpdated: membership1,
+      });
     }
     
     return {

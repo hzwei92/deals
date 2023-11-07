@@ -68,11 +68,36 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       authModal?.current?.present();
     }
   };
+
+  // set routing based on this upstream variable 
+  const [nextChannelId, setNextChannelId] = useState<number | null>(null);
+
+  useEffect(() => {
+    console.log('nextChannelId', nextChannelId)
+    if (nextChannelId === -1) {
+      return;
+    }
+    if (nextChannelId) {
+      if (nextChannelId === channel?.id) {
+        router.push('/map', 'none');
+      }
+      else { 
+        router.push('/map/'+nextChannelId, 'none');
+      }
+    }
+    else {
+      if (router.routeInfo.pathname !== '/map') {
+        router.push('/map', 'none');
+      }
+    }
+    setNextChannelId(-1);
+  }, [nextChannelId, channel?.id, router.routeInfo.pathname])
   
   // set focus channel based on routing
   useEffect(() => {
     const pattern = /^\/map\/(\d+)/;
     const match = router.routeInfo.pathname.match(pattern)
+    console.log('match', router.routeInfo.pathname, match);
     if (match) {
       const id = parseInt(match[1]);
       if (id !== channel?.id) {
@@ -124,9 +149,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
         console.log('map click', e.lngLat);
 
         setNewChannelLngLat(e.lngLat);
-        if (router.routeInfo.pathname !== '/map') {
-          router.push('/map', 'none')
-        }
+        setNextChannelId(null);
       }, 100)
     });
   }, [user?.id]);
@@ -230,9 +253,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     map.current.on('click', 'clusters', (e) => {
       e.clickOnLayer = true;
 
-      if (router.routeInfo.pathname !== '/map') {
-        router.push('/map', 'none')
-      }
+      setNextChannelId(null);
 
       const features = map.current?.queryRenderedFeatures(e.point, {
         layers: ['clusters']
@@ -258,18 +279,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       if (!e.features) return;
       const id = e.features[0].properties?.id;
 
-      const pattern = /^\/map\/(\d+)/;
-      const match = router.routeInfo.pathname.match(pattern)
-
-      console.log('click', id, match)
-      if (match) {
-        const id1 = match[1];
-        if (id === parseInt(id1)) {
-          router.push('/map', 'none')
-          return;
-        }
+      if (id) {
+        setNextChannelId(id);
       }
-      router.push('/map/' + id), 'none';
     });
 
     map.current.on('mouseenter', 'clusters', () => {
@@ -355,10 +367,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   // update new channel marker/popup
   useEffect(() => {
     if (newChannelLngLat) {
-
-      if (router.routeInfo.pathname !== '/map') {
-        router.push('/map', 'none')
-      }
+      setNextChannelId(null);
 
       if (marker.current && creationPopupRoot.current) {
         creationPopupRoot.current.render(<NewChannelPopup createChannel={createChannel}/>);

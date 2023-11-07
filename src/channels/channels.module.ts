@@ -6,6 +6,7 @@ import { Channel } from './channel.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
 import { MembershipsModule } from 'src/memberships/memberships.module';
+import { PubSubModule } from 'src/pub-sub/pub-sub.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { MembershipsModule } from 'src/memberships/memberships.module';
     JwtModule.register({}),
     UsersModule,
     MembershipsModule,
+    PubSubModule,
   ],
   providers: [ChannelsService, ChannelsResolver],
   exports: [ChannelsService]

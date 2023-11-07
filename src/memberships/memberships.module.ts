@@ -6,6 +6,7 @@ import { Membership } from './membership.entity';
 import { UsersModule } from 'src/users/users.module';
 import { ChannelsModule } from 'src/channels/channels.module';
 import { JwtModule } from '@nestjs/jwt';
+import { PubSubModule } from 'src/pub-sub/pub-sub.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule.register({}),
     UsersModule,
     forwardRef(() => ChannelsModule),
+    PubSubModule,
   ],
   providers: [MembershipsResolver, MembershipsService],
   exports: [MembershipsService],

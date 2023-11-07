@@ -19,8 +19,6 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams 
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectFocusChannel);
 
-  console.log('channel', channel)
-
   const [mode, setMode] = useState('talk');
 
   const handleMaximizeClick = () => {
