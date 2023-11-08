@@ -2,7 +2,7 @@ import { Args, Int, Mutation, Parent, ResolveField, Resolver, Subscription } fro
 import { Membership } from './membership.model';
 import { MembershipsService } from './memberships.service';
 import { UsersService } from 'src/users/users.service';
-import { Inject, UseGuards } from '@nestjs/common';
+import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
 import { Channel } from 'src/channels/channel.model';
 import { ChannelsService } from 'src/channels/channels.service';
 import { AuthGuard, CurrentUser } from 'src/auth/gql-auth.guard';
@@ -56,6 +56,16 @@ export class MembershipsResolver {
     @Args('channelId', { type: () => Int}) channelId:  number,
   ) {
     return this.membershipsService.findByChannelId(channelId);
+  }
+
+  @UseGuards(AuthGuard)
+  @Mutation(() => [Membership], { name: 'setMembershipSavedIndex' })
+  setMembershipSavedIndex(
+    @CurrentUser() user: UserEntity,
+    @Args('membershipId', { type: () => Int}) membershipId:  number,
+    @Args('index', { type: () => Int, nullable: true}) index:  number,
+  ) {
+    return this.membershipsService.setSavedIndex(user, membershipId, index);
   }
 
   @Subscription(() => Membership, { 

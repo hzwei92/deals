@@ -1,4 +1,4 @@
-import { IonButton, IonButtons, IonCard, IonContent, IonIcon, IonPage, isPlatform, useIonRouter } from '@ionic/react';
+import { IonButton, IonButtons, IonCard, IonContent, IonHeader, IonIcon, IonMenu, IonMenuToggle, IonPage, isPlatform, useIonRouter } from '@ionic/react';
 import mapboxgl, { Map } from 'mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
 import { useContext, useEffect, useRef, useState } from 'react';
 import { Root, createRoot } from 'react-dom/client';
@@ -14,8 +14,9 @@ import { Provider } from 'react-redux';
 import { store } from '../store';
 import { ApolloProvider } from '@apollo/client';
 import { client } from '../main';
-import { RouteComponentProps } from 'react-router';
-import { menuOutline, removeOutline } from 'ionicons/icons';
+import { closeOutline, starOutline } from 'ionicons/icons';
+import { useSetMembershipSavedIndex } from '../hooks/useSetMembershipSavedIndex';
+import { menuController } from '@ionic/core/components';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
@@ -319,6 +320,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   // update channel popup
   useEffect(() => {
     if (channel?.id) {
+      if (channel.lat !== mapLat || channel.lng !== mapLng) {
+        map.current?.easeTo({
+          center: [channel.lng, channel.lat],
+        });
+      }
+
       setNewChannelLngLat(null);
 
       if (channelPopup && channelPopupRoot) {
@@ -413,8 +420,60 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     }
   }, [newChannelLngLat]);
 
+  const setMembershipSavedIndex = useSetMembershipSavedIndex();
+
+  const handleChannelClick = (channelId: number) => () => {
+    router.push('/map/'+channelId, 'none');
+    menuController.close();
+  }
+
+  const handleRemoveClick = (membershipId: number) => (e: any) => {
+    e.stopPropagation();
+    setMembershipSavedIndex(membershipId, null);
+  }
+
   return (
-    <IonPage>
+    <>
+    <IonMenu type='overlay' menuId='map-menu' contentId='map-main-content'>
+      <IonHeader style={{
+        marginTop: 55,
+        padding: 10,
+      }}>
+        SAVED CHANNELS
+      </IonHeader>
+      <IonContent>
+        {
+          memberships
+            .filter(m => m.savedIndex !== null)
+            .sort((a, b) => a.savedIndex! - b.savedIndex!)
+            .map(m => {
+              return (
+                <IonCard key={m.id} onClick={handleChannelClick(m.channelId)} style={{
+                  padding: 10,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}>
+                    { channels[m.channelId].name }
+                  </div>
+                  <IonButtons>
+                    <IonButton onClick={handleRemoveClick(m.id)}>
+                      <IonIcon icon={closeOutline} />
+                    </IonButton>
+                  </IonButtons>
+                </IonCard>
+              )
+            })
+
+        }
+      </IonContent>
+    </IonMenu>
+    <IonPage id={'map-main-content'}>
       <IonContent fullscreen style={{
         position: 'relative',
       }}>
@@ -446,14 +505,17 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
           left: isPlatform('ios') ? -10 : 0,
           top: isPlatform('ios') ? 72 : 92,
         }}>
+        <IonMenuToggle autoHide={false}>
           <IonButtons>
-            <IonButton>
-              <IonIcon icon={menuOutline} size='small' />
-            </IonButton>
+              <IonButton >
+                <IonIcon icon={starOutline} size='small' />
+              </IonButton>
           </IonButtons>
+            </IonMenuToggle>
         </IonCard>
       </IonContent>
     </IonPage>
+    </>
   );
 };
 

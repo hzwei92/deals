@@ -6,7 +6,9 @@ import ChannelPopupTalk from "./ChannelPopupTalk";
 import { selectFocusChannel } from "../slices/channelSlice";
 import ChannelPopupText from "./ChannelPopupText";
 import ChannelPopupRoam from "./ChannelPopupRoam";
-import { close, closeOutline, removeOutline, squareOutline, stopOutline } from "ionicons/icons";
+import { close, closeOutline, removeOutline, squareOutline, star, starOutline, stopOutline } from "ionicons/icons";
+import { useSetMembershipSavedIndex } from "../hooks/useSetMembershipSavedIndex";
+import { selectMembershipByChannelIdAndUserId } from "../slices/membershipSlice";
 
 interface ChannelPopupProps {
   router: UseIonRouterResult;
@@ -19,7 +21,22 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams 
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectFocusChannel);
 
+
+  const membership = useAppSelector(state => selectMembershipByChannelIdAndUserId(state, channel?.id ?? -1, user?.id ?? -1))
+
   const [mode, setMode] = useState('talk');
+
+  const setMembershipSavedIndex = useSetMembershipSavedIndex();
+
+  const handleMinimizeClick = () => {
+    if (!membership?.id) return;
+    if (membership?.savedIndex === null) {
+      setMembershipSavedIndex(membership.id, 0)
+    }
+    else {
+      setMembershipSavedIndex(membership.id, null)
+    }
+  }
 
   const handleMaximizeClick = () => {
     router.push('/channel/' + channel?.id + '/' + mode, 'none');
@@ -49,8 +66,10 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams 
         </div>
         <IonButtons style={{
         }}>
-          <IonButton>
-            <IonIcon icon={removeOutline} size="small" />
+          <IonButton onClick={handleMinimizeClick}>
+            <IonIcon icon={membership?.savedIndex === null ? starOutline : star} size="small" style={{
+              color: membership?.savedIndex === null ? null : 'var(--ion-color-primary)'
+            }}/>
           </IonButton>
           <IonButton onClick={handleMaximizeClick}>
             <IonIcon icon={stopOutline} size="small" />

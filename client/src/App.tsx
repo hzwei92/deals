@@ -53,8 +53,8 @@ import { useAppSelector } from './store';
 import { selectAppUser } from './slices/userSlice';
 import { selectFocusChannel } from './slices/channelSlice';
 import useGetMemberships from './hooks/useGetMemberships';
-import useGetChannelMemberships from './hooks/useGetChannelMemberships';
 import useSubMembershipUpdated from './hooks/useSubMembershipUpdated';
+import useJoinChannel from './hooks/useJoinChannel';
 
 setupIonicReact();
 
@@ -84,7 +84,8 @@ const App: React.FC = () => {
   const authModal = useRef<HTMLIonModalElement>(null);
 
   const getMemberships = useGetMemberships(setShouldUpdateMapData);
-  const getChannelMemberships = useGetChannelMemberships();
+
+  const joinChannel = useJoinChannel();
 
   useEffect(() => {
     if (user?.id) {
@@ -94,7 +95,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (channel?.id) {
-      getChannelMemberships(channel.id);
+      joinChannel(channel.id);
     }
   }, [channel?.id]);
 

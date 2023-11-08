@@ -22,6 +22,10 @@ export class Membership {
   @ManyToOne(() => User, user => user.memberships)
   user: User;
 
+  // if null, then not saved; otherwise, the index of the saved membership
+  @Column({ nullable: true })
+  savedIndex: number; 
+  
   @Column({ default: false })
   isActive: boolean;
 

@@ -5,6 +5,7 @@ export const MEMBERSHIP_FIELDS = gql`
     id
     channelId 
     userId
+    savedIndex
     isActive
     createdAt
     updatedAt

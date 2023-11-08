@@ -6,11 +6,12 @@ import { useAppDispatch, useAppSelector } from '../store';
 import { Channel as ChannelType } from '../types/Channel';
 import { gql, useMutation } from '@apollo/client';
 import VideoRoom from '../components/VideoRoom';
-import { airplaneOutline, chatboxEllipsesOutline, closeOutline, navigateCircleOutline, removeOutline, scanOutline, stopOutline, videocamOutline } from 'ionicons/icons';
+import { airplaneOutline, chatboxEllipsesOutline, closeOutline, navigateCircleOutline, removeOutline, scanOutline, star, starOutline, stopOutline, videocamOutline } from 'ionicons/icons';
 import { CHANNEL_FIELDS } from '../fragments/channel';
 import { selectMembershipByChannelIdAndUserId } from '../slices/membershipSlice';
 import { selectAppUser } from '../slices/userSlice';
 import TextThread from '../components/TextThread';
+import { useSetMembershipSavedIndex } from '../hooks/useSetMembershipSavedIndex';
 
 const GET_CHANNEL = gql`
   mutation GetChannel($id: Int!) {
@@ -31,11 +32,24 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
 
   const dispatch = useAppDispatch();
 
+  const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectFocusChannel);
+
+  const membership = useAppSelector(state => selectMembershipByChannelIdAndUserId(state, channel?.id ?? -1, user?.id ?? -1));
 
   const [mode, setMode]  = useState<'talk' | 'text' | 'roam'>('talk');
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const setMembershipSavedIndex = useSetMembershipSavedIndex();
+  const handleMinimizeClick = () => {
+    if (!membership?.id) return;
+    if (membership?.savedIndex === null) {
+      setMembershipSavedIndex(membership.id, 0)
+    }
+    else {
+      setMembershipSavedIndex(membership.id, null)
+    }
+  }
   const handleRestoreClick = () => {
     router.push('/map/' + channel?.id + '/' + mode, 'none');
   }
@@ -137,8 +151,10 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
         </div>
         <IonButtons style={{
         }}>
-          <IonButton>
-            <IonIcon icon={removeOutline} size="small" />
+          <IonButton onClick={handleMinimizeClick}>
+            <IonIcon icon={membership?.savedIndex === null ? starOutline : star} size="small" style={{
+              color: membership?.savedIndex === null ? null : 'var(--ion-color-primary)'
+            }}/>
           </IonButton>
           <IonButton onClick={handleRestoreClick}>
             <IonIcon icon={scanOutline} size="small" />

@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
-import { Args, Float, Int, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Float, Int, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { AuthGuard, CurrentUser } from 'src/auth/gql-auth.guard';
 import { User as UserEntity } from 'src/users/user.entity';
 import { UsersService } from 'src/users/users.service';
@@ -10,6 +10,7 @@ import { MembershipsService } from 'src/memberships/memberships.service';
 import { ActivateChannelResult } from './dto/activate-channel-result.dto';
 import { PUB_SUB } from 'src/pub-sub/pub-sub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { Membership } from 'src/memberships/membership.model';
 
 @Resolver(() => Channel)
 export class ChannelsResolver {
@@ -20,6 +21,13 @@ export class ChannelsResolver {
     @Inject(PUB_SUB)
     private readonly pubSub: RedisPubSub,
   ) {}
+
+  @ResolveField(() => [Membership], { name: 'memberships' })
+  getMemberships(
+    @Parent() channel: Channel
+  ) {
+    return this.membershipService.findByChannelId(channel.id);
+  }
 
   @Mutation(() => Channel, {name: 'getChannel', nullable: true})
   async getChannel(
@@ -67,7 +75,7 @@ export class ChannelsResolver {
   }
 
   @UseGuards(AuthGuard)
-  @Mutation(() => JoinChannelResult, { name: 'joinChannel' })
+  @Mutation(() => Channel, { name: 'joinChannel' })
   async joinChannel(
     @Args('channelId', { type: () => Int }) channelId: number,
     @CurrentUser() user: UserEntity,
@@ -81,10 +89,7 @@ export class ChannelsResolver {
     if (!membership) {
       membership = await this.membershipService.createOne(user, channel);
     }
-    return {
-      channel,
-      membership,
-    };
+    return channel;
   }
 
   @UseGuards(AuthGuard)

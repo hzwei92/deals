@@ -2,6 +2,7 @@ import { createSelector, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { Membership } from '../types/Membership'
 import { RootState } from '../store'
+import { addChannels } from './channelSlice';
 
 export interface MembershipState {
   memberships: Record<number, Membership>;
@@ -24,6 +25,18 @@ export const membershipSlice = createSlice({
       })
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(addChannels, (state, action) => {
+      action.payload.forEach((channel) => {
+        (channel.memberships ?? []).forEach((membership) => {
+          state.memberships[membership.id] = {
+            ...state.memberships[membership.id],
+            ...membership,
+          };
+        });
+      });
+    })
+  }
 })
 
 // Action creators are generated for each case reducer function

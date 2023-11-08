@@ -62,6 +62,7 @@ type Membership {
   deletedAt: DateTime
   id: Int!
   isActive: Boolean!
+  savedIndex: Int
   updatedAt: DateTime!
   user: User!
   userId: Int!
@@ -84,12 +85,13 @@ type Mutation {
   getMemberships: [Membership!]!
   getUserMemberships(userId: Int!): [Membership!]!
   googleAuth(credential: String!): VerifyResult!
-  joinChannel(channelId: Int!): JoinChannelResult!
+  joinChannel(channelId: Int!): Channel!
   leaveChannel(channelId: Int!): JoinChannelResult!
   logout: Boolean!
   phoneLogin(phone: String!): User!
   refresh(refreshToken: String!): RefreshTokentResult!
   resend(email: String, phone: String): User!
+  setMembershipSavedIndex(index: Int, membershipId: Int!): [Membership!]!
   setUserCam(isCamOn: Boolean!): User!
   setUserMic(isMicOn: Boolean!): User!
   verify(code: String!, id: Int!): VerifyResult!

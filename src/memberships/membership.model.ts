@@ -20,6 +20,9 @@ export class Membership {
   @Field(() => Channel)
   channel: Channel;
 
+  @Field(() => Int, { nullable: true })
+  savedIndex: number;
+  
   @Field()
   isActive: boolean;
 

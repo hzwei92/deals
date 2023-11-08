@@ -8,10 +8,8 @@ import { addMemberships } from "../slices/membershipSlice";
 const JOIN_CHANNEL = gql`
   mutation JoinChannel($channelId: Int!) {
     joinChannel(channelId: $channelId) {
-      channel {
-        ...ChannelFields
-      }
-      membership {
+      ...ChannelFields
+      memberships {
         ...MembershipFields
       }
     }
@@ -31,8 +29,7 @@ const useJoinChannel = () => {
     onCompleted: data => {
       console.log(data);
       
-      dispatch(addChannels([data.joinChannel.channel]));
-      dispatch(addMemberships([data.joinChannel.membership]));
+      dispatch(addChannels([data.joinChannel]));
     },
   })
 
