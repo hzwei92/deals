@@ -11,6 +11,10 @@ const JOIN_CHANNEL = gql`
       ...ChannelFields
       memberships {
         ...MembershipFields
+        user {
+          id
+          name
+        }
       }
     }
   }

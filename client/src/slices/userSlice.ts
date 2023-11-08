@@ -3,6 +3,7 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import { User } from '../types/User'
 import { RootState } from '../store'
 import { addMemberships } from './membershipSlice';
+import { addChannels } from './channelSlice';
 
 export interface UserState {
   users: Record<number, User>;
@@ -40,6 +41,17 @@ export const userSlice = createSlice({
           };
         }
       })
+    }).addCase(addChannels, (state, action) => {
+      action.payload.forEach((channel) => {
+        (channel.memberships ?? []).forEach((membership) => {
+          if (membership.user?.id) {
+            state.users[membership.user.id] = {
+              ...state.users[membership.user.id],
+              ...membership.user,
+            };
+          }
+        });
+      });
     });
   },
 })
