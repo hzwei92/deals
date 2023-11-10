@@ -6,9 +6,10 @@ import useActivateChannel from "../hooks/useActivateChannel";
 import { selectMembershipsByChannelId } from "../slices/membershipSlice";
 import { feedStreams, feeds, localTracks } from "../hooks/useJanus";
 import { useEffect, useState } from "react";
+import md5 from "md5";
 
 
-const attachVidSrc = (stream: MediaStream) => (vid: HTMLVideoElement | null) => {
+const attachStreamSrc = (stream: MediaStream) => (vid: HTMLVideoElement | null) => {
   if (vid) {
     vid.srcObject = stream;
     vid.play();
@@ -106,17 +107,44 @@ const ChannelPopupTalk: React.FC<ChannelPopupTalkProps> = ({ authModal, streams 
                 }}> 
                   <div>
                     { 
-                      streams[m.userId]?.video
+                      streams[m.userId]?.video && (m.userId !== user?.id || user?.isCamOn)
                         ? (
-                            <video ref={attachVidSrc(streams[m.userId].video as MediaStream)} playsInline={true} autoPlay={true} muted={true} style={{
-                              width: 100,
-                              height: 100,
-                              transform: m.userId === user?.id 
-                                ? 'rotateY(180deg)'
-                                : '',
-                              border: '1px solid',
-                              borderRadius: 5,
-                            }} />  
+                            <video 
+                              ref={attachStreamSrc(streams[m.userId].video as MediaStream)} 
+                              playsInline={true} 
+                              autoPlay={true}
+                              muted={true} 
+                              style={{
+                                width: 100,
+                                height: 100,
+                                transform: m.userId === user?.id 
+                                  ? 'rotateY(180deg)'
+                                  : '',
+                                border: '1px solid',
+                                borderRadius: 5,
+                              }} 
+                            />  
+                        )
+                        : (
+                          <IonAvatar style={{
+                            width: 100,
+                            height: 100,
+                            border: '1px solid',
+                            borderRadius: 5,
+                          }}>
+                            <img src={`https://www.gravatar.com/avatar/${md5(m.userId.toString() || '')}?d=retro`} />
+                          </IonAvatar>
+                        )
+                    }
+                    {
+                      streams[m.userId]?.audio && user?.isSoundOn
+                        ? (
+                          <audio 
+                            ref={attachStreamSrc(streams[m.userId].audio as MediaStream)}
+                            playsInline={true}
+                            autoPlay={true}
+                            muted={true}
+                          />
                         )
                         : null
                     }

@@ -94,6 +94,7 @@ type Mutation {
   setMembershipSavedIndex(index: Int, membershipId: Int!): [Membership!]!
   setUserCam(isCamOn: Boolean!): User!
   setUserMic(isMicOn: Boolean!): User!
+  setUserSound(isSoundOn: Boolean!): User!
   verify(code: String!, id: Int!): VerifyResult!
 }
 

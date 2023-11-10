@@ -141,4 +141,9 @@ export class UsersService {
     user.isMicOn = isMicOn;
     return this.usersRepository.save(user);
   }
+
+  async updateSoundStatus(user: User, isSoundOn: boolean): Promise<User> {
+    user.isSoundOn = isSoundOn;
+    return this.usersRepository.save(user);
+  }
 }

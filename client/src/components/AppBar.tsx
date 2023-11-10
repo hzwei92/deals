@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useSetUserCam } from "../hooks/useSetUserCam";
 import { useSetUserMic } from "../hooks/useSetUserMic";
 import { selectFocusChannel, setFocusChannelId } from "../slices/channelSlice";
+import { useSetUserSound } from "../hooks/useSetUserSound";
 
 const AppBar: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -37,6 +38,7 @@ const AppBar: React.FC = () => {
 
   const setUserCam = useSetUserCam();
   const setUserMic = useSetUserMic();
+  const setUserSound = useSetUserSound();
 
   const handleCamClick = () => {
     if (!user?.id) return;
@@ -48,6 +50,10 @@ const AppBar: React.FC = () => {
     setUserMic(!user.isMicOn);
   }
 
+  const handleSoundClick = () => {
+    if (!user) return;
+    setUserSound(!user.isSoundOn);
+  }
 
   return (
       <IonHeader style={{

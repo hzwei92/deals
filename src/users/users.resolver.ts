@@ -46,5 +46,13 @@ export class UsersResolver {
     return this.usersService.updateMicStatus(user, isMicOn);
   }
 
-  
+  @UseGuards(AuthGuard)
+  @Mutation(() => User, { name: 'setUserSound' })
+  async updateSoundStatus(
+    @CurrentUser() user: UserEntity,
+    @Args('isSoundOn') isSoundOn: boolean,
+  ) {
+    return this.usersService.updateSoundStatus(user, isSoundOn);
+  }
+
 }
