@@ -143,7 +143,7 @@ const ChannelPopupTalk: React.FC<ChannelPopupTalkProps> = ({ authModal, streams 
                             ref={attachStreamSrc(streams[m.userId].audio as MediaStream)}
                             playsInline={true}
                             autoPlay={true}
-                            muted={true}
+                            muted={false}
                           />
                         )
                         : null
