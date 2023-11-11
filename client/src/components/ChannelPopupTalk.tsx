@@ -137,7 +137,7 @@ const ChannelPopupTalk: React.FC<ChannelPopupTalkProps> = ({ authModal, streams 
                         )
                     }
                     {
-                      streams[m.userId]?.audio && user?.isSoundOn
+                      streams[m.userId]?.audio && user?.isSoundOn && m.userId !== user?.id
                         ? (
                           <audio 
                             ref={attachStreamSrc(streams[m.userId].audio as MediaStream)}
