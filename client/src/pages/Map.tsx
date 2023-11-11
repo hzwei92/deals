@@ -71,15 +71,14 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   };
 
   // set routing based on this upstream variable 
-  const [nextChannelId, setNextChannelId] = useState<number | null>(null);
+  const [nextChannelId, setNextChannelId] = useState<number | null>(-1);
 
   useEffect(() => {
-    console.log('nextChannelId', nextChannelId)
     if (nextChannelId === -1) {
       return;
     }
     if (nextChannelId) {
-      if (nextChannelId === channel?.id) {
+      if (nextChannelId === channel?.id && channelPopup?.isOpen()) {
         router.push('/map', 'none');
       }
       else { 
@@ -97,8 +96,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   // set focus channel based on routing
   useEffect(() => {
     const pattern = /^\/map\/(\d+)/;
-    const match = router.routeInfo.pathname.match(pattern)
-    console.log('match', router.routeInfo.pathname, match);
+    const match = router.routeInfo.pathname.match(pattern);
     if (match) {
       const id = parseInt(match[1]);
       if (id !== channel?.id) {
@@ -106,10 +104,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       }
     }
     else {
-      if (router.routeInfo.pathname === '/map') {
-        if (channel?.id) {
-          dispatch(setFocusChannelId(null));
-        }
+      if (channel?.id) {
+        dispatch(setFocusChannelId(null));
       }
     }
   }, [router.routeInfo.pathname]);
@@ -245,7 +241,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
           '#f4900c',
           'grey',
         ],
-        'circle-radius': 10,
+        'circle-radius': 12,
         'circle-stroke-width': 2,
         'circle-stroke-color': '#ffffff' 
       } 
@@ -369,7 +365,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       channelPopup?.remove();
       setChannelPopup(null);
     }
-  }, [channel?.id, streams]);
+  }, [channel?.id, streams, channels]);
 
   // update new channel marker/popup
   useEffect(() => {

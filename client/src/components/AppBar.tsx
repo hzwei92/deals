@@ -6,7 +6,7 @@ import { micOffOutline, micOutline, personCircleOutline, videocamOffOutline, vid
 import { useEffect, useState } from "react";
 import { useSetUserCam } from "../hooks/useSetUserCam";
 import { useSetUserMic } from "../hooks/useSetUserMic";
-import { selectFocusChannel, setFocusChannelId } from "../slices/channelSlice";
+import { selectFocusChannel } from "../slices/channelSlice";
 import { useSetUserSound } from "../hooks/useSetUserSound";
 
 const AppBar: React.FC = () => {

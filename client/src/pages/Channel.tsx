@@ -1,16 +1,13 @@
 import { IonButton, IonButtons, IonContent, IonIcon, IonPage, useIonRouter } from '@ionic/react';
 import { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
-import { addChannels, selectChannel, selectFocusChannel, setFocusChannelId } from '../slices/channelSlice';
+import { addChannels, selectFocusChannel, setFocusChannelId } from '../slices/channelSlice';
 import { useAppDispatch, useAppSelector } from '../store';
-import { Channel as ChannelType } from '../types/Channel';
 import { gql, useMutation } from '@apollo/client';
-import VideoRoom from '../components/VideoRoom';
-import { airplaneOutline, chatboxEllipsesOutline, closeOutline, navigateCircleOutline, removeOutline, scanOutline, star, starOutline, stopOutline, videocamOutline } from 'ionicons/icons';
+import {  closeOutline, scanOutline, star, starOutline } from 'ionicons/icons';
 import { CHANNEL_FIELDS } from '../fragments/channel';
 import { selectMembershipByChannelIdAndUserId } from '../slices/membershipSlice';
 import { selectAppUser } from '../slices/userSlice';
-import TextThread from '../components/TextThread';
 import { useSetMembershipSavedIndex } from '../hooks/useSetMembershipSavedIndex';
 
 const GET_CHANNEL = gql`
