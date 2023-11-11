@@ -46,7 +46,8 @@ const useJanus = () => {
   const user = useAppSelector(selectAppUser);
 
   const [refresh, setRefresh] = useState(false);
-
+  const [publishAudioState, setPublishAudioState] = useState<string | null>(null);
+  const [publishVideoState, setPublishVideoState] = useState<string | null>(null);
   const [streams, setStreams] = useState<Record<number, any>>({});
   const activateChannel = useActivateChannel();
 
@@ -88,13 +89,18 @@ const useJanus = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    if (user?.activeChannelId) {
-      joinRoom(user.activeChannelId, user.id, user.name);
+    console.log(user?.activeChannelId, publishAudioState, publishVideoState)
+    if (publishAudioState  === 'connected' || publishVideoState === 'connected') {
+      if (user?.activeChannelId === null) {
+        disconnect();
+      }
     }
-    else {
-      disconnect();
+    else if (publishAudioState !== 'connected' && publishVideoState !== 'connected') {
+      if (user?.activeChannelId) {
+        joinRoom(user.activeChannelId, user.id, user.name);
+      }
     }
-  }, [user?.activeChannelId])
+  }, [user?.activeChannelId, publishAudioState, publishVideoState])
 
   useEffect(() => {
     const reconfig = {
@@ -201,6 +207,12 @@ const useJanus = () => {
       },
       mediaState: (medium, on, mid) => {
         Janus.log("Janus " + (on ? "started" : "stopped") + " receiving our " + medium + " (mid=" + mid + ")");
+        if (medium === 'audio') {
+          setPublishAudioState(on ? 'connected' : 'disconnected');
+        }
+        else if (medium === 'video') {
+          setPublishVideoState(on ? 'connected' : 'disconnected');
+        }
       },
       webrtcState: (on) => {
         Janus.log("Janus says our WebRTC PeerConnection is " + (on ? "up" : "down") + " now");
