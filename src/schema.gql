@@ -88,7 +88,6 @@ type Mutation {
   joinChannel(channelId: Int!): Channel!
   leaveChannel(channelId: Int!): JoinChannelResult!
   logout: Boolean!
-  phoneLogin(phone: String!): User!
   refresh(refreshToken: String!): RefreshTokentResult!
   resend(email: String, phone: String): User!
   setMembershipSavedIndex(index: Int, membershipId: Int!): [Membership!]!

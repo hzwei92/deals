@@ -35,25 +35,10 @@ export class AuthResolver {
   ) {
     let user = await this.usersService.findOneByEmail(email);
     if (!user) {
-      user = await this.usersService.createOne({ email });
+      user = await this.usersService.createOne(email);
     }
 
     await this.authService.emailLogin(user);
-
-    return user;
-  }
-
-
-  @Mutation(() => User, { name: 'phoneLogin' })
-  async phoneLogin(
-    @Args('phone') phone: string,
-  ) {
-    let user = await this.usersService.findOneByPhone(phone);
-    if (!user) {
-      user = await this.usersService.createOne({ phone });
-    }
-
-    await this.authService.phoneLogin(user);
 
     return user;
   }

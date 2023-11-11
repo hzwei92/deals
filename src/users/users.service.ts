@@ -31,18 +31,11 @@ export class UsersService {
     return this.usersRepository.findOneBy({ name });
   }
 
-  async createOne({phone, email}: {phone?: string, email?: string}): Promise<User> {
-    if (!phone && !email) {
-      throw new Error('Must provide either phone or email');
-    }
-    if (phone) {
-      phone = phone.trim();
-    }
+  async createOne(email: string): Promise<User> {
     if (email) {
       email = email.trim();
     }
     const stripeCustomer = await this.stripeService.createCustomer({
-      phone, 
       email
     });
  
@@ -60,7 +53,6 @@ export class UsersService {
 
 
     const user = await this.usersRepository.create({
-      phone,
       email,
       name,
       stripeCustomerId: stripeCustomer.id,

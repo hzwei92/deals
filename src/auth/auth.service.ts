@@ -56,7 +56,7 @@ export class AuthService {
     let user = await this.usersService.findOneByEmail(email);
 
     if (!user) {
-      user = await this.usersService.createOne({email});
+      user = await this.usersService.createOne(email);
     }
 
     const accessToken = this.getAccessToken(user);
@@ -84,7 +84,7 @@ export class AuthService {
     let user = await this.usersService.findOneByEmail(email);
 
     if (!user) {
-      user = await this.usersService.createOne({email});
+      user = await this.usersService.createOne(email);
     }
 
     const accessToken = this.getAccessToken(user);

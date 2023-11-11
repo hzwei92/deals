@@ -8,7 +8,6 @@ import { FACEBOOK_APP_ID } from "../constants";
 import { AppContext } from "../App";
 import useLoginByFacebook from "../hooks/useLoginByFacebook";
 import { send } from "ionicons/icons";
-import useLoginByPhone from "../hooks/useLoginByPhone";
 import useLoginByEmail from "../hooks/useLoginByEmail";
 
 
@@ -18,9 +17,6 @@ interface LoginStartProps {
 const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
   const [email, setEmail] = useState<string>('');
   const [emailIsValid, setEmailIsValid] = useState<boolean>(false);
-
-  const [tel, setTel] = useState<string>('');
-  const [telIsValid, setTelIsValid] = useState<boolean>(false);
 
   const [isLoading, setIsLoading] = useState<boolean>(false); 
 
@@ -33,11 +29,9 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
     setIsLoading(false);
     if (user?.id) {
       setEmail('');
-      setTel('');
       setPendingUser(user);
     }
   }
-  const phoneLogin = useLoginByPhone(completeLogin);
   const emailLogin = useLoginByEmail(completeLogin);
 
   const onEmailInput = (e: Event) => {
@@ -55,33 +49,11 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
     }
   }
 
-  const onPhoneInput = (e: Event) => {
-    const val = (e.target as HTMLIonInputElement).value as string;
-
-    setTel(val);
-    
-    const telRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
-    
-    if (telRegex.test(val)) {
-      setTelIsValid(true);
-    }
-    else {
-      setTelIsValid(false);
-    }
-  }
-
   const onEmailSubmit = () => {
     setIsLoading(true);
 
     const email1 = email.trim();
     emailLogin(email1);
-  }
-
-  const onPhoneSubmit = () => {
-    setIsLoading(true);
-
-    const tel1 = tel.replace(/[^0-9]/g, '');
-    phoneLogin(tel1);
   }
 
   const handleBack = () => {
@@ -98,34 +70,6 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
         textAlign: 'center'
       }}>
         Choose your preferred login method:
-      </div>
-      <div style={{
-        marginTop: 30,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-      }}>
-        <div style={{
-          paddingLeft: 10,
-          border: '1px solid',
-          borderRadius: 5,
-          margin: 'auto',
-          width: 240,
-          display: 'flex',
-        }}>
-          <IonInput
-            type={'tel'} 
-            placeholder='888-888-8888' 
-            onIonInput={onPhoneInput}
-            clearInput={true}
-            value={tel}
-          />
-          <IonButtons>
-            <IonButton disabled={!telIsValid || isLoading} onClick={onPhoneSubmit}>
-              <IonIcon icon={send} size='small' />
-            </IonButton>
-          </IonButtons>
-        </div>
       </div>
       <div style={{
         marginBottom: 30,
@@ -189,6 +133,9 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
           callback={(response: any) => {
             console.log(response);
             facebookAuth(response.accessToken);
+          }}
+          buttonStyle={{
+            width: 260,
           }}
         />
       </div>
