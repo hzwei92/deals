@@ -116,7 +116,7 @@ const AppBar: React.FC = () => {
             </IonButton>
             <IonButton onClick={handleSoundClick} style={{
               display: user?.id ? 'block' : 'none',
-              color: user?.activeChannelId && true ? 'green' : 'var(--ion-color-dark)',
+              color: user?.activeChannelId && user?.isSoundOn ? 'green' : 'var(--ion-color-dark)',
               marginRight: 10,
             }}> 
             {
