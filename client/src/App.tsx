@@ -55,6 +55,7 @@ import { selectFocusChannel } from './slices/channelSlice';
 import useGetMemberships from './hooks/useGetMemberships';
 import useSubMembershipUpdated from './hooks/useSubMembershipUpdated';
 import useJoinChannel from './hooks/useJoinChannel';
+import useSubChannelUpdated from './hooks/useSubChannelUpdated';
 
 setupIonicReact();
 
@@ -99,7 +100,8 @@ const App: React.FC = () => {
     }
   }, [channel?.id]);
 
-  useSubMembershipUpdated([channel?.id ?? -1])
+  useSubChannelUpdated(setShouldUpdateMapData, -90, 90, -180, 180);
+  useSubMembershipUpdated([channel?.id ?? -1]);
 
   return (
     <IonApp>

@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, UseGuards } from '@nestjs/common';
-import { Args, Float, Int, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Float, Int, Mutation, Parent, ResolveField, Resolver, Subscription } from '@nestjs/graphql';
 import { AuthGuard, CurrentUser } from 'src/auth/gql-auth.guard';
 import { User as UserEntity } from 'src/users/user.entity';
 import { UsersService } from 'src/users/users.service';
@@ -152,11 +152,19 @@ export class ChannelsResolver {
 
       const channel0 = await this.channelsService.incrementActiveUserCount(user.activeChannelId, -1);
       channels.push(channel0);
+
+      this.pubSub.publish('channelUpdated', {
+        channelUpdated: channel0,
+      });
     }
 
     if (channelId) {
       const channel1 = await this.channelsService.incrementActiveUserCount(channelId, 1);
       channels.push(channel1);
+
+      this.pubSub.publish('channelUpdated', {
+        channelUpdated: channel1,
+      });
 
       let membership1 = await this.membershipService.findOneByUserIdAndChannelId(user.id, channelId);
       if (!membership1) {
@@ -175,5 +183,26 @@ export class ChannelsResolver {
       channels,
       memberships,
     };
+  }
+
+  @Subscription(() => Channel, { 
+    name: 'channelUpdated', 
+    filter: (payload, variables) => {
+      return (
+        payload.channelUpdated.lng >= variables.minLng && 
+        payload.channelUpdated.lng <= variables.maxLng && 
+        payload.channelUpdated.lat >= variables.minLat && 
+        payload.channelUpdated.lat <= variables.maxLat
+      );
+    }
+  })
+  channelUpdated(
+    @Args('minLng', { type: () => Float }) minLng: number,
+    @Args('maxLng', { type: () => Float }) maxLng: number,
+    @Args('minLat', { type: () => Float }) minLat: number,
+    @Args('maxLat', { type: () => Float }) maxLat: number,
+  ) {
+    console.log('channelUpdated', minLng, maxLng, minLat, maxLat)
+    return this.pubSub.asyncIterator('channelUpdated');
   }
 }
