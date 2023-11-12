@@ -19,8 +19,13 @@ const AppBar: React.FC = () => {
   const [callTime, setCallTime] = useState(0);
 
   const handleChannelClick = () => {
-    if (user?.activeChannelId && channel?.id && user.activeChannelId !== channel.id) {
-      router.push('/channel/' + user.activeChannelId + '/talk')
+    if (user?.activeChannelId && user.activeChannelId !== channel?.id) {
+      if (
+        router.routeInfo.pathname !== '/channel/' + user.activeChannelId ||
+        router.routeInfo.pathname !== '/map/' + user.activeChannelId
+      ) {
+        router.push('/map/' + user.activeChannelId, 'none');
+      } 
     };
   }
 
