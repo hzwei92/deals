@@ -80,7 +80,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       return;
     }
     if (nextChannelId) {
-      if (nextChannelId === channel?.id && channelPopup?.isOpen()) {
+      if (nextChannelId === channel?.id) {
         router.push('/map', 'none');
       }
       else { 
@@ -149,7 +149,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
         setMapZoom(map.current.getZoom());
       }
     });
-    console.log('map initialized', user);
     map.current.on('click', (e) => {
       setTimeout(() => {
         if (e.clickOnLayer) {
@@ -161,7 +160,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
         setNextChannelId(null);
       }, 100)
     });
-  }, [user?.id]);
+  }, []);
 
   // update map data
   useEffect(() => {

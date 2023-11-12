@@ -68,8 +68,8 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
         <IonButtons style={{
         }}>
           <IonButton onClick={handleMinimizeClick}>
-            <IonIcon icon={membership?.savedIndex === null ? starOutline : star} size="small" style={{
-              color: membership?.savedIndex === null ? null : 'var(--ion-color-primary)'
+            <IonIcon icon={!membership?.id || membership?.savedIndex === null ? starOutline : star} size="small" style={{
+              color:!membership?.id || membership?.savedIndex === null ? null : 'var(--ion-color-primary)'
             }}/>
           </IonButton>
           <IonButton onClick={handleMaximizeClick}>
