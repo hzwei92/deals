@@ -1,30 +1,31 @@
 import {IonButton, IonButtons, IonIcon, UseIonRouterResult } from "@ionic/react";
 import { useAppDispatch, useAppSelector } from "../store";
 import { selectAppUser } from "../slices/userSlice";
-import { useState } from "react";
-import ChannelPopupTalk from "./ChannelPopupTalk";
+import { Dispatch, SetStateAction, useState } from "react";
+import ChannelPopupTalk from "./ChannelTalk";
 import { selectFocusChannel } from "../slices/channelSlice";
-import ChannelPopupText from "./ChannelPopupText";
-import ChannelPopupRoam from "./ChannelPopupRoam";
+import ChannelPopupText from "./ChannelText";
+import ChannelPopupRoam from "./ChannelRoam";
 import { close, closeOutline, removeOutline, squareOutline, star, starOutline, stopOutline } from "ionicons/icons";
 import { useSetMembershipSavedIndex } from "../hooks/useSetMembershipSavedIndex";
 import { selectMembershipByChannelIdAndUserId } from "../slices/membershipSlice";
+import { AppContext } from "../App";
 
 interface ChannelPopupProps {
   router: UseIonRouterResult;
   authModal: React.RefObject<HTMLIonModalElement>;
   streams: Record<number, any>;
+  channelMode: 'talk' | 'text' | 'roam';
+  setChannelMode: Dispatch<SetStateAction<'talk' | 'text' | 'roam'>>;
 }
 
-const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams }) => {
+const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams, channelMode, setChannelMode }) => {
   const dispatch = useAppDispatch();
+
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectFocusChannel);
 
-
   const membership = useAppSelector(state => selectMembershipByChannelIdAndUserId(state, channel?.id ?? -1, user?.id ?? -1))
-
-  const [mode, setMode] = useState('talk');
 
   const setMembershipSavedIndex = useSetMembershipSavedIndex();
 
@@ -39,7 +40,7 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams 
   }
 
   const handleMaximizeClick = () => {
-    router.push('/channel/' + channel?.id + '/' + mode, 'none');
+    router.push('/channel/' + channel?.id, 'none');
   }
 
   const handleCloseClick = () => {
@@ -93,23 +94,23 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams 
         flexDirection: 'row',
         justifyContent: 'center',
       }}>
-        <IonButton onClick={() => setMode('talk')} style={{
-          color: mode === 'talk' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
-          borderBottom: mode === 'talk' ? '4px solid var(--ion-color-primary)' : 'none',
+        <IonButton onClick={() => setChannelMode('talk')} style={{
+          color: channelMode === 'talk' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+          borderBottom: channelMode === 'talk' ? '4px solid var(--ion-color-primary)' : 'none',
           fontWeight: 'bold',
         }}>
           TALK
         </IonButton>
-        <IonButton onClick={() => setMode('text')} style={{
-          color: mode === 'text' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
-          borderBottom: mode === 'text' ? '4px solid var(--ion-color-primary)' : 'none',
+        <IonButton onClick={() => setChannelMode('text')} style={{
+          color: channelMode === 'text' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+          borderBottom: channelMode === 'text' ? '4px solid var(--ion-color-primary)' : 'none',
           fontWeight: 'bold',
         }}>
           TEXT
         </IonButton>
-        <IonButton onClick={() => setMode('roam')} style={{
-          color: mode === 'roam' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
-          borderBottom: mode === 'roam' ? '4px solid var(--ion-color-primary)' : 'none',
+        <IonButton onClick={() => setChannelMode('roam')} style={{
+          color: channelMode === 'roam' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+          borderBottom: channelMode === 'roam' ? '4px solid var(--ion-color-primary)' : 'none',
           fontWeight: 'bold',
         }}>
           ROAM
@@ -119,11 +120,11 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams 
         marginTop: 10,
       }}>
         {
-          mode === 'talk'
+          channelMode === 'talk'
             ? <ChannelPopupTalk authModal={authModal} streams={streams} />
-            : mode === 'text'
+            : channelMode === 'text'
               ? <ChannelPopupText />
-              : mode === 'roam'
+              : channelMode === 'roam'
                 ? <ChannelPopupRoam />
                 : null
         }

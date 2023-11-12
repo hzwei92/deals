@@ -32,6 +32,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     setShouldUpdateMapData,
     newChannelLngLat,
     setNewChannelLngLat,
+    channelMode,
+    setChannelMode
   } = useContext(AppContext);
 
   const router = useIonRouter();
@@ -95,17 +97,27 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   
   // set focus channel based on routing
   useEffect(() => {
-    const pattern = /^\/map\/(\d+)/;
-    const match = router.routeInfo.pathname.match(pattern);
-    if (match) {
-      const id = parseInt(match[1]);
+    const pattern1 = /^\/map\/(\d+)/;
+    const match1 = router.routeInfo.pathname.match(pattern1);
+    if (match1) {
+      const id = parseInt(match1[1]);
       if (id !== channel?.id) {
         dispatch(setFocusChannelId(id));
       }
     }
     else {
-      if (channel?.id) {
-        dispatch(setFocusChannelId(null));
+      const pattern2 = /^\/channel\/(\d+)/;
+      const match2 = router.routeInfo.pathname.match(pattern2);
+      if (match2) {
+        const id = parseInt(match2[1]);
+        if (id !== channel?.id) {
+          dispatch(setFocusChannelId(id));
+        }
+      }
+      else {
+        if (channel?.id) {
+          dispatch(setFocusChannelId(null));
+        }
       }
     }
   }, [router.routeInfo.pathname]);
@@ -328,7 +340,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
         channelPopupRoot.render(
           <ApolloProvider client={client}>
             <Provider store={store}>
-              <ChannelPopup router={router} authModal={authModal} streams={streams} />
+              <ChannelPopup 
+                router={router} 
+                authModal={authModal} 
+                streams={streams} 
+                channelMode={channelMode}
+                setChannelMode={setChannelMode}
+              />
             </Provider>
           </ApolloProvider>
         );
@@ -343,7 +361,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
         root.render(
           <ApolloProvider client={client}>
             <Provider store={store}>
-              <ChannelPopup router={router} authModal={authModal} streams={streams}/>
+              <ChannelPopup 
+                router={router} 
+                authModal={authModal} 
+                streams={streams}
+                channelMode={channelMode}
+                setChannelMode={setChannelMode}
+              />
             </Provider>
           </ApolloProvider>
         );
@@ -365,7 +389,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       channelPopup?.remove();
       setChannelPopup(null);
     }
-  }, [channel?.id, streams, channels]);
+  }, [channel?.id, streams, channels, channelMode]);
 
   // update new channel marker/popup
   useEffect(() => {

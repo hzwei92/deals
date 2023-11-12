@@ -1,5 +1,5 @@
 import { IonButton, IonButtons, IonContent, IonIcon, IonPage, useIonRouter } from '@ionic/react';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { addChannels, selectFocusChannel, setFocusChannelId } from '../slices/channelSlice';
 import { useAppDispatch, useAppSelector } from '../store';
@@ -9,6 +9,10 @@ import { CHANNEL_FIELDS } from '../fragments/channel';
 import { selectMembershipByChannelIdAndUserId } from '../slices/membershipSlice';
 import { selectAppUser } from '../slices/userSlice';
 import { useSetMembershipSavedIndex } from '../hooks/useSetMembershipSavedIndex';
+import ChannelPopupTalk from '../components/ChannelTalk';
+import ChannelPopupText from '../components/ChannelText';
+import ChannelPopupRoam from '../components/ChannelRoam';
+import { AppContext } from '../App';
 
 const GET_CHANNEL = gql`
   mutation GetChannel($id: Int!) {
@@ -21,7 +25,6 @@ const GET_CHANNEL = gql`
 
 interface ChannelProps extends RouteComponentProps<{
   id: string;
-  mode: string;
 }> {}
 
 const Channel: React.FC<ChannelProps> = ({ match }) => {
@@ -29,12 +32,18 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
 
   const dispatch = useAppDispatch();
 
+  const {
+    authModal,
+    streams,
+    channelMode,
+    setChannelMode,
+  } = useContext(AppContext);
+
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectFocusChannel);
 
   const membership = useAppSelector(state => selectMembershipByChannelIdAndUserId(state, channel?.id ?? -1, user?.id ?? -1));
 
-  const [mode, setMode]  = useState<'talk' | 'text' | 'roam'>('talk');
   const [isLoaded, setIsLoaded] = useState(false);
 
   const setMembershipSavedIndex = useSetMembershipSavedIndex();
@@ -48,7 +57,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     }
   }
   const handleRestoreClick = () => {
-    router.push('/map/' + channel?.id + '/' + mode, 'none');
+    router.push('/map/' + channel?.id, 'none');
   }
 
   const handleCloseClick = () => {
@@ -67,6 +76,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   });
 
   useEffect(() => {
+    console.log(match.params.id)
     if (channel?.id === parseInt(match.params.id)) {
       setIsLoaded(true);
     }
@@ -88,7 +98,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           display: 'flex',
           flexDirection: 'column',
           marginLeft: 5,
-          marginTop: 5,
+          marginTop: 55,
         }}>
           <div style={{
             display: 'flex',
@@ -104,14 +114,14 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     </IonPage>
   );
 
-  if (!channel) return (
+  if (!channel?.id) return (
     <IonPage>
       <IonContent fullscreen>
         <div style={{ 
           display: 'flex',
           flexDirection: 'column',
           marginLeft: 5,
-          marginTop: 5,
+          marginTop: 55,
         }}>
           <div style={{
             display: 'inline-flex',
@@ -175,28 +185,41 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
         flexDirection: 'row',
         justifyContent: 'center',
       }}>
-        <IonButton onClick={() => setMode('talk')} style={{
-          color: mode === 'talk' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
-          borderBottom: mode === 'talk' ? '4px solid var(--ion-color-primary)' : 'none',
+        <IonButton onClick={() => setChannelMode('talk')} style={{
+          color: channelMode === 'talk' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+          borderBottom: channelMode === 'talk' ? '4px solid var(--ion-color-primary)' : 'none',
           fontWeight: 'bold',
         }}>
           TALK
         </IonButton>
-        <IonButton onClick={() => setMode('text')} style={{
-          color: mode === 'text' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
-          borderBottom: mode === 'text' ? '4px solid var(--ion-color-primary)' : 'none',
+        <IonButton onClick={() => setChannelMode('text')} style={{
+          color: channelMode === 'text' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+          borderBottom: channelMode === 'text' ? '4px solid var(--ion-color-primary)' : 'none',
           fontWeight: 'bold',
         }}>
           TEXT
         </IonButton>
-        <IonButton onClick={() => setMode('roam')} style={{
-          color: mode === 'roam' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
-          borderBottom: mode === 'roam' ? '4px solid var(--ion-color-primary)' : 'none',
+        <IonButton onClick={() => setChannelMode('roam')} style={{
+          color: channelMode === 'roam' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+          borderBottom: channelMode === 'roam' ? '4px solid var(--ion-color-primary)' : 'none',
           fontWeight: 'bold',
         }}>
           ROAM
         </IonButton>
       </IonButtons>
+      <div style={{
+        paddingTop: 10,
+      }}>
+        {
+          channelMode === 'talk'
+            ? <ChannelPopupTalk authModal={authModal} streams={streams} />
+            : channelMode === 'text'
+              ? <ChannelPopupText />
+              : channelMode === 'roam'
+                ? <ChannelPopupRoam />
+                : null
+        }
+      </div>
       </IonContent>
     </IonPage>
   );

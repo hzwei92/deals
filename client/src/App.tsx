@@ -69,6 +69,9 @@ export const AppContext = createContext({} as {
   setShouldUpdateMapData: Dispatch<SetStateAction<boolean>>;
   newChannelLngLat: mapboxgl.LngLat | null;
   setNewChannelLngLat: Dispatch<SetStateAction<mapboxgl.LngLat | null>>;
+  // channel
+  channelMode: 'talk' | 'text' | 'roam';
+  setChannelMode: Dispatch<SetStateAction<'talk' | 'text' | 'roam'>>;
 });
 
 const App: React.FC = () => {
@@ -77,6 +80,8 @@ const App: React.FC = () => {
 
   const [shouldUpdateMapData, setShouldUpdateMapData] = useState(false);
   const [newChannelLngLat, setNewChannelLngLat] = useState<mapboxgl.LngLat | null>(null);
+
+  const [channelMode, setChannelMode] = useState<'talk' | 'text' | 'roam'>('talk');
 
   const { 
     streams,
@@ -112,6 +117,8 @@ const App: React.FC = () => {
         setShouldUpdateMapData,
         newChannelLngLat,
         setNewChannelLngLat,
+        channelMode,
+        setChannelMode,
       }}>
         <IonReactRouter>
           <AppBar />
@@ -119,7 +126,7 @@ const App: React.FC = () => {
           <AccountModal />
           <IonTabs>
             <IonRouterOutlet>
-              <Route exact path="/channel/:id/:mode" component={Channel} />
+              <Route exact path="/channel/:id" component={Channel} />
               <Route exact path="/create-channel" component={CreateChannel} />
               <Route exact path="/create-deal" component={CreateDeal} />
               <Route exact path="/deal/:id" component={Deal} />
