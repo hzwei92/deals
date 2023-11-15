@@ -122,7 +122,6 @@ const ChannelPopupText: React.FC<ChannelPopupTextProps> = ({ isPopup }) => {
       if (containerRef.current.scrollHeight > prevScrollHeight) {
         containerRef.current.scrollTo({
           top: containerRef.current.scrollHeight - prevScrollHeight + containerRef.current.scrollTop,
-          behavior: 'instant',
         });
       }
     }
