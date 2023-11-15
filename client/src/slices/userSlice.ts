@@ -4,6 +4,7 @@ import { User } from '../types/User'
 import { RootState } from '../store'
 import { addMemberships } from './membershipSlice';
 import { addChannels } from './channelSlice';
+import { addPosts } from './postSlice';
 
 export interface UserState {
   users: Record<number, User>;
@@ -51,6 +52,15 @@ export const userSlice = createSlice({
             };
           }
         });
+      });
+    }).addCase(addPosts, (state, action) => {
+      action.payload.forEach((post) => {
+        if (post.user?.id) {
+          state.users[post.user.id] = {
+            ...state.users[post.user.id],
+            ...post.user,
+          };
+        }
       });
     });
   },

@@ -7,7 +7,6 @@ import { selectAppUser, setAppUserId } from '../slices/userSlice';
 import { useAppDispatch, useAppSelector } from '../store';
 import useLogout from '../hooks/useLogout';
 import useChangeName from '../hooks/useChangeName';
-import { checkmarkOutline, closeOutline } from 'ionicons/icons';
 import md5 from 'md5';
 
 
@@ -121,7 +120,7 @@ const AccountModal: React.FC = () => {
                   width: 48,
                   height: 48,
                   borderRadius: 24,
-                }} src={`https://www.gravatar.com/avatar/${md5(user?.id.toString() || '')}?d=retro`}/>
+                }} src={`https://www.gravatar.com/avatar/${md5(user?.email ?? '')}?d=retro`}/>
               </IonAvatar>
             </div>
             <div style={{

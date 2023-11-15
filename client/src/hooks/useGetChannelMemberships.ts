@@ -11,6 +11,7 @@ const GET_CHANNEL_MEMBERSHIPS = gql`
       user {
         id
         name
+        email
       }
     }
   }

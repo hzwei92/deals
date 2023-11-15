@@ -18,9 +18,12 @@ export class PostsService {
     });
   }
 
-  async findByChannelId(channelId: number, maxDate: Date, limit: number): Promise<Post[]> {
-    maxDate = maxDate || new Date();
-    limit = limit || 10;
+  async findByChannelId(channelId: number, createdAt: string): Promise<Post[]> {
+    const maxDate = createdAt
+      ? new Date(createdAt)
+      : new Date();
+      
+    const limit = 10;
     return this.postsRepository.find({
       where: {
         channelId,

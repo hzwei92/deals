@@ -132,7 +132,7 @@ const ChannelPopupTalk: React.FC<ChannelPopupTalkProps> = ({ authModal, streams 
                             border: '1px solid',
                             borderRadius: 5,
                           }}>
-                            <img src={`https://www.gravatar.com/avatar/${md5(m.userId.toString() || '')}?d=retro`} />
+                            <img src={`https://www.gravatar.com/avatar/${md5(users[m.userId].email || '')}?d=retro`} />
                           </IonAvatar>
                         )
                     }

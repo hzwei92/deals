@@ -10,7 +10,7 @@ export type Membership = {
   user?: User;
   savedIndex: number | null;
   isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
 };

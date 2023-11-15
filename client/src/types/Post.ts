@@ -9,7 +9,7 @@ export type Post = {
   userId: number;
   user?: User;
   text: string;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
 };

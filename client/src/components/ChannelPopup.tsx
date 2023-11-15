@@ -123,7 +123,7 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
           channelMode === 'talk'
             ? <ChannelPopupTalk authModal={authModal} streams={streams} />
             : channelMode === 'text'
-              ? <ChannelPopupText />
+              ? <ChannelPopupText isPopup={true} />
               : channelMode === 'roam'
                 ? <ChannelPopupRoam />
                 : null

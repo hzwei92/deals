@@ -9,4 +9,7 @@ export type User = {
   isMicOn: boolean;
   isSoundOn: boolean;
   activeChannelId: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
 }

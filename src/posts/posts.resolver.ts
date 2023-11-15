@@ -45,10 +45,9 @@ export class PostsResolver {
   @Mutation(() => [Post], { name: 'getChannelPosts' })
   getChannelPosts(
     @Args('channelId', { type: () => Int }) channelId: number,
-    @Args('maxDate', { type: () => Date, nullable: true }) maxDate: Date,
-    @Args('limit', { type: () => Int, nullable: true }) limit: number,
+    @Args('createdAt', { type: () => String, nullable: true }) createdAt: string,
     @CurrentUser() user: UserEntity,
   ) {
-    return this.postsService.findByChannelId(channelId, maxDate, limit);
+    return this.postsService.findByChannelId(channelId, createdAt);
   }
 }

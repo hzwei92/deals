@@ -79,7 +79,7 @@ type Mutation {
   getActiveChannels(lat: Float!, lng: Float!): [Channel!]!
   getChannel(id: Int!): Channel
   getChannelMemberships(channelId: Int!): [Membership!]!
-  getChannelPosts(channelId: Int!, limit: Int, maxDate: DateTime): [Post!]!
+  getChannelPosts(channelId: Int!, createdAt: String): [Post!]!
   getChannels(lat: Float!, lng: Float!): [Channel!]!
   getDeals: [Deal!]!
   getMemberships: [Membership!]!

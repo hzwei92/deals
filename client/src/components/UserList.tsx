@@ -59,7 +59,7 @@ const UserList: React.FC<UserListProps> = ({ channel, channelMemberships }) => {
                     height: 20,
                     cursor: 'pointer',
                   }}>
-                    <img src={`https://www.gravatar.com/avatar/${md5(membership.userId.toString() || '')}?d=retro`} />
+                    <img src={`https://www.gravatar.com/avatar/${md5(users[membership.userId].email || '')}?d=retro`} />
                   </IonAvatar>
                   <div style={{
                     paddingLeft: 5,

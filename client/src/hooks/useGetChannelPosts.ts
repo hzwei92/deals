@@ -5,12 +5,13 @@ import { addPosts } from "../slices/postSlice";
 import { USER_FIELDS } from "../fragments/user";
 
 const GET_CHANNEL_MEMBERSHIPS = gql`
-  mutation GetChannelPosts($channelId: Int!) {
-    getChannelPosts(channelId: $channelId) {
+  mutation GetChannelPosts($channelId: Int!, $createdAt: String) {
+    getChannelPosts(channelId: $channelId, createdAt: $createdAt) {
       ...PostFields
       user {
         id
         name
+        email
       }
     }
   }
@@ -30,11 +31,11 @@ const useGetChannelPosts = () => {
     },
   });
 
-  const getChannelPosts = (channelId: number) => {
+  const getChannelPosts = (channelId: number, createdAt?: string) => {
     get({
       variables: {
         channelId,
-        
+        createdAt,
       }
     });
   };

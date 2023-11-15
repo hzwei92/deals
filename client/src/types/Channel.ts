@@ -14,7 +14,7 @@ export type Channel = {
   posts?: Post[];
   memberCount: number;
   activeUserCount: number;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string;
 };

@@ -143,7 +143,7 @@ const AppBar: React.FC = () => {
                 height: 30,
                 cursor: 'pointer',
               }}>
-                <img src={`https://www.gravatar.com/avatar/${md5(user?.id.toString() || '')}?d=retro`} />
+                <img src={`https://www.gravatar.com/avatar/${md5(user?.email || '')}?d=retro`} />
               </IonAvatar>
             </IonButton>
           </IonButtons>
