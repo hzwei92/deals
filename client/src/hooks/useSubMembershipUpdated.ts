@@ -7,6 +7,11 @@ const SUB_MEMBERSHIP_UPDATED = gql`
   subscription MembershipUpdated($channelIds: [Int!]!) {
     membershipUpdated(channelIds: $channelIds) {
       ...MembershipFields
+      user {
+        id
+        name
+        email
+      }
     }
   }
   ${MEMBERSHIP_FIELDS}
