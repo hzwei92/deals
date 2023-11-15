@@ -56,6 +56,7 @@ import useGetMemberships from './hooks/useGetMemberships';
 import useSubMembershipUpdated from './hooks/useSubMembershipUpdated';
 import useJoinChannel from './hooks/useJoinChannel';
 import useSubChannelUpdated from './hooks/useSubChannelUpdated';
+import useSubPostUpdated from './hooks/useSubPostUpdated';
 
 setupIonicReact();
 
@@ -107,6 +108,7 @@ const App: React.FC = () => {
 
   useSubChannelUpdated(setShouldUpdateMapData, -90, 90, -180, 180);
   useSubMembershipUpdated([channel?.id ?? -1]);
+  useSubPostUpdated([channel?.id ?? -1])
 
   return (
     <IonApp>

@@ -6,6 +6,7 @@ import { Post } from './post.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
 import { ChannelsModule } from 'src/channels/channels.module';
+import { PubSubModule } from 'src/pub-sub/pub-sub.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ChannelsModule } from 'src/channels/channels.module';
     JwtModule.register({}),
     UsersModule,
     ChannelsModule,
+    PubSubModule,
   ],
   providers: [PostsService, PostsResolver]
 })

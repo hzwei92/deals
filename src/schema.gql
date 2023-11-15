@@ -121,6 +121,7 @@ type RefreshTokentResult {
 type Subscription {
   channelUpdated(maxLat: Float!, maxLng: Float!, minLat: Float!, minLng: Float!): Channel!
   membershipUpdated(channelIds: [Int!]!): Membership!
+  postUpdated(channelIds: [Int!]!): Post!
 }
 
 type User {

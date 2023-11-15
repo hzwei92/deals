@@ -1,13 +1,15 @@
-import { Args, Int, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Parent, ResolveField, Resolver, Subscription } from '@nestjs/graphql';
 import { Post } from './post.model';
 import { User } from 'src/users/user.model';
 import { PostsService } from './posts.service';
 import { UsersService } from 'src/users/users.service';
 import { Channel } from 'src/channels/channel.model';
 import { ChannelsService } from 'src/channels/channels.service';
-import { UseGuards } from '@nestjs/common';
+import { Inject, UseGuards } from '@nestjs/common';
 import { AuthGuard, CurrentUser } from 'src/auth/gql-auth.guard';
 import { User as UserEntity } from 'src/users/user.entity';
+import { PUB_SUB } from 'src/pub-sub/pub-sub.module';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -15,6 +17,8 @@ export class PostsResolver {
     private readonly postsService: PostsService,
     private readonly usersService: UsersService,
     private readonly channelsService: ChannelsService,
+    @Inject(PUB_SUB)
+    private readonly pubSub: RedisPubSub,
   ) {}
 
   @ResolveField(() => User, { name: 'user' })
@@ -33,12 +37,14 @@ export class PostsResolver {
 
   @UseGuards(AuthGuard)
   @Mutation(() => Post, { name: 'createPost' })
-  createPost(
+  async createPost(
     @Args('channelId', { type: () => Int }) channelId: number,
     @Args('text') text: string,
     @CurrentUser() user: UserEntity,
   ) {
-    return this.postsService.createOne(user.id, channelId, text);
+    const post = await this.postsService.createOne(user.id, channelId, text);
+    this.pubSub.publish('postUpdated', { postUpdated: post });
+    return post;
   }
 
   @UseGuards(AuthGuard)
@@ -49,5 +55,18 @@ export class PostsResolver {
     @CurrentUser() user: UserEntity,
   ) {
     return this.postsService.findByChannelId(channelId, createdAt);
+  }
+
+  @Subscription(() => Post, { 
+    name: 'postUpdated', 
+    filter: (payload, variables) => {
+      return variables.channelIds.some((channelId) => channelId === payload.postUpdated.channelId);
+    }
+  })
+  postUpdated(
+    @Args('channelIds', { type: () => [Int] }) channelIds: number[],
+  ) {
+    console.log('postUpdated', channelIds)
+    return this.pubSub.asyncIterator('postUpdated');
   }
 }
