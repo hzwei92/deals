@@ -55,10 +55,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   const channels = useAppSelector(selectChannels);
 
   const memberships = useAppSelector(state => selectMembershipsByUserId(state, user?.id ?? -1));
-
-  const [channelPopup, setChannelPopup] = useState<mapboxgl.Popup | null>(null);
-  const [channelPopupRoot, setChannelPopupRoot] = useState<Root | null>(null);
-
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   const getChannels = useGetChannels(setShouldUpdateMapData);
@@ -318,77 +314,63 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     shouldUpdateMapData, 
     channels, 
     memberships,
-    map.current?.getSource('channels'), 
-    !!channelPopup, 
-    !!channelPopupRoot,
+    map.current?.getSource('channels'),
     users,
   ])
 
   // update channel popup
+
+  const channelPopupRef = useRef<mapboxgl.Popup | null>(null);
+  const [prevChannelId, setPrevChannelId] = useState<number | null>(null);
+
+
   useEffect(() => {
+    setPrevChannelId(channel?.id ?? null);
+
+    if (channelPopupRef.current) {
+      channelPopupRef.current.remove();
+    }
+
     if (channel?.id) {
-      if (channel.lat !== mapLat || channel.lng !== mapLng) {
+      if (channel?.id !== prevChannelId && (channel.lat !== mapLat || channel.lng !== mapLng)) {
         map.current?.easeTo({
           center: [channel.lng, channel.lat],
         });
       }
 
       setNewChannelLngLat(null);
+      const channelPopupNode = document.createElement('div')
+      channelPopupNode.id = 'yolo-'+Date.now().toString();
+      const root = createRoot(channelPopupNode);
+      root.render(
+        <ApolloProvider client={client}>
+          <Provider store={store}>
+            <ChannelPopup 
+              router={router} 
+              authModal={authModal} 
+              streams={streams}
+              channelMode={channelMode}
+              setChannelMode={setChannelMode}
+            />
+          </Provider>
+        </ApolloProvider>
+      );
 
-      if (channelPopup && channelPopupRoot) {
-        channelPopupRoot.render(
-          <ApolloProvider client={client}>
-            <Provider store={store}>
-              <ChannelPopup 
-                router={router} 
-                authModal={authModal} 
-                streams={streams} 
-                channelMode={channelMode}
-                setChannelMode={setChannelMode}
-              />
-            </Provider>
-          </ApolloProvider>
-        );
+      const popup = new mapboxgl.Popup({
+        offset: 15,
+        focusAfterOpen: true,
+        closeButton: false,
+      })
+      .setLngLat([channel.lng, channel.lat])
+      .setDOMContent(channelPopupNode)
+      .addTo(map.current!);       
 
-        channelPopup
-          .setLngLat([channels[channel.id].lng, channels[channel.id].lat])
-          .addTo(map.current!);
-      }
-      else {
-        const channelPopupNode = document.createElement('div');
-        const root = createRoot(channelPopupNode);
-        root.render(
-          <ApolloProvider client={client}>
-            <Provider store={store}>
-              <ChannelPopup 
-                router={router} 
-                authModal={authModal} 
-                streams={streams}
-                channelMode={channelMode}
-                setChannelMode={setChannelMode}
-              />
-            </Provider>
-          </ApolloProvider>
-        );
-
-        const popup = new mapboxgl.Popup({
-          offset: 15,
-          focusAfterOpen: true,
-          closeButton: false,
-        })
-        .setLngLat([channels[channel.id].lng, channels[channel.id].lat])
-        .setDOMContent(channelPopupNode)
-        .addTo(map.current!);       
-
-        setChannelPopup(popup);
-        setChannelPopupRoot(root);
-      }
+      channelPopupRef.current = popup;
     }
     else {
-      channelPopup?.remove();
-      setChannelPopup(null);
+      channelPopupRef.current = null;
     }
-  }, [channel?.id, streams, channels, channelMode]);
+  }, [channel?.id, streams, channelMode]);
 
   // update new channel marker/popup
   useEffect(() => {
