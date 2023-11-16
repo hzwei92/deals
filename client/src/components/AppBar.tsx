@@ -1,4 +1,4 @@
-import { IonAvatar, IonButton, IonButtons, IonHeader, IonIcon, useIonRouter } from "@ionic/react"
+import { IonAvatar, IonButton, IonButtons, IonHeader, IonIcon, isPlatform, useIonRouter } from "@ionic/react"
 import md5 from "md5";
 import { selectAppUser } from "../slices/userSlice";
 import { useAppDispatch, useAppSelector } from "../store";
@@ -66,13 +66,17 @@ const AppBar: React.FC = () => {
         <div style={{
           backgroundColor: 'var(--ion-tab-bar-background, var(--ion-color-step-50, #f7f7f7))',
           width: '100%',
-          height: 50,
-          //paddingTop: isPlatform('ios') ? 50 : 0,
+          height: isPlatform('ios') && !isPlatform('mobileweb') ? 100 : 50,
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'space-between',
         }}>
-          <IonButtons>
+          <IonButtons style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'end',
+            paddingBottom: 10,
+          }}>
             <IonButton>
               <img src={'/icon.png'} style={{
                 width: 40,
@@ -81,6 +85,12 @@ const AppBar: React.FC = () => {
               }} />
             </IonButton>
           </IonButtons>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'end',
+            paddingBottom: 10,
+          }}>
           <IonButtons style={{
             display: 'flex',
             flexDirection: 'row',
@@ -147,6 +157,7 @@ const AppBar: React.FC = () => {
               </IonAvatar>
             </IonButton>
           </IonButtons>
+          </div>
         </div>
 
       </IonHeader>

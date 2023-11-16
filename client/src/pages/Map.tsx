@@ -14,7 +14,7 @@ import { Provider } from 'react-redux';
 import { store } from '../store';
 import { ApolloProvider } from '@apollo/client';
 import { client } from '../main';
-import { closeOutline, starOutline } from 'ionicons/icons';
+import { closeOutline, star, starOutline } from 'ionicons/icons';
 import { useSetMembershipSavedIndex } from '../hooks/useSetMembershipSavedIndex';
 import { menuController } from '@ionic/core/components';
 
@@ -49,6 +49,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   const mapContainer = useRef<HTMLDivElement | null>(null);
   const map = useRef<Map | null>(null);
 
+  const popupRoot = useRef<Root | null>(null);
   const creationPopupRoot = useRef<Root | null>(null);
 
   const users = useAppSelector(selectUsers);
@@ -121,8 +122,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   // fetch channels
   useEffect(() => {
     getChannels(mapLng, mapLat);
-    map.current?.resize();
   }, []);
+
+
+  // resize map
+  useEffect(() => {
+    map.current?.resize();
+  }, [router.routeInfo.pathname])
 
   // initialize map
   useEffect(() => {
@@ -327,47 +333,59 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   useEffect(() => {
     setPrevChannelId(channel?.id ?? null);
 
-    if (channelPopupRef.current) {
-      channelPopupRef.current.remove();
-    }
-
     if (channel?.id) {
-      if (channel?.id !== prevChannelId && (channel.lat !== mapLat || channel.lng !== mapLng)) {
-        map.current?.easeTo({
-          center: [channel.lng, channel.lat],
-        });
+      if (channel?.id !== prevChannelId) {
+        channelPopupRef.current?.remove();
+
+        if (channel.lat !== mapLat || channel.lng !== mapLng) {
+          map.current?.easeTo({
+            center: [channel.lng, channel.lat],
+          });
+        }
+
+        setNewChannelLngLat(null);
+        const channelPopupNode = document.createElement('div')
+        popupRoot.current = createRoot(channelPopupNode);
+        popupRoot.current.render(
+          <ApolloProvider client={client}>
+            <Provider store={store}>
+              <ChannelPopup 
+                router={router} 
+                authModal={authModal} 
+                streams={streams}
+                channelMode={channelMode}
+                setChannelMode={setChannelMode}
+              />
+            </Provider>
+          </ApolloProvider>
+        );
+        channelPopupRef.current = new mapboxgl.Popup({
+          offset: 15,
+          focusAfterOpen: true,
+          closeButton: false,
+        })
+        .setLngLat([channel.lng, channel.lat])
+        .setDOMContent(channelPopupNode)
+        .addTo(map.current!);
       }
-
-      setNewChannelLngLat(null);
-      const channelPopupNode = document.createElement('div')
-      channelPopupNode.id = 'yolo-'+Date.now().toString();
-      const root = createRoot(channelPopupNode);
-      root.render(
-        <ApolloProvider client={client}>
-          <Provider store={store}>
-            <ChannelPopup 
-              router={router} 
-              authModal={authModal} 
-              streams={streams}
-              channelMode={channelMode}
-              setChannelMode={setChannelMode}
-            />
-          </Provider>
-        </ApolloProvider>
-      );
-
-      const popup = new mapboxgl.Popup({
-        offset: 15,
-        focusAfterOpen: true,
-        closeButton: false,
-      })
-      .setLngLat([channel.lng, channel.lat])
-      .setDOMContent(channelPopupNode)
-      .addTo(map.current!);       
-
-      channelPopupRef.current = popup;
+      else {
+        popupRoot.current?.render(
+          <ApolloProvider client={client}>
+            <Provider store={store}>
+              <ChannelPopup 
+                router={router} 
+                authModal={authModal} 
+                streams={streams}
+                channelMode={channelMode}
+                setChannelMode={setChannelMode}
+              />
+            </Provider>
+          </ApolloProvider>
+        );
+      }  
     }
     else {
+      channelPopupRef.current?.remove();
       channelPopupRef.current = null;
     }
   }, [channel?.id, streams, channelMode]);
@@ -437,7 +455,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     <>
     <IonMenu type='overlay' menuId='map-menu' contentId='map-main-content'>
       <IonHeader style={{
-        marginTop: 55,
+        marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 55,
         padding: 10,
       }}>
         SAVED CHANNELS
@@ -488,7 +506,11 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
           borderRadius: 3,
           zIndex: 10,
           left: isPlatform('ios') ? -10 : 0,
-          top: isPlatform('ios') ? 32 : 52,
+          top: isPlatform('ios') 
+            ? isPlatform('mobileweb') 
+              ? 32
+              : 92 
+            : 52,
           padding: 10,
         }}>
           {
@@ -504,12 +526,16 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
           borderRadius: 3,
           zIndex: 10,
           left: isPlatform('ios') ? -10 : 0,
-          top: isPlatform('ios') ? 72 : 92,
+          top: isPlatform('ios') 
+            ? isPlatform('mobileweb')
+              ? 72
+              : 142 
+            : 92,
         }}>
         <IonMenuToggle autoHide={false}>
           <IonButtons>
               <IonButton >
-                <IonIcon icon={starOutline} size='small' />
+                <IonIcon icon={star} size='small' />
               </IonButton>
           </IonButtons>
             </IonMenuToggle>

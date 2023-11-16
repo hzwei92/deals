@@ -152,16 +152,22 @@ const ChannelPopupText: React.FC<ChannelPopupTextProps> = ({ isPopup }) => {
   return (
     <div style={{
       fontSize: 14,
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'end',  
     }}>
       <div ref={containerRef} style={{
         overflowY: 'scroll',
-        maxHeight: 360,
+        height: '100%'
       }}>
         <div style={{
           display: shouldGetPosts ? 'flex' : 'none',
+          padding: 20,
         }}>
           <IonSpinner />
         </div>
+
         {
           posts
             .sort((a, b) => a.createdAt < b.createdAt ? -1 : 1)

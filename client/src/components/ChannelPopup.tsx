@@ -118,6 +118,7 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
       </IonButtons>
       <div style={{
         marginTop: 10,
+        height: 240,
       }}>
         {
           channelMode === 'talk'

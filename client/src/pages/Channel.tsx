@@ -1,4 +1,4 @@
-import { IonButton, IonButtons, IonContent, IonIcon, IonPage, useIonRouter } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonIcon, IonPage, isPlatform, useIonRouter } from '@ionic/react';
 import { useContext, useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { addChannels, selectFocusChannel, setFocusChannelId } from '../slices/channelSlice';
@@ -98,7 +98,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           display: 'flex',
           flexDirection: 'column',
           marginLeft: 5,
-          marginTop: 55,
+          marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 55,
         }}>
           <div style={{
             display: 'flex',
@@ -121,7 +121,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           display: 'flex',
           flexDirection: 'column',
           marginLeft: 5,
-          marginTop: 55,
+          marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 55,
         }}>
           <div style={{
             display: 'inline-flex',
@@ -141,7 +141,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     <IonPage>
       <IonContent fullscreen>
       <div style={{
-        marginTop: 55,
+        marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 55,
         fontSize: 24,
         padding: 10,
         fontWeight: 'bold',
