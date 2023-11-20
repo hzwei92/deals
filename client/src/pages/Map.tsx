@@ -126,9 +126,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
 
 
   // resize map
-  useEffect(() => {
-    map.current?.resize();
-  }, [router.routeInfo.pathname])
+  map.current?.resize();
 
   // initialize map
   useEffect(() => {
@@ -468,6 +466,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
             .map(m => {
               return (
                 <IonCard key={m.id} onClick={handleChannelClick(m.channelId)} style={{
+                  margin: 5,
                   padding: 10,
                   cursor: 'pointer',
                   display: 'flex',

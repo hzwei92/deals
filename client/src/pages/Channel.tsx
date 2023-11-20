@@ -1,5 +1,5 @@
 import { IonButton, IonButtons, IonContent, IonIcon, IonPage, isPlatform, useIonRouter } from '@ionic/react';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { RouteComponentProps } from 'react-router';
 import { addChannels, selectFocusChannel, setFocusChannelId } from '../slices/channelSlice';
 import { useAppDispatch, useAppSelector } from '../store';
@@ -91,6 +91,12 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
     }
   }, [match.params.id]);
 
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    console.log(headerRef.current?.clientHeight)
+  }, [headerRef.current?.clientHeight]);
+
   if (!isLoaded) return (
     <IonPage>
       <IonContent fullscreen>
@@ -139,87 +145,94 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
 
   return (
     <IonPage>
-      <IonContent fullscreen>
       <div style={{
-        marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 55,
-        fontSize: 24,
-        padding: 10,
-        fontWeight: 'bold',
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+        height: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 55,
+      }} />
+      <IonContent style={{
+        overflowY: 'hidden',
       }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-        }}>
-        { channel?.name } 
+        <div ref={headerRef}>
+          <div style={{
+            fontSize: 24,
+            padding: 10,
+            fontWeight: 'bold',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}>
+            { channel?.name } 
+            </div>
+            <IonButtons style={{
+            }}>
+              <IonButton onClick={handleMinimizeClick}>
+                <IonIcon icon={membership?.savedIndex === null ? starOutline : star} size="small" style={{
+                  color: membership?.savedIndex === null ? null : 'var(--ion-color-primary)'
+                }}/>
+              </IonButton>
+              <IonButton onClick={handleRestoreClick}>
+                <IonIcon icon={scanOutline} size="small" />
+              </IonButton>
+              <IonButton onClick={handleCloseClick}>
+                <IonIcon icon={closeOutline} size="small"/>
+              </IonButton>
+            </IonButtons>
+          </div>
+          <div style={{
+            padding: 10,
+            textAlign: 'left',
+            fontSize: 14,
+            color: 'var(--ion-color-medium)'
+          }}>
+            { channel?.detail }
+          </div>
+          <IonButtons style={{
+            marginTop: 5,
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+          }}>
+            <IonButton onClick={() => setChannelMode('talk')} style={{
+              color: channelMode === 'talk' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+              borderBottom: channelMode === 'talk' ? '4px solid var(--ion-color-primary)' : 'none',
+              fontWeight: 'bold',
+            }}>
+              TALK
+            </IonButton>
+            <IonButton onClick={() => setChannelMode('text')} style={{
+              color: channelMode === 'text' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+              borderBottom: channelMode === 'text' ? '4px solid var(--ion-color-primary)' : 'none',
+              fontWeight: 'bold',
+            }}>
+              TEXT
+            </IonButton>
+            <IonButton onClick={() => setChannelMode('roam')} style={{
+              color: channelMode === 'roam' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
+              borderBottom: channelMode === 'roam' ? '4px solid var(--ion-color-primary)' : 'none',
+              fontWeight: 'bold',
+            }}>
+              ROAM
+            </IonButton>
+          </IonButtons>
         </div>
-        <IonButtons style={{
+        <div style={{
+          paddingTop: 10,
+          height: `calc(100% - ${headerRef.current?.clientHeight ?? 0}px)`
         }}>
-          <IonButton onClick={handleMinimizeClick}>
-            <IonIcon icon={membership?.savedIndex === null ? starOutline : star} size="small" style={{
-              color: membership?.savedIndex === null ? null : 'var(--ion-color-primary)'
-            }}/>
-          </IonButton>
-          <IonButton onClick={handleRestoreClick}>
-            <IonIcon icon={scanOutline} size="small" />
-          </IonButton>
-          <IonButton onClick={handleCloseClick}>
-            <IonIcon icon={closeOutline} size="small"/>
-          </IonButton>
-        </IonButtons>
-      </div>
-      <div style={{
-        padding: 10,
-        textAlign: 'left',
-        fontSize: 14,
-        color: 'var(--ion-color-medium)'
-      }}>
-        { channel?.detail }
-      </div>
-      <IonButtons style={{
-        marginTop: 5,
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'center',
-      }}>
-        <IonButton onClick={() => setChannelMode('talk')} style={{
-          color: channelMode === 'talk' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
-          borderBottom: channelMode === 'talk' ? '4px solid var(--ion-color-primary)' : 'none',
-          fontWeight: 'bold',
-        }}>
-          TALK
-        </IonButton>
-        <IonButton onClick={() => setChannelMode('text')} style={{
-          color: channelMode === 'text' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
-          borderBottom: channelMode === 'text' ? '4px solid var(--ion-color-primary)' : 'none',
-          fontWeight: 'bold',
-        }}>
-          TEXT
-        </IonButton>
-        <IonButton onClick={() => setChannelMode('roam')} style={{
-          color: channelMode === 'roam' ? 'var(--ion-color-dark)' : 'var(--ion-color-medium)',
-          borderBottom: channelMode === 'roam' ? '4px solid var(--ion-color-primary)' : 'none',
-          fontWeight: 'bold',
-        }}>
-          ROAM
-        </IonButton>
-      </IonButtons>
-      <div style={{
-        paddingTop: 10,
-      }}>
-        {
-          channelMode === 'talk'
-            ? <ChannelPopupTalk authModal={authModal} streams={streams} />
-            : channelMode === 'text'
-              ? <ChannelPopupText />
-              : channelMode === 'roam'
-                ? <ChannelPopupRoam />
-                : null
-        }
-      </div>
+          {
+            channelMode === 'talk'
+              ? <ChannelPopupTalk authModal={authModal} streams={streams} />
+              : channelMode === 'text'
+                ? <ChannelPopupText />
+                : channelMode === 'roam'
+                  ? <ChannelPopupRoam />
+                  : null
+          }
+        </div>
       </IonContent>
     </IonPage>
   );

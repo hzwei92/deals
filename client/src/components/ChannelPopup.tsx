@@ -1,7 +1,7 @@
 import {IonButton, IonButtons, IonIcon, UseIonRouterResult } from "@ionic/react";
 import { useAppDispatch, useAppSelector } from "../store";
 import { selectAppUser } from "../slices/userSlice";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useRef, useState } from "react";
 import ChannelPopupTalk from "./ChannelTalk";
 import { selectFocusChannel } from "../slices/channelSlice";
 import ChannelPopupText from "./ChannelText";
@@ -49,7 +49,9 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
 
   return (
     <div className="popup" style={{
+      width: 220,
     }}>
+      <div>
       <div style={{
         marginTop: 5,
         fontSize: 24,
@@ -116,9 +118,10 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
           ROAM
         </IonButton>
       </IonButtons>
+      </div>
       <div style={{
         marginTop: 10,
-        height: 240,
+        height: 300,
       }}>
         {
           channelMode === 'talk'
