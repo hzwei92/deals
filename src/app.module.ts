@@ -38,6 +38,9 @@ import { PostsModule } from './posts/posts.module';
         STRIPE_CURRENCY: Joi.string().required(),
         JANUS_URL: Joi.string().required(),
         JANUS_SECRET: Joi.string().required(),
+        GOOGLE_CLIENT_ID: Joi.string().required(),
+        GOOGLE_CLIENT_SECRET: Joi.string().required(),
+        IOS_GOOGLE_CLIENT_ID: Joi.string().required(),
         FRONTEND_URL: Joi.string(),
       }))
     }),

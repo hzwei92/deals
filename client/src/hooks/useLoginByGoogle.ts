@@ -7,10 +7,11 @@ import { Preferences } from "@capacitor/preferences";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../constants";
 import useToken from "./useToken";
 import { USER_FIELDS } from "../fragments/user";
+import { isPlatform } from "@ionic/react";
 
 const GOOGLE_AUTH = gql`
-  mutation GoogleAuth($credential: String!) {
-    googleAuth(credential: $credential) {
+  mutation GoogleAuth($credential: String!, $ios: Boolean!) {
+    googleAuth(credential: $credential, ios: $ios) {
       user {
         ...UserFields
       }
@@ -54,9 +55,12 @@ const useLoginByGoogle = () => {
     },
   });
 
-  const googleAuth = async (credential?: string) => {
+  const googleAuth = (credential?: string) => {
     if (credential) {
-      await authenticate({ variables: { credential } });
+      authenticate({ variables: { 
+        credential,
+        ios: isPlatform('ios') && !isPlatform('mobileweb'),
+      } });
     }
   }
 

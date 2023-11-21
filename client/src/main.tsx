@@ -3,12 +3,11 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink, split } from '@apollo/client';
 import { isPlatform } from '@ionic/react';
-import { DEV_SERVER_URI, PROD_SERVER_URI, ACCESS_TOKEN_KEY, GOOGLE_CLIENT_ID } from './constants';
+import { DEV_SERVER_URI, PROD_SERVER_URI, ACCESS_TOKEN_KEY } from './constants';
 import { setContext } from '@apollo/client/link/context';
 import { Preferences } from '@capacitor/preferences';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 
 (window as any).EXCALIDRAW_ASSET_PATH = process.env.NODE_ENV === 'production'
   ? '/excalidraw-assets'
@@ -76,12 +75,10 @@ const root = createRoot(container!);
 
 root.render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <ApolloProvider client={client}>
         <Provider store={store}>
           <App />
         </Provider>
       </ApolloProvider>
-    </GoogleOAuthProvider>
   </React.StrictMode>
 );

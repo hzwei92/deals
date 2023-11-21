@@ -73,7 +73,7 @@ const LoginFinish: React.FC<LoginFinishProps> = ({ pendingUser, setPendingUser }
   }
 
   return (
-    <IonContent fullscreen>
+    <IonContent>
     <div>
       <div style={{
         margin: 30,

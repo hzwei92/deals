@@ -15,6 +15,7 @@ import mailgun from 'mailgun-js';
 export class AuthService {
   twilioClient: Twilio;
   googleOauthClient: OAuth2Client;
+  iosGoogleOauthClient: OAuth2Client;
 
   mailgunClient: any;
 
@@ -33,6 +34,9 @@ export class AuthService {
     const clientSecret = this.configService.get('GOOGLE_CLIENT_SECRET');
 
     this.googleOauthClient = new OAuth2Client(clientId, clientSecret);
+
+    const iosClientId = this.configService.get('IOS_GOOGLE_CLIENT_ID');
+    this.iosGoogleOauthClient = new OAuth2Client(iosClientId);
 
     this.mailgunClient = mailgun({
       apiKey: this.configService.get('MAILGUN_API_KEY'),
@@ -70,10 +74,12 @@ export class AuthService {
   }
 
 
-  async googleAuth(credential: string) {
+  async googleAuth(credential: string, ios: boolean) {
     const ticket = await this.googleOauthClient.verifyIdToken({
       idToken: credential,
-      audience: this.configService.get('GOOGLE_CLIENT_ID'),
+      audience: ios
+        ? this.configService.get('IOS_GOOGLE_CLIENT_ID')
+        : this.configService.get('GOOGLE_CLIENT_ID'),
     });
 
     const payload = ticket.getPayload();
@@ -97,7 +103,6 @@ export class AuthService {
       refreshToken,
     }
   }
-
 
   async emailLogin(user: User) {
     const code = Math.floor(Math.random() * 1e6).toString().padStart(6, '0');

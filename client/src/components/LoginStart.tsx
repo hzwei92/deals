@@ -1,15 +1,15 @@
-import { IonButton, IonButtons, IonContent, IonIcon, IonInput } from "@ionic/react"
-import { useContext, useState } from "react";
+import { IonButton, IonButtons, IonContent, IonIcon, IonInput, isPlatform } from "@ionic/react"
+import { useContext, useEffect, useState } from "react";
 import { User } from "../types/User";
 import { GoogleLogin } from "@react-oauth/google";
 import useLoginByGoogle from "../hooks/useLoginByGoogle";
 import FacebookLogin from "react-facebook-login";
-import { FACEBOOK_APP_ID } from "../constants";
+import { FACEBOOK_APP_ID, GOOGLE_CLIENT_ID, IOS_GOOGLE_CLIENT_ID } from "../constants";
 import { AppContext } from "../App";
 import useLoginByFacebook from "../hooks/useLoginByFacebook";
-import { send } from "ionicons/icons";
+import { logoGoogle, send } from "ionicons/icons";
 import useLoginByEmail from "../hooks/useLoginByEmail";
-
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
 interface LoginStartProps {
   setPendingUser: (user: User | null) => void;
@@ -21,6 +21,14 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false); 
 
   const { authModal } = useContext(AppContext);
+
+  useEffect(() => {
+    const clientId = isPlatform('ios') && !isPlatform('mobileweb') ? IOS_GOOGLE_CLIENT_ID : GOOGLE_CLIENT_ID;
+    GoogleAuth.initialize({
+      clientId,
+      scopes: ['email'],
+    });
+  }, [])
 
   const googleAuth = useLoginByGoogle();
   const facebookAuth = useLoginByFacebook();
@@ -61,10 +69,8 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
   }
 
   return (
-    <IonContent fullscreen>
+    <IonContent>
     <div style={{
-      padding: 30,
-      paddingTop: 0,
     }}>
       <div style={{
         textAlign: 'center'
@@ -72,8 +78,8 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
         Choose your preferred login method:
       </div>
       <div style={{
-        marginBottom: 30,
-        paddingTop: 30,
+        marginBottom: 20,
+        paddingTop: 20,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -83,7 +89,7 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
           border: '1px solid',
           borderRadius: 5,
           margin: 'auto',
-          width: 240,
+          width: 250,
           display: 'flex'
         }}>
           <IonInput
@@ -104,30 +110,36 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
         display: 'flex',
         justifyContent: 'center',
       }}>
-        <GoogleLogin 
-          onSuccess={credentialResponse => {
-            console.log(credentialResponse);
-            googleAuth(credentialResponse.credential);
-          }}
-          onError={() => {
-            console.log('Login failed');
-          }}
-          useOneTap={false}
-          text={'continue_with'}
-          width={220}
-        />
+        <IonButtons>
+          <IonButton style={{
+            width: 250,
+            height: 45,
+            backgroundColor: 'dimgrey',
+            color: 'white',
+            borderRadius: 5,
+          }} onClick={() => {
+            GoogleAuth.signIn().then((response: any) => {
+              console.log(response);
+              googleAuth(response.authentication.idToken);
+            }).catch((error: any) => {
+              console.log(error);
+            });
+          }}>
+            Google
+          </IonButton>
+        </IonButtons>
       </div>
       <div style={{
         display: 'flex',
         justifyContent: 'center',
-        padding: 30,
+        padding: 20,
       }}>
         <FacebookLogin 
           appId={FACEBOOK_APP_ID}
           autoLoad={false}
           fields="name,email,picture"
           scope="public_profile, email"
-          textButton="Continue with Facebook"
+          textButton="Facebook"
           disableMobileRedirect={true}
           onClick={() => {}}
           callback={(response: any) => {
@@ -135,7 +147,8 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
             facebookAuth(response.accessToken);
           }}
           buttonStyle={{
-            width: 260,
+            width: 250,
+            borderRadius: 5,
           }}
         />
       </div>

@@ -1,0 +1,6 @@
+framework module CodetrixStudioCapacitorGoogleAuth {
+  umbrella header "CodetrixStudioCapacitorGoogleAuth-umbrella.h"
+
+  export *
+  module * { export * }
+}

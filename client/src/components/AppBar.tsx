@@ -78,10 +78,11 @@ const AppBar: React.FC = () => {
             paddingBottom: 10,
           }}>
             <IonButton>
-              <img src={'/icon.png'} style={{
-                width: 40,
-                height: 40,
+              <img src={'/JAMN.png'} style={{
+                width: 30,
+                height: 30,
                 borderRadius: 20,
+                backgroundColor: 'var(--ion-tab-bar-background, var(--ion-color-step-50, #f7f7f7))',
               }} />
             </IonButton>
           </IonButtons>

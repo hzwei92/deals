@@ -25,8 +25,9 @@ export class AuthResolver {
   @Mutation(() => VerifyResult, { name: 'googleAuth' })
   async googleAuth(
     @Args('credential') credential: string,
+    @Args('ios') ios: boolean,
   ) {
-    return this.authService.googleAuth(credential);
+    return this.authService.googleAuth(credential, ios);
   }
 
   @Mutation(() => User, { name: 'emailLogin' })

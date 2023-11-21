@@ -1,15 +1,14 @@
 import {IonButton, IonButtons, IonIcon, UseIonRouterResult } from "@ionic/react";
 import { useAppDispatch, useAppSelector } from "../store";
 import { selectAppUser } from "../slices/userSlice";
-import { Dispatch, SetStateAction, useRef, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import ChannelPopupTalk from "./ChannelTalk";
 import { selectFocusChannel } from "../slices/channelSlice";
 import ChannelPopupText from "./ChannelText";
 import ChannelPopupRoam from "./ChannelRoam";
-import { close, closeOutline, removeOutline, squareOutline, star, starOutline, stopOutline } from "ionicons/icons";
+import { closeOutline, star, starOutline, stopOutline } from "ionicons/icons";
 import { useSetMembershipSavedIndex } from "../hooks/useSetMembershipSavedIndex";
 import { selectMembershipByChannelIdAndUserId } from "../slices/membershipSlice";
-import { AppContext } from "../App";
 
 interface ChannelPopupProps {
   router: UseIonRouterResult;

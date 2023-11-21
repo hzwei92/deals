@@ -1,5 +1,5 @@
 import { Preferences } from '@capacitor/preferences';
-import { IonAvatar, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonModal } from '@ionic/react';
+import { IonAvatar, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonModal, isPlatform } from '@ionic/react';
 import { useRef, useState } from 'react';
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from '../constants';
 import { selectInterval, setRefreshInterval } from '../slices/authSlice';
@@ -59,9 +59,10 @@ const AccountModal: React.FC = () => {
   return (
     <IonModal ref={modal} trigger={'account-modal-button'}>
       <IonHeader style={{
-        padding: 20,
+        margin: 20,
         fontWeight: 'bold',
         fontSize: 40,
+        marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 70 : 20,
       }}> 
         MY ACCOUNT
       </IonHeader>

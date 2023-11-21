@@ -1,4 +1,4 @@
-import { IonHeader, IonModal } from '@ionic/react';
+import { IonContent, IonHeader, IonModal, isPlatform } from '@ionic/react';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { selectAppUser } from '../slices/userSlice';
 import { useAppSelector } from '../store';
@@ -35,13 +35,15 @@ const AuthModal: React.FC = () => {
   
   return (
     <IonModal trigger='auth-modal-button' ref={authModal}>
-      <IonHeader style={{
+      <div style={{
         fontWeight: 'bold',
         fontSize: 40,
-        margin: 20,
+        padding: 20,
+        paddingTop: isPlatform('ios') && !isPlatform('mobileweb') ? 70 : 20,
+        color: 'inherit'
       }}>
         LOG IN
-      </IonHeader>
+      </div>
       {
         !pendingUser
           ? <LoginStart setPendingUser={setPendingUser} />

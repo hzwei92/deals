@@ -84,7 +84,7 @@ type Mutation {
   getDeals: [Deal!]!
   getMemberships: [Membership!]!
   getUserMemberships(userId: Int!): [Membership!]!
-  googleAuth(credential: String!): VerifyResult!
+  googleAuth(credential: String!, ios: Boolean!): VerifyResult!
   joinChannel(channelId: Int!): Channel!
   leaveChannel(channelId: Int!): JoinChannelResult!
   logout: Boolean!
