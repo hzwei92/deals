@@ -125,11 +125,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   }, []);
 
 
-  // resize map
-  map.current?.resize();
 
   // initialize map
   useEffect(() => {
+    console.log('initializing map');
     map.current = new mapboxgl.Map({
       container: mapContainer.current!,
       style: 'mapbox://styles/mapbox/streets-v12',
@@ -329,17 +328,18 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
 
 
   useEffect(() => {
+    console.log('update channel popup', channel?.id, prevChannelId, channelMode, mapContainer.current?.clientWidth, mapContainer.current?.clientHeight);
     setPrevChannelId(channel?.id ?? null);
 
-    if (channel?.id) {
+    if (channel?.id) {  
+      if (channel.lat !== mapLat || channel.lng !== mapLng) {
+        map.current?.easeTo({
+          center: [channel.lng, channel.lat],
+        });
+      }
+
       if (channel?.id !== prevChannelId) {
         channelPopupRef.current?.remove();
-
-        if (channel.lat !== mapLat || channel.lng !== mapLng) {
-          map.current?.easeTo({
-            center: [channel.lng, channel.lat],
-          });
-        }
 
         setNewChannelLngLat(null);
         const channelPopupNode = document.createElement('div')
@@ -386,7 +386,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       channelPopupRef.current?.remove();
       channelPopupRef.current = null;
     }
-  }, [channel?.id, streams, channelMode]);
+  }, [channel?.id, streams, channelMode, mapContainer.current?.clientWidth, mapContainer.current?.clientHeight]);
 
   // update new channel marker/popup
   useEffect(() => {
@@ -449,6 +449,22 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     setMembershipSavedIndex(membershipId, null);
   }
 
+
+  // resize map
+  map.current?.resize();
+
+  useEffect(() => {
+    const handleResize = () => {
+      map.current?.resize();
+    };
+  
+    window.addEventListener('resize', handleResize);
+  
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   return (
     <>
     <IonMenu type='overlay' menuId='map-menu' contentId='map-main-content'>
@@ -498,7 +514,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
         <div ref={mapContainer} className="map-container" style={{
           opacity: isMapLoaded ? 1 : 0,
           top: 0,
-          height: '100%',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          position:'fixed',
         }} />
         <IonCard style={{
           position: 'fixed',
