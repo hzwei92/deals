@@ -1,13 +1,12 @@
 import { IonButton, IonButtons, IonContent, IonIcon, IonInput, isPlatform } from "@ionic/react"
 import { useContext, useEffect, useState } from "react";
 import { User } from "../types/User";
-import { GoogleLogin } from "@react-oauth/google";
 import useLoginByGoogle from "../hooks/useLoginByGoogle";
-import FacebookLogin from "react-facebook-login";
+import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props'
 import { FACEBOOK_APP_ID, GOOGLE_CLIENT_ID, IOS_GOOGLE_CLIENT_ID } from "../constants";
 import { AppContext } from "../App";
 import useLoginByFacebook from "../hooks/useLoginByFacebook";
-import { logoGoogle, send } from "ionicons/icons";
+import { logoFacebook, logoGoogle, send } from "ionicons/icons";
 import useLoginByEmail from "../hooks/useLoginByEmail";
 import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 
@@ -113,10 +112,12 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
         <IonButtons>
           <IonButton style={{
             width: 250,
-            height: 45,
+            height: 50,
             backgroundColor: 'dimgrey',
             color: 'white',
             borderRadius: 5,
+            fontWeight: 'bold',
+            fontSize: 16,
           }} onClick={() => {
             GoogleAuth.signIn().then((response: any) => {
               console.log(response);
@@ -125,7 +126,7 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
               console.log(error);
             });
           }}>
-            Google
+            <IonIcon icon={logoGoogle} />&nbsp;GOOGLE
           </IonButton>
         </IonButtons>
       </div>
@@ -146,9 +147,22 @@ const LoginStart: React.FC<LoginStartProps> = ({ setPendingUser }) => {
             console.log(response);
             facebookAuth(response.accessToken);
           }}
-          buttonStyle={{
-            width: 250,
-            borderRadius: 5,
+          render={renderProps => {
+            return (
+              <IonButtons>
+                <IonButton style={{
+                  width: 250,
+                  height: 50,
+                  backgroundColor: 'steelblue',
+                  color: 'white',
+                  borderRadius: 5,
+                  fontWeight: 'bold',
+                  fontSize: 16,
+                }} onClick={renderProps.onClick}>
+                  <IonIcon icon={logoFacebook} />&nbsp;FACEBOOK
+                </IonButton>
+              </IonButtons>
+            )
           }}
         />
       </div>
