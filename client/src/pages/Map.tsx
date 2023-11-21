@@ -321,12 +321,11 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     users,
   ])
 
-  // update channel popup
-
+  const [resize, setResize] = useState(false);
   const channelPopupRef = useRef<mapboxgl.Popup | null>(null);
   const [prevChannelId, setPrevChannelId] = useState<number | null>(null);
 
-
+  // update, scroll to channel popup
   useEffect(() => {
     console.log('update channel popup', channel?.id, prevChannelId, channelMode, mapContainer.current?.clientWidth, mapContainer.current?.clientHeight);
     setPrevChannelId(channel?.id ?? null);
@@ -386,7 +385,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       channelPopupRef.current?.remove();
       channelPopupRef.current = null;
     }
-  }, [channel?.id, streams, channelMode, mapContainer.current?.clientWidth, mapContainer.current?.clientHeight]);
+  }, [channel?.id, streams, channelMode, resize]);
 
   // update new channel marker/popup
   useEffect(() => {
@@ -449,21 +448,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     setMembershipSavedIndex(membershipId, null);
   }
 
-
-  // resize map
-  map.current?.resize();
-
   useEffect(() => {
-    const handleResize = () => {
-      map.current?.resize();
-    };
-  
-    window.addEventListener('resize', handleResize);
-  
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+    // resize map
+    map.current?.resize();
+    // trigger update of channel popup
+    setResize(prev => !prev);
+  }, [mapContainer.current?.clientWidth, mapContainer.current?.clientHeight])
 
   return (
     <>
