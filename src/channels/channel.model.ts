@@ -7,12 +7,6 @@ export class Channel {
   @Field(() => Int)
   id: number;
 
-  @Field(() => Int)
-  ownerId: number;
-
-  @Field(() => User)
-  owner: User;
-
   @Field(() => [Membership])
   memberships: Membership[];
   

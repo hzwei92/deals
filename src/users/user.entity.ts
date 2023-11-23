@@ -1,5 +1,6 @@
 import { Channel } from "src/channels/channel.entity";
 import { Deal } from "src/deals/deal.entity";
+import { Device } from "src/devices/device.entity";
 import { Membership } from "src/memberships/membership.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
@@ -20,8 +21,8 @@ export class User {
   @Column()
   name: string;
 
-  @OneToMany(() => Channel, channel => channel.owner)
-  channels: Channel[];
+  @OneToMany(() => Device, device => device.user)
+  devices: Deal[];
 
   @OneToMany(() => Deal, deal => deal.vendor)
   offers: Deal[];

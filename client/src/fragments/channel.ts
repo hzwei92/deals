@@ -5,7 +5,6 @@ export const CHANNEL_FIELDS = gql`
     id
     name
     detail
-    ownerId
     lat
     lng
     memberCount

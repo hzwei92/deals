@@ -7,7 +7,7 @@ import { selectFocusChannel } from "../slices/channelSlice";
 import ChannelPopupText from "./ChannelText";
 import ChannelPopupRoam from "./ChannelRoam";
 import { closeOutline, star, starOutline, stopOutline } from "ionicons/icons";
-import { useSetMembershipSavedIndex } from "../hooks/useSetMembershipSavedIndex";
+import { useSaveMembership } from "../hooks/useSaveMembership";
 import { selectMembershipByChannelIdAndUserId } from "../slices/membershipSlice";
 
 interface ChannelPopupProps {
@@ -26,16 +26,11 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
 
   const membership = useAppSelector(state => selectMembershipByChannelIdAndUserId(state, channel?.id ?? -1, user?.id ?? -1))
 
-  const setMembershipSavedIndex = useSetMembershipSavedIndex();
+  const saveMembership = useSaveMembership();
 
   const handleMinimizeClick = () => {
     if (!membership?.id) return;
-    if (membership?.savedIndex === null) {
-      setMembershipSavedIndex(membership.id, 0)
-    }
-    else {
-      setMembershipSavedIndex(membership.id, null)
-    }
+    saveMembership(membership.id, !membership.isSaved);
   }
 
   const handleMaximizeClick = () => {
@@ -69,8 +64,8 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
         <IonButtons style={{
         }}>
           <IonButton onClick={handleMinimizeClick}>
-            <IonIcon icon={!membership?.id || membership?.savedIndex === null ? starOutline : star} size="small" style={{
-              color:!membership?.id || membership?.savedIndex === null ? null : 'var(--ion-color-primary)'
+            <IonIcon icon={membership?.isSaved ? star : starOutline } size="small" style={{
+              color: membership?.isSaved ? 'var(--ion-color-primary)' : null
             }}/>
           </IonButton>
           <IonButton onClick={handleMaximizeClick}>

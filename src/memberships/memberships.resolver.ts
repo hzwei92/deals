@@ -59,13 +59,15 @@ export class MembershipsResolver {
   }
 
   @UseGuards(AuthGuard)
-  @Mutation(() => [Membership], { name: 'setMembershipSavedIndex' })
-  setMembershipSavedIndex(
+  @Mutation(() => Membership, { name: 'saveMembership' })
+  async saveMembership(
     @CurrentUser() user: UserEntity,
     @Args('membershipId', { type: () => Int}) membershipId:  number,
-    @Args('index', { type: () => Int, nullable: true}) index:  number,
+    @Args('isSaved') isSaved: boolean,
   ) {
-    return this.membershipsService.setSavedIndex(user, membershipId, index);
+    const membership = await this.membershipsService.findOne(membershipId);
+    if (!membership) throw new BadRequestException('Membership not found');
+    return this.membershipsService.setIsSaved(membership, isSaved);
   }
 
   @Subscription(() => Membership, { 

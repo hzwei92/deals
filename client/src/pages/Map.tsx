@@ -14,8 +14,8 @@ import { Provider } from 'react-redux';
 import { store } from '../store';
 import { ApolloProvider } from '@apollo/client';
 import { client } from '../main';
-import { closeOutline, star, starOutline } from 'ionicons/icons';
-import { useSetMembershipSavedIndex } from '../hooks/useSetMembershipSavedIndex';
+import { closeOutline, save, star, starOutline } from 'ionicons/icons';
+import { useSaveMembership } from '../hooks/useSaveMembership';
 import { menuController } from '@ionic/core/components';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
@@ -436,7 +436,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     }
   }, [newChannelLngLat]);
 
-  const setMembershipSavedIndex = useSetMembershipSavedIndex();
+  const saveMembership = useSaveMembership();
 
   const handleChannelClick = (channelId: number) => () => {
     router.push('/map/'+channelId, 'none');
@@ -445,7 +445,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
 
   const handleRemoveClick = (membershipId: number) => (e: any) => {
     e.stopPropagation();
-    setMembershipSavedIndex(membershipId, null);
+    saveMembership(membershipId, false);
   }
 
   useEffect(() => {
@@ -467,8 +467,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       <IonContent>
         {
           memberships
-            .filter(m => m.savedIndex !== null)
-            .sort((a, b) => a.savedIndex! - b.savedIndex!)
+            .filter(m => m.isSaved || m.isOwner)
+            .sort((a, b) => a.lastOpenedAt > b.lastOpenedAt ? -1 : 1)
             .map(m => {
               return (
                 <IonCard key={m.id} onClick={handleChannelClick(m.channelId)} style={{

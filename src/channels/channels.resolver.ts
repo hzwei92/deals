@@ -66,7 +66,7 @@ export class ChannelsResolver {
     @CurrentUser() user: UserEntity
   ) {
     const channel = await this.channelsService.createOne(user, lng, lat, name, url, desc);
-    const membership = await this.membershipService.createOne(user, channel);
+    const membership = await this.membershipService.createOne(user, channel, true);
 
     return {
       channel,
@@ -87,7 +87,7 @@ export class ChannelsResolver {
 
     let membership = await this.membershipService.findOneByUserIdAndChannelId(user.id, channelId);
     if (!membership) {
-      membership = await this.membershipService.createOne(user, channel);
+      membership = await this.membershipService.createOne(user, channel, false);
     }
     return channel;
   }
@@ -168,7 +168,7 @@ export class ChannelsResolver {
 
       let membership1 = await this.membershipService.findOneByUserIdAndChannelId(user.id, channelId);
       if (!membership1) {
-        membership1 = await this.membershipService.createOne(user, channel1);
+        membership1 = await this.membershipService.createOne(user, channel1, false);
       }
       membership1 = await this.membershipService.setIsActive(membership1, true);
       memberships.push(membership1);

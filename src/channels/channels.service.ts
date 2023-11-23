@@ -50,7 +50,6 @@ export class ChannelsService {
       name,
       url,
       detail,
-      ownerId: user.id,
       lng,
       lat,
     });

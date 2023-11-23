@@ -7,12 +7,6 @@ export class Channel {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  ownerId: number;
-
-  @ManyToOne(() => User, user => user.channels)
-  owner: User;
-
   @OneToMany(() => Membership, membership => membership.channel)
   memberships: Membership[];
 

@@ -43,10 +43,11 @@ export class MembershipsService {
     });
   }
 
-  async createOne(user: User, channel: Channel) {
+  async createOne(user: User, channel: Channel, isOwner: boolean): Promise<Membership> {
     const membership = await this.membershipsRepository.create({
       userId: user.id,
       channelId: channel.id,
+      isOwner,
     });
     return this.membershipsRepository.save(membership);
   }
@@ -63,55 +64,8 @@ export class MembershipsService {
     return this.membershipsRepository.save(membership);
   }
 
-  async setSavedIndex(user: User, membershipId: number, index: number | null) {
-    const membership = await this.findOne(membershipId);
-    if (!membership) throw new Error('Membership not found');
-    if (membership.userId !== user.id) throw new Error('Membership does not belong to user');
-    if (membership.savedIndex === index) return [];
-
-    const memberships = await this.findByUserId(membership.userId);
-    const memberships1 = [];
-
-    if (index !== null) {
-      if (membership.savedIndex !== null) {
-        if (membership.savedIndex < index) {
-          memberships.forEach((m) => {
-            if (m.savedIndex !== null && m.savedIndex > membership.savedIndex && m.savedIndex <= index) {
-              m.savedIndex -= 1;
-              memberships1.push(m);
-            }
-          })
-        }
-        else if (membership.savedIndex > index) {
-          memberships.forEach((m) => {
-            if (m.savedIndex !== null && m.savedIndex < membership.savedIndex && m.savedIndex >= index) {
-              m.savedIndex += 1;
-              memberships1.push(m);
-            }
-          })
-        }
-      }
-      else {
-        memberships.forEach((m) => {
-          if (m.savedIndex !== null && m.savedIndex >= index) {
-            m.savedIndex += 1;
-            memberships1.push(m);
-          }
-        })
-      }
-    }
-    else {
-      memberships.forEach((m) => {
-        if (m.savedIndex !== null && m.savedIndex > membership.savedIndex) {
-          m.savedIndex -= 1;
-          memberships1.push(m);
-        }
-      });
-    }
-
-    membership.savedIndex = index;
-    memberships1.push(membership);
-
-    return this.membershipsRepository.save(memberships1);
+  async setIsSaved(membership: Membership, isSaved: boolean) {
+    membership.isSaved = isSaved;
+    return this.membershipsRepository.save(membership);
   }
 }

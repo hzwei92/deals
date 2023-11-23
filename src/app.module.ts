@@ -16,6 +16,7 @@ import { ChannelsModule } from './channels/channels.module';
 import { PubSubModule } from './pub-sub/pub-sub.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { PostsModule } from './posts/posts.module';
+import { DevicesModule } from './devices/devices.module';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { PostsModule } from './posts/posts.module';
     PubSubModule,
     MembershipsModule,
     PostsModule,
+    DevicesModule,
   ],
 })
 export class AppModule {}

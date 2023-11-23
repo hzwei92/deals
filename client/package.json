@@ -25,6 +25,7 @@
     "@capacitor/ios": "^5.2.2",
     "@capacitor/keyboard": "5.0.5",
     "@capacitor/preferences": "^5.0.5",
+    "@capacitor/push-notifications": "^5.1.0",
     "@capacitor/status-bar": "5.0.5",
     "@codetrix-studio/capacitor-google-auth": "^3.3.5",
     "@excalidraw/excalidraw": "^0.15.2",

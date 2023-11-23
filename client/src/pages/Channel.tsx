@@ -8,7 +8,7 @@ import {  closeOutline, scanOutline, star, starOutline } from 'ionicons/icons';
 import { CHANNEL_FIELDS } from '../fragments/channel';
 import { selectMembershipByChannelIdAndUserId } from '../slices/membershipSlice';
 import { selectAppUser } from '../slices/userSlice';
-import { useSetMembershipSavedIndex } from '../hooks/useSetMembershipSavedIndex';
+import { useSaveMembership } from '../hooks/useSaveMembership';
 import ChannelPopupTalk from '../components/ChannelTalk';
 import ChannelPopupText from '../components/ChannelText';
 import ChannelPopupRoam from '../components/ChannelRoam';
@@ -46,15 +46,10 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
 
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const setMembershipSavedIndex = useSetMembershipSavedIndex();
+  const saveMembership = useSaveMembership();
   const handleMinimizeClick = () => {
     if (!membership?.id) return;
-    if (membership?.savedIndex === null) {
-      setMembershipSavedIndex(membership.id, 0)
-    }
-    else {
-      setMembershipSavedIndex(membership.id, null)
-    }
+    saveMembership(membership.id, !membership.isSaved);
   }
   const handleRestoreClick = () => {
     router.push('/map/' + channel?.id, 'none');
@@ -170,8 +165,8 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
             <IonButtons style={{
             }}>
               <IonButton onClick={handleMinimizeClick}>
-                <IonIcon icon={membership?.savedIndex === null ? starOutline : star} size="small" style={{
-                  color: membership?.savedIndex === null ? null : 'var(--ion-color-primary)'
+                <IonIcon icon={membership?.isSaved ? star : starOutline} size="small" style={{
+                  color: membership?.isSaved ? 'var(--ion-color-primary)' : null
                 }}/>
               </IonButton>
               <IonButton onClick={handleRestoreClick}>

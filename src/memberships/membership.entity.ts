@@ -22,12 +22,18 @@ export class Membership {
   @ManyToOne(() => User, user => user.memberships)
   user: User;
 
-  // if null, then not saved; otherwise, the index of the saved membership
-  @Column({ nullable: true })
-  savedIndex: number; 
-  
+  @Column({ default: false })
+  isOwner: boolean;
+
+  @Column({ default: false })
+  isSaved: boolean;
+
+  // if true, then the user is live in the channel video call
   @Column({ default: false })
   isActive: boolean;
+
+  @Column({ nullable: true })
+  lastOpenedAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;

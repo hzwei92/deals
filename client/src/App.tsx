@@ -9,6 +9,7 @@ import {
   IonTabs,
   setupIonicReact,
   isPlatform,
+  IonToast,
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { ellipse, square, triangle } from 'ionicons/icons';
@@ -57,6 +58,8 @@ import useSubMembershipUpdated from './hooks/useSubMembershipUpdated';
 import useJoinChannel from './hooks/useJoinChannel';
 import useSubChannelUpdated from './hooks/useSubChannelUpdated';
 import useSubPostUpdated from './hooks/useSubPostUpdated';
+import { selectMembershipsByUserId } from './slices/membershipSlice';
+import usePushNotifications from './hooks/usePushNotifications';
 
 setupIonicReact();
 
@@ -78,6 +81,7 @@ export const AppContext = createContext({} as {
 const App: React.FC = () => {
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectFocusChannel);
+  const memberships = useAppSelector(state => selectMembershipsByUserId(state, user?.id ?? -1));
 
   const [shouldUpdateMapData, setShouldUpdateMapData] = useState(false);
   const [newChannelLngLat, setNewChannelLngLat] = useState<mapboxgl.LngLat | null>(null);
@@ -107,8 +111,20 @@ const App: React.FC = () => {
   }, [channel?.id]);
 
   useSubChannelUpdated(setShouldUpdateMapData, -90, 90, -180, 180);
-  useSubMembershipUpdated([channel?.id ?? -1]);
-  useSubPostUpdated([channel?.id ?? -1])
+
+  const subscribedChannelIds = memberships
+    .filter(m => m.isOwner || m.isSaved)
+    .sort((a, b) => a.lastOpenedAt > b.lastOpenedAt ? -1 : 1)
+    .map(m => m.channelId);
+
+  if (channel?.id) {
+    subscribedChannelIds.push(channel.id)
+  }
+
+  useSubMembershipUpdated(subscribedChannelIds);
+  useSubPostUpdated(subscribedChannelIds)
+
+  usePushNotifications();
 
   return (
     <IonApp>

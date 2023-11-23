@@ -20,11 +20,17 @@ export class Membership {
   @Field(() => Channel)
   channel: Channel;
 
-  @Field(() => Int, { nullable: true })
-  savedIndex: number;
+  @Field()
+  isOwner: boolean;
+
+  @Field()
+  isSaved: boolean;
   
   @Field()
   isActive: boolean;
+
+  @Field({ nullable: true })
+  lastOpenedAt: Date;
 
   @Field()
   createdAt: Date;

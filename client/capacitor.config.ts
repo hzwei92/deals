@@ -13,6 +13,9 @@ const config: CapacitorConfig = {
       clientId: '752107153785-5tggr0pc3t5ll8vddlppkk37k83ln5j5.apps.googleusercontent.com',
       forceCodeForRefreshToken: true,
     },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"],
+    },
   }
 };
 

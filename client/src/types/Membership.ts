@@ -8,8 +8,10 @@ export type Membership = {
   channel?: Channel;
   userId: number;
   user?: User;
-  savedIndex: number | null;
+  isOwner: boolean;
+  isSaved: boolean;
   isActive: boolean;
+  lastOpenedAt: string;
   createdAt: string;
   updatedAt: string;
   deletedAt: string;

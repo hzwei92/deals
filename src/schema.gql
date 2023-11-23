@@ -19,8 +19,6 @@ type Channel {
   memberCount: Int!
   memberships: [Membership!]!
   name: String!
-  owner: User!
-  ownerId: Int!
   updatedAt: DateTime!
 }
 
@@ -43,6 +41,16 @@ type Deal {
   vendorId: Int!
 }
 
+type Device {
+  apnsToken: String!
+  createdAt: DateTime!
+  deletedAt: DateTime
+  id: Int!
+  updatedAt: DateTime!
+  user: User!
+  userId: Int!
+}
+
 type Image {
   createdAt: DateTime!
   data: String!
@@ -62,7 +70,9 @@ type Membership {
   deletedAt: DateTime
   id: Int!
   isActive: Boolean!
-  savedIndex: Int
+  isOwner: Boolean!
+  isSaved: Boolean!
+  lastOpenedAt: DateTime
   updatedAt: DateTime!
   user: User!
   userId: Int!
@@ -70,6 +80,7 @@ type Membership {
 
 type Mutation {
   activateChannel(channelId: Int): ActivateChannelResult!
+  addDevice(apnsToken: String!): Device!
   changeName(name: String!): User!
   createChannel(desc: String!, lat: Float!, lng: Float!, name: String!, url: String!): JoinChannelResult!
   createPaymentIntent(price: Int!): String!
@@ -89,8 +100,9 @@ type Mutation {
   leaveChannel(channelId: Int!): JoinChannelResult!
   logout: Boolean!
   refresh(refreshToken: String!): RefreshTokentResult!
+  removeDevice(deviceId: Int!): Boolean!
   resend(email: String, phone: String): User!
-  setMembershipSavedIndex(index: Int, membershipId: Int!): [Membership!]!
+  saveMembership(isSaved: Boolean!, membershipId: Int!): Membership!
   setUserCam(isCamOn: Boolean!): User!
   setUserMic(isMicOn: Boolean!): User!
   setUserSound(isSoundOn: Boolean!): User!
