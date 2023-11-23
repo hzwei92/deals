@@ -33,6 +33,9 @@ export class ApnService {
     return this.apnProvider.send(notification, deviceToken)
       .then((result) => {
         console.log(result);
+        result.failed.forEach((failure) => {
+          console.error(failure.response);
+        });
       })
       .catch((error) => {
         console.error(error);
