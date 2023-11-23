@@ -12,6 +12,7 @@ import { UsersModule } from 'src/users/users.module';
     JwtModule.register({}),
     UsersModule,
   ],
-  providers: [DevicesService, DevicesResolver]
+  providers: [DevicesService, DevicesResolver],
+  exports: [DevicesService],
 })
 export class DevicesModule {}

@@ -42,7 +42,7 @@ type Deal {
 }
 
 type Device {
-  apnsToken: String!
+  apnToken: String!
   createdAt: DateTime!
   deletedAt: DateTime
   id: Int!
@@ -80,7 +80,7 @@ type Membership {
 
 type Mutation {
   activateChannel(channelId: Int): ActivateChannelResult!
-  addDevice(apnsToken: String!): Device!
+  addDevice(apnToken: String!): Device!
   changeName(name: String!): User!
   createChannel(desc: String!, lat: Float!, lng: Float!, name: String!, url: String!): JoinChannelResult!
   createPaymentIntent(price: Int!): String!

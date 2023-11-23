@@ -17,6 +17,7 @@ import { PubSubModule } from './pub-sub/pub-sub.module';
 import { MembershipsModule } from './memberships/memberships.module';
 import { PostsModule } from './posts/posts.module';
 import { DevicesModule } from './devices/devices.module';
+import { ApnModule } from './apn/apn.module';
 
 @Module({
   imports: [
@@ -42,6 +43,9 @@ import { DevicesModule } from './devices/devices.module';
         GOOGLE_CLIENT_ID: Joi.string().required(),
         GOOGLE_CLIENT_SECRET: Joi.string().required(),
         IOS_GOOGLE_CLIENT_ID: Joi.string().required(),
+        APN_KEY: Joi.string().required(),
+        APN_KEY_ID: Joi.string().required(),
+        APN_TEAM_ID: Joi.string().required(),
         FRONTEND_URL: Joi.string(),
       }))
     }),
@@ -82,6 +86,7 @@ import { DevicesModule } from './devices/devices.module';
     MembershipsModule,
     PostsModule,
     DevicesModule,
+    ApnModule,
   ],
 })
 export class AppModule {}

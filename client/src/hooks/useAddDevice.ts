@@ -3,10 +3,10 @@ import { Preferences } from "@capacitor/preferences";
 
 
 const ADD_DEVICE = gql`
-  mutation addDevice($apnsToken: String!) {
-    addDevice(apnsToken: $apnsToken) {
+  mutation addDevice($apnToken: String!) {
+    addDevice(apnToken: $apnToken) {
       id
-      apnsToken
+      apnToken
     }
   }
 `
@@ -21,8 +21,8 @@ const useAddDevice = () => {
     },
   });
 
-  const addDevice = (apnsToken: string) => { 
-    add({ variables: { apnsToken } });
+  const addDevice = (apnToken: string) => { 
+    add({ variables: { apnToken } });
   }
 
   return addDevice;

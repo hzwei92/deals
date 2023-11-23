@@ -7,6 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { UsersModule } from 'src/users/users.module';
 import { MembershipsModule } from 'src/memberships/memberships.module';
 import { PubSubModule } from 'src/pub-sub/pub-sub.module';
+import { DevicesModule } from 'src/devices/devices.module';
+import { ApnModule } from 'src/apn/apn.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { PubSubModule } from 'src/pub-sub/pub-sub.module';
     JwtModule.register({}),
     UsersModule,
     MembershipsModule,
+    DevicesModule,
+    ApnModule,
     PubSubModule,
   ],
   providers: [ChannelsService, ChannelsResolver],

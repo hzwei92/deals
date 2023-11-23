@@ -15,9 +15,9 @@ export class DevicesResolver {
   @Mutation(() => Device)
   async addDevice(
     @CurrentUser() user: UserEntity,
-    @Args('apnsToken') apnsToken: string,
+    @Args('apnToken') apnToken: string,
   ) {
-    return this.devicesService.addDevice(user, apnsToken);
+    return this.devicesService.addDevice(user, apnToken);
   }
 
   @UseGuards(AuthGuard)

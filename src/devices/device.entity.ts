@@ -1,4 +1,3 @@
-import { Channel } from "src/channels/channel.entity";
 import { User } from "src/users/user.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
@@ -14,7 +13,7 @@ export class Device {
   user: User;
 
   @Column()
-  apnsToken: string;
+  apnToken: string;
 
   @CreateDateColumn()
   createdAt: Date;

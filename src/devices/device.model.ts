@@ -13,7 +13,7 @@ export class Device {
   user: User;
 
   @Field()
-  apnsToken: string;
+  apnToken: string;
 
   @Field()
   createdAt: Date;

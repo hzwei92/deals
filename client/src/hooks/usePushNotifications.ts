@@ -49,11 +49,15 @@ const usePushNotifications = () => {
 
   const user = useAppSelector(selectAppUser);
 
+  useEffect(() => {
+    if (isPlatform('ios') && !isPlatform('mobileweb')) {
+      addListeners();
+    }
+  }, []);
 
   useEffect(() => {
     if (!user?.id) return;
     if (isPlatform('ios') && !isPlatform('mobileweb')) {
-      addListeners();
       registerNotifications();
     }
   }, [user?.id]);

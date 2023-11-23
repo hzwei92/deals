@@ -18,20 +18,28 @@ export class DevicesService {
       }
     });
   }
-  async findOneByUserIdAndApnsToken(userId: number, apnsToken: string) {
-    return this.devicesRepository.findOne({ where: {
-      userId, apnsToken 
-    }});
+
+  async findByUserId(userId: number) {
+    return this.devicesRepository.find({
+      where: {
+        userId,
+      }
+    });
   }
 
-  async addDevice(user: User, apnsToken: string) {
-    let device = await this.findOneByUserIdAndApnsToken(user.id, apnsToken);
-    if (device) {
-      return device;
-    }
-    device = new Device();
+  async findByChannelId(channelId: number) {
+    return this.devicesRepository.createQueryBuilder('device')
+      .where(
+        'device.userId IN (SELECT userId FROM memberships WHERE channelId = :channelId AND isSaved = true)', 
+        { channelId }
+      )
+      .getMany();
+  }
+
+  async addDevice(user: User, apnToken: string) {
+    const device = new Device();
     device.userId = user.id;
-    device.apnsToken = apnsToken;
+    device.apnToken = apnToken;
     return this.devicesRepository.save(device);
   }
 

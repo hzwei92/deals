@@ -39,6 +39,7 @@
     "@types/graphql-upload": "^16.0.0",
     "@types/mailgun-js": "^0.22.13",
     "@types/passport-facebook": "^3.0.0",
+    "apn": "^2.2.0",
     "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "class-validator": "^0.14.0",

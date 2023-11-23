@@ -10,6 +10,9 @@ import { AuthGuard, CurrentUser } from 'src/auth/gql-auth.guard';
 import { User as UserEntity } from 'src/users/user.entity';
 import { PUB_SUB } from 'src/pub-sub/pub-sub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
+import { ApnService } from 'src/apn/apn.service';
+import { MembershipsService } from 'src/memberships/memberships.service';
+import { DevicesService } from 'src/devices/devices.service';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -17,6 +20,8 @@ export class PostsResolver {
     private readonly postsService: PostsService,
     private readonly usersService: UsersService,
     private readonly channelsService: ChannelsService,
+    private readonly devicesService: DevicesService,
+    private readonly apnService: ApnService,
     @Inject(PUB_SUB)
     private readonly pubSub: RedisPubSub,
   ) {}
@@ -44,6 +49,17 @@ export class PostsResolver {
   ) {
     const post = await this.postsService.createOne(user.id, channelId, text);
     this.pubSub.publish('postUpdated', { postUpdated: post });
+
+    const devices = await this.devicesService.findByChannelId(channelId);
+
+    devices.forEach((device) => {
+      this.apnService.sendNotification(device.apnToken, {
+        title: 'New message',
+        body: `${user.name}: ${text}`,
+        channelId,
+      });
+    });
+    
     return post;
   }
 

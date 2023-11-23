@@ -11,6 +11,8 @@ import { ActivateChannelResult } from './dto/activate-channel-result.dto';
 import { PUB_SUB } from 'src/pub-sub/pub-sub.module';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { Membership } from 'src/memberships/membership.model';
+import { DevicesService } from 'src/devices/devices.service';
+import { ApnService } from 'src/apn/apn.service';
 
 @Resolver(() => Channel)
 export class ChannelsResolver {
@@ -18,6 +20,8 @@ export class ChannelsResolver {
     private readonly channelsService: ChannelsService,
     private readonly usersService: UsersService,
     private readonly membershipService: MembershipsService,
+    private readonly devicesService: DevicesService,
+    private readonly apnService: ApnService,
     @Inject(PUB_SUB)
     private readonly pubSub: RedisPubSub,
   ) {}
@@ -175,6 +179,16 @@ export class ChannelsResolver {
 
       this.pubSub.publish('membershipUpdated', {
         membershipUpdated: membership1,
+      });
+
+      const devices = await this.devicesService.findByChannelId(channelId);
+
+      devices.forEach((device) => {
+        this.apnService.sendNotification(device.apnToken, {
+          title: 'New call',
+          body: `${user.name} joined`,
+          channelId,
+        });
       });
     }
     
