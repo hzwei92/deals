@@ -11,9 +11,7 @@ export class ApnService {
   ) {
     this.apnProvider = new apn.Provider({
       token: {
-        key: configService.get('NODE_ENV') === 'production' 
-          ? configService.get('APN_KEY').replace(/\\n/g, '\n')
-          : configService.get('APN_KEY'),
+        key: configService.get('APN_KEY').replace(/\\n/g, '\n'),
         keyId: configService.get('APN_KEY_ID'),
         teamId: configService.get('APN_TEAM_ID'),
       },
@@ -22,6 +20,7 @@ export class ApnService {
   }
 
   async sendNotification(deviceToken: string, payload: any) {
+    console.log('sending notification to ', deviceToken)
     const notification = new apn.Notification();
     notification.expiry = Math.floor(Date.now() / 1000) + 3600;
     notification.badge = 1;
