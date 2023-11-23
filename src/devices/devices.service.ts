@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Device } from './device.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { User } from 'src/users/user.entity';
 
 @Injectable()
@@ -27,13 +27,12 @@ export class DevicesService {
     });
   }
 
-  async findByChannelId(channelId: number) {
-    return this.devicesRepository.createQueryBuilder('device')
-      .where(
-        'device.userId IN (SELECT userId FROM memberships WHERE channelId = :channelId AND isSaved = true)', 
-        { channelId }
-      )
-      .getMany();
+  async findByUserIds(userIds: number[]) {
+    return this.devicesRepository.find({
+      where: {
+        userId: In(userIds),
+      }
+    });
   }
 
   async addDevice(user: User, apnToken: string) {

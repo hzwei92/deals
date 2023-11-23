@@ -20,6 +20,7 @@ export class PostsResolver {
     private readonly postsService: PostsService,
     private readonly usersService: UsersService,
     private readonly channelsService: ChannelsService,
+    private readonly membershipsService: MembershipsService,
     private readonly devicesService: DevicesService,
     private readonly apnService: ApnService,
     @Inject(PUB_SUB)
@@ -50,7 +51,8 @@ export class PostsResolver {
     const post = await this.postsService.createOne(user.id, channelId, text);
     this.pubSub.publish('postUpdated', { postUpdated: post });
 
-    const devices = await this.devicesService.findByChannelId(channelId);
+    const saved = await this.membershipsService.findSavedByChannelId(channelId);
+    const devices = await this.devicesService.findByUserIds(saved.map(m => m.userId));
 
     devices.forEach((device) => {
       this.apnService.sendNotification(device.apnToken, {

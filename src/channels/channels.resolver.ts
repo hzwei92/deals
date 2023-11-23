@@ -181,7 +181,8 @@ export class ChannelsResolver {
         membershipUpdated: membership1,
       });
 
-      const devices = await this.devicesService.findByChannelId(channelId);
+      const saved = await this.membershipService.findSavedByChannelId(channelId);
+      const devices = await this.devicesService.findByUserIds(saved.map(m => m.userId));
 
       devices.forEach((device) => {
         this.apnService.sendNotification(device.apnToken, {

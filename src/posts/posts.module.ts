@@ -9,6 +9,7 @@ import { ChannelsModule } from 'src/channels/channels.module';
 import { PubSubModule } from 'src/pub-sub/pub-sub.module';
 import { ApnModule } from 'src/apn/apn.module';
 import { DevicesModule } from 'src/devices/devices.module';
+import { MembershipsModule } from 'src/memberships/memberships.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { DevicesModule } from 'src/devices/devices.module';
     JwtModule.register({}),
     UsersModule,
     ChannelsModule,
+    MembershipsModule,
     DevicesModule,
     PubSubModule,
     ApnModule,

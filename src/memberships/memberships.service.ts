@@ -37,6 +37,15 @@ export class MembershipsService {
     });
   }
 
+  async findSavedByChannelId(channelId: number): Promise<Membership[]> {
+    return this.membershipsRepository.find({
+      where: {
+        channelId,
+        isSaved: true,
+      },
+    });
+  }
+
   async findOne(id: number): Promise<Membership | null> {
     return this.membershipsRepository.findOne({
       where: { id }
