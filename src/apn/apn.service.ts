@@ -30,6 +30,12 @@ export class ApnService {
     notification.payload = payload;
     notification.pushType = 'alert';
     notification.topic = 'io.jamn';
-    return this.apnProvider.send(notification, deviceToken);
+    return this.apnProvider.send(notification, deviceToken)
+      .then((result) => {
+        console.log(result);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }
 }
