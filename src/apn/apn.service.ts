@@ -23,14 +23,13 @@ export class ApnService {
 
   async sendNotification(deviceToken: string, payload: any) {
     const notification = new apn.Notification();
-    notification.topic = 'com.example.app';
     notification.expiry = Math.floor(Date.now() / 1000) + 3600;
     notification.badge = 1;
     notification.sound = 'ping.aiff';
     notification.alert = 'Hello World \uD83C\uDF10';
     notification.payload = payload;
     notification.pushType = 'alert';
-    notification.topic = 'com.example.app';
+    notification.topic = 'io.jamn';
     return this.apnProvider.send(notification, deviceToken);
   }
 }
