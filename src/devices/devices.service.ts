@@ -43,25 +43,21 @@ export class DevicesService {
     });
   }
 
-  async addDevice(user: User, apnToken: string) {
+  async addDevice(user: User, apnToken: string): Promise<Device> {
     console.log('addDevice', user, apnToken);
-    const device = await this.findOneByApnToken(apnToken);
+    let device = await this.findOneByApnToken(apnToken);
 
     if (device) {
-      if (device.userId === user.id) {
-        return device;
-      }
-      else {
-        device.userId = user.id;
-        return this.devicesRepository.save(device);
-      }
+      device.userId = user.id;
     }
     else {
-      return this.devicesRepository.create({
+      device = await this.devicesRepository.create({
         userId: user.id,
         apnToken,
       });
     }
+
+    return this.devicesRepository.save(device); 
   }
 
   async removeDevice(user: User, id: number) {

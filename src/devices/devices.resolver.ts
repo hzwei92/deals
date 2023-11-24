@@ -17,7 +17,9 @@ export class DevicesResolver {
     @CurrentUser() user: UserEntity,
     @Args('apnToken') apnToken: string,
   ) {
-    return this.devicesService.addDevice(user, apnToken);
+    const device = await this.devicesService.addDevice(user, apnToken);
+    console.log('device', device);
+    return device;
   }
 
   @UseGuards(AuthGuard)
