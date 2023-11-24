@@ -44,6 +44,7 @@ export class PostsResolver {
   @UseGuards(AuthGuard)
   @Mutation(() => Post, { name: 'createPost' })
   async createPost(
+    @Args('deviceId', { type: () => Int, nullable: true} ) deviceId: number,
     @Args('channelId', { type: () => Int }) channelId: number,
     @Args('text') text: string,
     @CurrentUser() user: UserEntity,
@@ -53,8 +54,12 @@ export class PostsResolver {
 
     const saved = await this.membershipsService.findSavedByChannelId(channelId);
     const devices = await this.devicesService.findByUserIds(saved.map(m => m.userId));
+    const dedupedDevices = [... new Set(devices)];
 
-    devices.forEach((device) => {
+    dedupedDevices.forEach((device) => {
+      if (device.id === deviceId || device.userId === user.id) {
+        return;
+      }
       this.apnService.sendNotification(device.apnToken, {
         title: 'New message',
         body: `${user.name}: ${text}`,

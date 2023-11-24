@@ -25,10 +25,10 @@ export class ApnService {
     notification.expiry = Math.floor(Date.now() / 1000) + 3600;
     notification.badge = 1;
     notification.sound = 'ping.aiff';
-    notification.alert = 'Hello World \uD83C\uDF10';
-    notification.payload = payload;
+    notification.alert = payload
     notification.pushType = 'alert';
     notification.topic = 'io.jamn';
+    notification.rawPayload = payload;
     return this.apnProvider.send(notification, deviceToken)
       .then((result) => {
         console.log(result);

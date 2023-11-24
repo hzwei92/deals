@@ -79,12 +79,12 @@ type Membership {
 }
 
 type Mutation {
-  activateChannel(channelId: Int): ActivateChannelResult!
+  activateChannel(channelId: Int, deviceId: Int): ActivateChannelResult!
   addDevice(apnToken: String!): Device!
   changeName(name: String!): User!
   createChannel(desc: String!, lat: Float!, lng: Float!, name: String!, url: String!): JoinChannelResult!
   createPaymentIntent(price: Int!): String!
-  createPost(channelId: Int!, text: String!): Post!
+  createPost(channelId: Int!, deviceId: Int, text: String!): Post!
   emailLogin(email: String!): User!
   facebookAuth(credential: String!): VerifyResult!
   getActiveChannels(lat: Float!, lng: Float!): [Channel!]!

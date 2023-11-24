@@ -124,6 +124,7 @@ export class ChannelsResolver {
   @UseGuards(AuthGuard)
   @Mutation(() => ActivateChannelResult, { name: 'activateChannel' })
   async activateChannel(
+    @Args('deviceId', { type: () => Int, nullable: true}) deviceId: number,
     @Args('channelId', { type: () => Int, nullable: true }) channelId: number,
     @CurrentUser() user: UserEntity,
   ) {
@@ -184,7 +185,12 @@ export class ChannelsResolver {
       const saved = await this.membershipService.findSavedByChannelId(channelId);
       const devices = await this.devicesService.findByUserIds(saved.map(m => m.userId));
 
-      devices.forEach((device) => {
+      const dedupedDevices = [... new Set(devices)];
+      dedupedDevices.forEach((device) => {
+        if (device.id === deviceId || device.userId === user.id) {
+          return;
+        }
+
         this.apnService.sendNotification(device.apnToken, {
           title: 'New call',
           body: `${user.name} joined`,

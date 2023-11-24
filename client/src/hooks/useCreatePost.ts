@@ -2,11 +2,12 @@ import { gql, useMutation } from "@apollo/client";
 import { POST_FIELDS } from "../fragments/post";
 import { useAppDispatch } from "../store";
 import { addPosts } from "../slices/postSlice";
+import { Preferences } from "@capacitor/preferences";
 
 
 const CREATE_POST = gql`
-  mutation CreatePost($channelId: Int!, $text: String!) {
-    createPost(channelId: $channelId, text: $text) {
+  mutation CreatePost($deviceId: Int, $channelId: Int!, $text: String!) {
+    createPost(deviceId: $deviceId, channelId: $channelId, text: $text) {
       ...PostFields
     }
   }
@@ -30,9 +31,14 @@ const useCreatePost = (onComleted: () => void) => {
     },
   });
 
-  const createPost = (channelId: number, text: string) => {
+  const createPost = async (channelId: number, text: string) => {
+    const deviceId = (await Preferences.get({
+      key: 'deviceId',
+    })).value;
+
     create({
       variables: {
+        deviceId,
         channelId,
         text,
       }
