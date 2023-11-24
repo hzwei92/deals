@@ -172,6 +172,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       map.current.removeLayer('clusters');
       map.current.removeLayer('cluster-count');
       map.current.removeLayer('unclustered-point');
+      map.current.removeLayer('unclustered-point-label')
       map.current.removeSource('channels');
     }
 
