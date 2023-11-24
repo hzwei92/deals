@@ -28,7 +28,6 @@ export class ApnService {
     notification.alert = payload
     notification.pushType = 'alert';
     notification.topic = 'io.jamn';
-    notification.rawPayload = payload;
     return this.apnProvider.send(notification, deviceToken)
       .then((result) => {
         console.log(result);
