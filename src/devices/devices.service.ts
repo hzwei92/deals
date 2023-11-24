@@ -44,6 +44,7 @@ export class DevicesService {
   }
 
   async addDevice(user: User, apnToken: string) {
+    console.log('addDevice', user, apnToken);
     const device = await this.findOneByApnToken(apnToken);
 
     if (device) {
