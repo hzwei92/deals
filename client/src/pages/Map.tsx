@@ -183,6 +183,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
           type: 'Feature',
           properties: {
             id: channel.id,
+            name: channel.name,
             memberCount: channel.memberCount,
             activeUserCount: channel.activeUserCount,
           },
@@ -256,6 +257,21 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
         'circle-stroke-color': '#ffffff' 
       } 
     });  
+
+
+    map.current.addLayer({
+      id: 'unclustered-point-label',
+      type: 'symbol',
+      source: 'channels',
+      filter: ['!', ['has', 'point_count']],
+      layout: {
+        'text-field': ['get', 'name'],
+        'text-font': ['Open Sans Semibold'],
+        'text-size': 14,
+        'text-offset': [0, 1.5],
+      }
+  
+    })
 
     map.current.on('click', 'clusters', (e) => {
       e.clickOnLayer = true;
