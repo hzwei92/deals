@@ -35,7 +35,21 @@ export class DevicesService {
     });
   }
 
+  async findByApnToken(apnToken: string) {
+    return this.devicesRepository.find({
+      where: {
+        apnToken,
+      }
+    });
+  }
+
   async addDevice(user: User, apnToken: string) {
+    const devices = await this.findByApnToken(apnToken);
+    devices.forEach(device => {
+      device.deletedAt = new Date();
+    });
+    await this.devicesRepository.save(devices);
+    
     const device = new Device();
     device.userId = user.id;
     device.apnToken = apnToken;
