@@ -35,8 +35,8 @@ export class DevicesService {
     });
   }
 
-  async findByApnToken(apnToken: string) {
-    return this.devicesRepository.find({
+  async findOneByApnToken(apnToken: string) {
+    return this.devicesRepository.findOne({
       where: {
         apnToken,
       }
@@ -44,16 +44,23 @@ export class DevicesService {
   }
 
   async addDevice(user: User, apnToken: string) {
-    const devices = await this.findByApnToken(apnToken);
-    devices.forEach(device => {
-      device.deletedAt = new Date();
-    });
-    await this.devicesRepository.save(devices);
-    
-    const device = new Device();
-    device.userId = user.id;
-    device.apnToken = apnToken;
-    return this.devicesRepository.save(device);
+    const device = await this.findOneByApnToken(apnToken);
+
+    if (device) {
+      if (device.userId === user.id) {
+        return device;
+      }
+      else {
+        device.userId = user.id;
+        return this.devicesRepository.save(device);
+      }
+    }
+    else {
+      return this.devicesRepository.create({
+        userId: user.id,
+        apnToken,
+      });
+    }
   }
 
   async removeDevice(user: User, id: number) {

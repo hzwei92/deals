@@ -12,7 +12,7 @@ export class Device {
   @ManyToOne(() => User, user => user.devices)
   user: User;
 
-  @Index({ unique: true })
+  @Index({ unique: true, where: '"deletedAt" IS NULL' })
   @Column()
   apnToken: string;
 
