@@ -1,14 +1,18 @@
-import { IonButton, IonButtons, IonCard, IonInput, IonPage } from "@ionic/react"
+import { IonButton, IonButtons, IonCard, IonInput, IonPage, isPlatform, useIonRouter } from "@ionic/react"
 import { useState } from "react";
 import useCreateChannel from "../hooks/useCreateChannel";
 
 
 const CreateChannel: React.FC = () => {
+  const router = useIonRouter();
+
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [hasModifiedUrl, setHasModifiedUrl] = useState(false);
   const [description, setDescription] = useState(''); 
   const [error, setError] = useState('');
+
+  console.log('yolo')
   
   const createChannel = useCreateChannel(
     (err: any) => {
@@ -65,10 +69,14 @@ const CreateChannel: React.FC = () => {
     createChannel(name, url, description);
   }
 
+  const handleBack = () => {
+    console.log('hihi', router.routeInfo.pathname)
+    router.push('/map', 'none');
+  }
   return (
     <IonPage>
       <div style={{
-        marginTop: 50,
+        marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 50,
         height: 'calc(100% - 50px)',
         backgroundColor: 'var(--ion-color-light)',
         display: 'flex',
@@ -80,7 +88,7 @@ const CreateChannel: React.FC = () => {
           flexDirection: 'row',
           justifyContent: 'space-between',
         }}>
-          <IonButton routerLink="/map" style={{
+          <IonButton onClick={handleBack} style={{
             margin: 20,
             border: '1px solid',
             borderRadius: 5,

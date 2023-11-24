@@ -62,7 +62,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
 
   const createChannel = () => {
     if (user?.id) {
-      router.push('/create-channel');
+      marker.current?.getPopup().remove();
+      marker.current?.remove();
+      console.log(router.routeInfo.pathname)
+      router.push('/create-channel', 'none');
     }
     else {
       authModal?.current?.present();
@@ -73,11 +76,15 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   const [nextChannelId, setNextChannelId] = useState<number | null>(-1);
 
   useEffect(() => {
+    console.log('pathname', router.routeInfo.pathname, nextChannelId, channel?.id)
+    if (!router.routeInfo.pathname.match(/^\/map/)) {
+      return;
+    }
     if (nextChannelId === -1) {
       return;
     }
     if (nextChannelId) {
-      if (nextChannelId === channel?.id) {
+      if (nextChannelId === (channel?.id ?? null)) {
         router.push('/map', 'none');
       }
       else { 
@@ -451,7 +458,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     else {
       marker.current?.remove();
     }
-  }, [newChannelLngLat]);
+  }, [newChannelLngLat, router.push]);
 
   const saveMembership = useSaveMembership();
 
@@ -476,7 +483,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     <>
     <IonMenu type='overlay' menuId='map-menu' contentId='map-main-content'>
       <IonHeader style={{
-        marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 55,
+        marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 50,
         padding: 10,
       }}>
         SAVED CHANNELS

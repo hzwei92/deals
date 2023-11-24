@@ -46,7 +46,7 @@ const useCreateChannel = (handleError: (err: any) => void, handleSuccess: () => 
       dispatch(addChannels([data.createChannel.channel]));
       dispatch(addMemberships([data.createChannel.membership]));
 
-      router.push('/channel/' + data.createChannel.membership.channelId + '/talk');
+      router.push('/map/' + data.createChannel.membership.channelId, 'none');
       setShouldUpdateMapData(true);
 
       handleSuccess();

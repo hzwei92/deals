@@ -99,7 +99,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           display: 'flex',
           flexDirection: 'column',
           marginLeft: 5,
-          marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 55,
+          marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 50,
         }}>
           <div style={{
             display: 'flex',
@@ -122,7 +122,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
           display: 'flex',
           flexDirection: 'column',
           marginLeft: 5,
-          marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 55,
+          marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 50,
         }}>
           <div style={{
             display: 'inline-flex',
@@ -141,7 +141,7 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
   return (
     <IonPage>
       <div style={{
-        height: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 55,
+        height: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 50,
       }} />
       <IonContent style={{
         overflowY: 'hidden',

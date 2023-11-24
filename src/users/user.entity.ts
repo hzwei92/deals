@@ -15,7 +15,7 @@ export class User {
 
   @Index({ unique: true, where: '"deletedAt" IS NULL AND phone IS NOT NULL' })
   @Column({ nullable: true })
-  phone?: string;
+  phone: string;
 
   @Index({ unique: true, where: '"deletedAt" IS NOT NULL' })
   @Column()
