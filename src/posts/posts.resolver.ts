@@ -56,6 +56,8 @@ export class PostsResolver {
     const devices = await this.devicesService.findByUserIds(saved.map(m => m.userId));
     const dedupedDevices = [... new Set(devices)];
 
+    console.log('dedupedDevices', dedupedDevices);
+
     dedupedDevices.forEach((device) => {
       if (device.id === deviceId || device.userId === user.id) {
         return;
