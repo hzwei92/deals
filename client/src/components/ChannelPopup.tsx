@@ -29,7 +29,7 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
   const saveMembership = useSaveMembership();
 
   const handleMinimizeClick = () => {
-    if (!membership?.id) return;
+    if (!membership?.id || membership.isOwner) return;
     saveMembership(membership.id, !membership.isSaved);
   }
 
@@ -48,6 +48,7 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
       <div>
       <div style={{
         marginTop: 5,
+        marginLeft: 5,
         fontSize: 24,
         fontWeight: 'bold',
         display: 'flex',
@@ -59,13 +60,13 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
           flexDirection: 'column',
           justifyContent: 'center',
         }}>
-        { channel?.name } 
+          { channel?.name } 
         </div>
         <IonButtons style={{
         }}>
           <IonButton onClick={handleMinimizeClick}>
-            <IonIcon icon={membership?.isSaved ? star : starOutline } size="small" style={{
-              color: membership?.isSaved ? 'var(--ion-color-primary)' : null
+            <IonIcon icon={membership?.isSaved || membership?.isOwner ? star : starOutline } size="small" style={{
+              color: membership?.isSaved || membership?.isOwner ? 'var(--ion-color-primary)' : null
             }}/>
           </IonButton>
           <IonButton onClick={handleMaximizeClick}>

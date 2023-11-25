@@ -70,11 +70,14 @@ export class MembershipsService {
 
   async setIsActive(membership: Membership, isActive: boolean) {
     membership.isActive = isActive;
+    membership.isSaved = membership.isSaved || isActive;
+    membership.lastVisitedAt = new Date();
     return this.membershipsRepository.save(membership);
   }
 
   async setIsSaved(membership: Membership, isSaved: boolean) {
     membership.isSaved = isSaved;
+    membership.lastVisitedAt = new Date();
     return this.membershipsRepository.save(membership);
   }
 }

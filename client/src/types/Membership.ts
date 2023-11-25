@@ -11,7 +11,7 @@ export type Membership = {
   isOwner: boolean;
   isSaved: boolean;
   isActive: boolean;
-  lastOpenedAt: string;
+  lastVisitedAt: string;
   createdAt: string;
   updatedAt: string;
   deletedAt: string;

@@ -355,13 +355,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     setPrevChannelId(channel?.id ?? null);
 
     if (channel?.id) {  
-      if (channel.lat !== mapLat || channel.lng !== mapLng) {
-        map.current?.easeTo({
-          center: [channel.lng, channel.lat],
-        });
-      }
-
       if (channel?.id !== prevChannelId) {
+        if (channel.lat !== mapLat || channel.lng !== mapLng) {
+          map.current?.easeTo({
+            center: [channel.lng, channel.lat],
+          });
+        }
+
         channelPopupRef.current?.remove();
 
         setNewChannelLngLat(null);
@@ -486,13 +486,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
         marginTop: isPlatform('ios') && !isPlatform('mobileweb') ? 105 : 50,
         padding: 10,
       }}>
-        SAVED CHANNELS
+        STARRED CHANNELS
       </IonHeader>
       <IonContent>
         {
           memberships
             .filter(m => m.isSaved || m.isOwner)
-            .sort((a, b) => a.lastOpenedAt > b.lastOpenedAt ? -1 : 1)
+            .sort((a, b) => a.lastVisitedAt > b.lastVisitedAt ? -1 : 1)
             .map(m => {
               return (
                 <IonCard key={m.id} onClick={handleChannelClick(m.channelId)} style={{
@@ -507,10 +507,32 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
                     flexDirection: 'column',
                     justifyContent: 'center',
                   }}>
-                    { channels[m.channelId].name }
+                    <div style={{
+                      display: 'flex',
+                    }}>
+                      <div>
+                        { channels[m.channelId].name }
+                      </div>
+                      &nbsp;
+                      <div style={{
+                        color: '#f4900c',
+                      }}>
+                        { m.isOwner ? '(owner)' : null }
+                      </div>
+                    </div>
+                    {
+                      channels[m.channelId].activeUserCount > 0
+                        ? <div style={{
+                            fontSize: 12,
+                            color: '#f4900c',
+                          }}>
+                            { channels[m.channelId].activeUserCount } active 
+                          </div>
+                        : null
+                    }
                   </div>
                   <IonButtons>
-                    <IonButton onClick={handleRemoveClick(m.id)}>
+                    <IonButton onClick={handleRemoveClick(m.id)} disabled={m.isOwner}>
                       <IonIcon icon={closeOutline} />
                     </IonButton>
                   </IonButtons>

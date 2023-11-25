@@ -114,7 +114,7 @@ const App: React.FC = () => {
 
   const subscribedChannelIds = memberships
     .filter(m => m.isOwner || m.isSaved)
-    .sort((a, b) => a.lastOpenedAt > b.lastOpenedAt ? -1 : 1)
+    .sort((a, b) => a.lastVisitedAt > b.lastVisitedAt ? -1 : 1)
     .map(m => m.channelId);
 
   if (channel?.id) {

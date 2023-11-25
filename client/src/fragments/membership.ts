@@ -8,7 +8,7 @@ export const MEMBERSHIP_FIELDS = gql`
     isOwner
     isSaved
     isActive
-    lastOpenedAt
+    lastVisitedAt
     createdAt
     updatedAt
     deletedAt

@@ -30,7 +30,7 @@ export class Membership {
   isActive: boolean;
 
   @Field({ nullable: true })
-  lastOpenedAt: Date;
+  lastVisitedAt: Date;
 
   @Field()
   createdAt: Date;

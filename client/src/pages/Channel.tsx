@@ -165,8 +165,8 @@ const Channel: React.FC<ChannelProps> = ({ match }) => {
             <IonButtons style={{
             }}>
               <IonButton onClick={handleMinimizeClick}>
-                <IonIcon icon={membership?.isSaved ? star : starOutline} size="small" style={{
-                  color: membership?.isSaved ? 'var(--ion-color-primary)' : null
+                <IonIcon icon={membership?.isSaved || membership?.isOwner ? star : starOutline} size="small" style={{
+                  color: membership?.isSaved || membership?.isOwner ? 'var(--ion-color-primary)' : null
                 }}/>
               </IonButton>
               <IonButton onClick={handleRestoreClick}>

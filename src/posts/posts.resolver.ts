@@ -13,6 +13,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { ApnService } from 'src/apn/apn.service';
 import { MembershipsService } from 'src/memberships/memberships.service';
 import { DevicesService } from 'src/devices/devices.service';
+import { CreatePostResult } from './dto/create-post-result.dto';
 
 @Resolver(() => Post)
 export class PostsResolver {
@@ -42,7 +43,7 @@ export class PostsResolver {
   }
 
   @UseGuards(AuthGuard)
-  @Mutation(() => Post, { name: 'createPost' })
+  @Mutation(() => CreatePostResult, { name: 'createPost' })
   async createPost(
     @Args('deviceId', { type: () => Int, nullable: true} ) deviceId: number,
     @Args('channelId', { type: () => Int }) channelId: number,
@@ -51,6 +52,8 @@ export class PostsResolver {
   ) {
     const post = await this.postsService.createOne(user.id, channelId, text);
     this.pubSub.publish('postUpdated', { postUpdated: post });
+
+    const channel = await this.channelsService.findOne(channelId);
 
     const saved = await this.membershipsService.findSavedByChannelId(channelId);
     const devices = await this.devicesService.findByUserIds(saved.map(m => m.userId));
@@ -63,13 +66,19 @@ export class PostsResolver {
         return;
       }
       this.apnService.sendNotification(device.apnToken, {
-        title: 'New message',
+        title: channel.name,
         body: `${user.name}: ${text}`,
         channelId,
       });
     });
-    
-    return post;
+
+    let membership = await this.membershipsService.findOneByUserIdAndChannelId(user.id, channelId);
+    membership = await this.membershipsService.setIsSaved(membership, true);
+
+    return {
+      post, 
+      membership,
+    };
   }
 
   @UseGuards(AuthGuard)

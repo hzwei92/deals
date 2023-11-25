@@ -33,7 +33,7 @@ export class Membership {
   isActive: boolean;
 
   @Column({ nullable: true })
-  lastOpenedAt: Date;
+  lastVisitedAt: Date;
 
   @CreateDateColumn()
   createdAt: Date;

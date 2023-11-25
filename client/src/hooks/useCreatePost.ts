@@ -3,15 +3,24 @@ import { POST_FIELDS } from "../fragments/post";
 import { useAppDispatch } from "../store";
 import { addPosts } from "../slices/postSlice";
 import { Preferences } from "@capacitor/preferences";
+import { DEVICE_ID_KEY } from "../constants";
+import { MEMBERSHIP_FIELDS } from "../fragments/membership";
+import { addMemberships } from "../slices/membershipSlice";
 
 
 const CREATE_POST = gql`
   mutation CreatePost($deviceId: Int, $channelId: Int!, $text: String!) {
     createPost(deviceId: $deviceId, channelId: $channelId, text: $text) {
-      ...PostFields
+      post {
+        ...PostFields
+      }
+      membership {
+        ...MembershipFields
+      }
     }
   }
   ${POST_FIELDS}
+  ${MEMBERSHIP_FIELDS}
 `;
 
 const useCreatePost = (onComleted: () => void) => {
@@ -26,19 +35,24 @@ const useCreatePost = (onComleted: () => void) => {
       console.log(data);
 
       dispatch(addPosts([data.createPost]))
+      dispatch(addMemberships([data.createPost.membership]))
 
       onComleted();
     },
   });
 
   const createPost = async (channelId: number, text: string) => {
-    const deviceId = (await Preferences.get({
-      key: 'deviceId',
-    })).value;
+    const { value } = await Preferences.get({
+      key: DEVICE_ID_KEY,
+    }); 
+
+    console.log('deviceId', value);
 
     create({
       variables: {
-        deviceId,
+        deviceId: value
+          ? parseInt(value)
+          : null,
         channelId,
         text,
       }

@@ -1,5 +1,6 @@
 import { gql, useMutation } from "@apollo/client"
 import { Preferences } from "@capacitor/preferences";
+import { DEVICE_ID_KEY } from "../constants";
 
 
 const ADD_DEVICE = gql`
@@ -16,8 +17,11 @@ const useAddDevice = () => {
       console.error(err);
     },
     onCompleted: data => {
-      console.log('add device', data);
-      Preferences.set({ key: 'deviceId', value: data.addDevice.id });
+      console.log('add device', data, data.addDevice.id);
+      Preferences.set({ 
+        key: DEVICE_ID_KEY, 
+        value: data.addDevice.id.toString(),
+      });
     },
   });
 

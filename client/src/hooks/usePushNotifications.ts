@@ -32,10 +32,12 @@ const usePushNotifications = () => {
     console.log('permStatus', permStatus)
 
     if (permStatus.receive === 'prompt') {
+      permStatus = await PushNotifications.requestPermissions();
     }
 
     if (permStatus.receive !== 'granted') {
-      permStatus = await PushNotifications.requestPermissions();
+      throw new Error('User denied permissions!');
+      // TODO unregister?
     }
 
     await PushNotifications.register();

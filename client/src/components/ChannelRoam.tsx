@@ -1,3 +1,4 @@
+import { IonButton, IonButtons } from "@ionic/react";
 import { selectFocusChannel } from "../slices/channelSlice";
 import { selectAppUser } from "../slices/userSlice";
 import { useAppSelector } from "../store";
@@ -11,7 +12,14 @@ const ChannelPopupRoam: React.FC<ChannelPopupRoamProps> = ({  }) => {
 
   return (
     <div>
-      
+      <IonButtons>
+        <IonButton style={{
+          border: '1px solid',
+          borderRadius: 5,
+        }}>
+          EDIT
+        </IonButton>
+      </IonButtons>
     </div>
   );
 };

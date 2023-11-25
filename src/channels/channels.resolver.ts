@@ -194,8 +194,8 @@ export class ChannelsResolver {
         }
 
         this.apnService.sendNotification(device.apnToken, {
-          title: 'New call',
-          body: `${user.name} joined`,
+          title: channel1.name,
+          body: `${user.name} joined the call`,
           channelId,
         });
       });

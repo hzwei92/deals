@@ -7,6 +7,7 @@ import { CHANNEL_FIELDS } from "../fragments/channel";
 import { addMemberships } from "../slices/membershipSlice";
 import { MEMBERSHIP_FIELDS } from "../fragments/membership";
 import { Preferences } from "@capacitor/preferences";
+import { DEVICE_ID_KEY } from "../constants";
 
 const ACTIVATE_CHANNEL = gql`
   mutation ActivateChannel($deviceId: Int, $channelId: Int) {
@@ -47,12 +48,17 @@ const useActivateChannel = () => {
 
 
   const activate = async (channelId: number | null) => {
-    const deviceId = (await Preferences.get({
-      key: 'deviceId',
-    })).value;
+    const { value } = await Preferences.get({
+      key: DEVICE_ID_KEY,
+    });
+
+    console.log('deviceId', value);
+
     activateChannel({
       variables: {
-        deviceId,
+        deviceId: value 
+          ? parseInt(value)
+          : null,
         channelId,
       }
     });
