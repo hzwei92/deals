@@ -8,6 +8,9 @@ export type User = {
   isCamOn: boolean;
   isMicOn: boolean;
   isSoundOn: boolean;
+  lng: number;
+  lat: number;
+  zoom: number;
   activeChannelId: number;
   createdAt: string;
   updatedAt: string;

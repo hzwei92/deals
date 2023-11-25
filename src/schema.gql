@@ -109,6 +109,7 @@ type Mutation {
   resend(email: String, phone: String): User!
   saveMembership(isSaved: Boolean!, membershipId: Int!): Membership!
   setUserCam(isCamOn: Boolean!): User!
+  setUserMap(lat: Float!, lng: Float!, zoom: Float!): User!
   setUserMic(isMicOn: Boolean!): User!
   setUserSound(isSoundOn: Boolean!): User!
   verify(code: String!, id: Int!): VerifyResult!
@@ -150,10 +151,13 @@ type User {
   isCamOn: Boolean!
   isMicOn: Boolean!
   isSoundOn: Boolean!
+  lat: Float!
+  lng: Float!
   memberships: [Membership!]!
   name: String!
   offers: [Deal!]!
   phone: String
+  zoom: Float!
 }
 
 type VerifyResult {

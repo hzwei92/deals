@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql";
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql";
 import { Channel } from "src/channels/channel.model";
 import { Deal } from "src/deals/deal.model";
 import { Membership } from "src/memberships/membership.model";
@@ -34,6 +34,15 @@ export class User {
 
   @Field()
   isSoundOn: boolean;
+
+  @Field(() => Float)
+  lng: number;
+
+  @Field(() => Float)
+  lat: number;
+
+  @Field(() => Float)
+  zoom: number;  
 
   @Field(() => [Deal])
   offers: Deal[]

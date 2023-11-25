@@ -138,4 +138,11 @@ export class UsersService {
     user.isSoundOn = isSoundOn;
     return this.usersRepository.save(user);
   }
+
+  async updateMapStatus(user: User, lng: number, lat: number, zoom: number): Promise<User> {
+    user.lat = lat;
+    user.lng = lng;
+    user.zoom = zoom;
+    return this.usersRepository.save(user);
+  }
 }

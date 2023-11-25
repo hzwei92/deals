@@ -48,6 +48,15 @@ export class User {
   @Column({ default: true })
   isSoundOn: boolean;
 
+  @Column({ type: 'float', default: -118.306 })
+  lng: number;
+
+  @Column({ type: 'float', default: 34.115 })
+  lat: number;
+
+  @Column({ type: 'float', default: 9 })
+  zoom: number;
+
   @Column()
   stripeCustomerId: string;
 

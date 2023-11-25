@@ -17,6 +17,7 @@ import { client } from '../main';
 import { closeOutline, save, star, starOutline } from 'ionicons/icons';
 import { useSaveMembership } from '../hooks/useSaveMembership';
 import { menuController } from '@ionic/core/components';
+import useSetUserMap from '../hooks/useSetUserMap';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
@@ -41,9 +42,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectFocusChannel);
 
-  const [mapLng, setMapLng] = useState(-70.9);
-  const [mapLat, setMapLat] = useState(42.35);
-  const [mapZoom, setMapZoom] = useState(9);
+  const [lng, setLng] = useState(-118.306);
+  const [lat, setLat] = useState(34.115);
+  const [zoom, setZoom] = useState(9);
 
   const marker = useRef<mapboxgl.Marker | null>(null);
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -59,6 +60,17 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   const getChannels = useGetChannels(setShouldUpdateMapData);
+
+  const setUserMap = useSetUserMap();
+
+  useEffect(() => {
+    if (user?.id && map.current) {
+      map.current.easeTo({
+        center: [user.lng, user.lat],
+        zoom: user.zoom,
+      })
+    }
+  }, [user?.id])
 
   const createChannel = () => {
     if (user?.id) {
@@ -128,7 +140,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
 
   // fetch channels
   useEffect(() => {
-    getChannels(mapLng, mapLat);
+    getChannels(lng, lat);
   }, []);
 
 
@@ -139,8 +151,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     map.current = new mapboxgl.Map({
       container: mapContainer.current!,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [mapLng, mapLat],
-      zoom: mapZoom,
+      center: [lng, lat],
+      zoom: zoom,
       trackResize: true,
     });
     map.current.on('load', function () {
@@ -150,9 +162,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
     });    
     map.current.on('move', () => {
       if (map.current) {
-        setMapLng(map.current.getCenter().lng);
-        setMapLat(map.current.getCenter().lat);
-        setMapZoom(map.current.getZoom());
+        setLng(map.current.getCenter().lng);
+        setLat(map.current.getCenter().lat);
+        setZoom(map.current.getZoom());
       }
     });
     map.current.on('click', (e) => {
@@ -335,6 +347,23 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       map.current.getCanvas().style.cursor = '';
     });
 
+    map.current.on('moveend', () => {
+      if (!map.current) return;
+      const bounds = map.current.getBounds();
+      //getChannels(bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth());
+      const center = map.current.getCenter();
+      setUserMap(center.lng, center.lat, map.current.getZoom());
+    })
+
+    map.current.on('zoomend', () => {
+      if (!map.current) return;
+      const bounds = map.current.getBounds();
+      //getChannels(bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth());
+      const center = map.current.getCenter();
+      setUserMap(center.lng, center.lat, map.current.getZoom());
+    });
+      
+
     setShouldUpdateMapData(false);
   }, [
     isMapLoaded, 
@@ -356,7 +385,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
 
     if (channel?.id) {  
       if (channel?.id !== prevChannelId) {
-        if (channel.lat !== mapLat || channel.lng !== mapLng) {
+        if (channel.lat !== lat || channel.lng !== lng) {
           map.current?.easeTo({
             center: [channel.lng, channel.lat],
           });
@@ -572,7 +601,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
               ? channels[channel.id].lng.toPrecision(6) + ', ' + channels[channel.id].lat.toPrecision(6)
               : newChannelLngLat
                 ? newChannelLngLat?.lng.toPrecision(6) + ', ' + newChannelLngLat?.lat.toPrecision(6)
-                : mapLng.toPrecision(6) + ', ' + mapLat.toPrecision(6) 
+                : lng.toPrecision(6) + ', ' + lat.toPrecision(6) 
           }
         </IonCard>
         <IonCard style={{

@@ -10,6 +10,9 @@ export const USER_FIELDS = gql`
     isCamOn
     isMicOn
     isSoundOn
+    lng
+    lat
+    zoom
     activeChannelId
   }
 `;

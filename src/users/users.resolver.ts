@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Float, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { User } from './user.model';
 import { UsersService } from './users.service';
 import { UseGuards } from '@nestjs/common';
@@ -55,4 +55,14 @@ export class UsersResolver {
     return this.usersService.updateSoundStatus(user, isSoundOn);
   }
 
+  @UseGuards(AuthGuard)
+  @Mutation(() => User, { name: 'setUserMap' })
+  async updateMapStatus(
+    @CurrentUser() user: UserEntity,
+    @Args('lng', { type: () => Float}) lng: number,
+    @Args('lat', { type: () => Float}) lat: number,
+    @Args('zoom', { type: () => Float}) zoom: number,
+  ) {
+    return this.usersService.updateMapStatus(user, lng, lat, zoom);
+  }
 }
