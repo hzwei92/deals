@@ -22,8 +22,7 @@ const useSetUserMap = () => {
   });
 
   const setUserMap = (lng: number, lat: number, zoom: number) => { 
-    console.log(zoom)
-    set({ variables: { lat, lng, zoom } });
+    set({ variables: { lng, lat, zoom } });
   }
 
   return setUserMap;

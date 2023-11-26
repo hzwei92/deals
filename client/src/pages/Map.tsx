@@ -53,6 +53,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
   const popupRoot = useRef<Root | null>(null);
   const creationPopupRoot = useRef<Root | null>(null);
 
+  const timeoutId = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const users = useAppSelector(selectUsers);
   const channels = useAppSelector(selectChannels);
 
@@ -352,7 +354,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       const bounds = map.current.getBounds();
       //getChannels(bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth());
       const center = map.current.getCenter();
-      setUserMap(center.lng, center.lat, map.current.getZoom());
+      const zoom = map.current.getZoom();
+      if (timeoutId.current) {
+        clearTimeout(timeoutId.current);
+      }
+      setTimeout(() => {
+        setUserMap(center.lng, center.lat, zoom);
+      }, 1000);
     })
 
     map.current.on('zoomend', () => {
@@ -360,7 +368,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ }) => {
       const bounds = map.current.getBounds();
       //getChannels(bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth());
       const center = map.current.getCenter();
-      setUserMap(center.lng, center.lat, map.current.getZoom());
+      const zoom = map.current.getZoom();
+      if (timeoutId.current) {
+        clearTimeout(timeoutId.current);
+      }
+      setTimeout(() => {
+        setUserMap(center.lng, center.lat, zoom);
+      }, 1000);
     });
       
 
