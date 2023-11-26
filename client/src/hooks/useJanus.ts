@@ -97,6 +97,7 @@ const useJanus = () => {
     }
     else if (publishAudioState !== 'connected' && publishVideoState !== 'connected') {
       if (user?.activeChannelId) {
+        console.log('joinRoom')
         joinRoom(user.activeChannelId, user.id, user.name);
       }
     }
@@ -908,9 +909,17 @@ const useJanus = () => {
   }
 
   const disconnect = () => {
-    unpublishOwnFeed();
+    //unpublishOwnFeed();
     const leave = { request: "leave" }
-    janusPluginHandle?.send({ message: leave });
+    janusPluginHandle?.send({ 
+      message: leave, 
+      success: () => {
+        Janus.log('Leave success');
+      },
+      error: err => {
+        Janus.error(err);
+      },
+    });
     Object.keys(feedStreams).forEach((id) => {
       unsubscribeFrom(id);
     });
