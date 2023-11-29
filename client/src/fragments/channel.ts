@@ -4,6 +4,7 @@ export const CHANNEL_FIELDS = gql`
   fragment ChannelFields on Channel {
     id
     name
+    url
     detail
     lat
     lng

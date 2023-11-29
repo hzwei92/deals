@@ -1,6 +1,6 @@
-import {IonButton, IonButtons, IonIcon, UseIonRouterResult } from "@ionic/react";
+import {IonAvatar, IonButton, IonButtons, IonIcon, UseIonRouterResult } from "@ionic/react";
 import { useAppDispatch, useAppSelector } from "../store";
-import { selectAppUser } from "../slices/userSlice";
+import { selectAppUser, selectUsers } from "../slices/userSlice";
 import { Dispatch, SetStateAction } from "react";
 import ChannelPopupTalk from "./ChannelTalk";
 import { selectFocusChannel } from "../slices/channelSlice";
@@ -8,7 +8,8 @@ import ChannelPopupText from "./ChannelText";
 import ChannelPopupRoam from "./ChannelRoam";
 import { closeOutline, star, starOutline, stopOutline } from "ionicons/icons";
 import { useSaveMembership } from "../hooks/useSaveMembership";
-import { selectMembershipByChannelIdAndUserId } from "../slices/membershipSlice";
+import { selectMembershipByChannelIdAndUserId, selectMembershipsByChannelId } from "../slices/membershipSlice";
+import md5 from "md5";
 
 interface ChannelPopupProps {
   router: UseIonRouterResult;
@@ -20,11 +21,14 @@ interface ChannelPopupProps {
 
 const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams, channelMode, setChannelMode }) => {
   const dispatch = useAppDispatch();
-
+  const users = useAppSelector(selectUsers);
   const user = useAppSelector(selectAppUser);
   const channel = useAppSelector(selectFocusChannel);
-
+  const memberships = useAppSelector(state => selectMembershipsByChannelId(state, channel?.id ?? -1));
   const membership = useAppSelector(state => selectMembershipByChannelIdAndUserId(state, channel?.id ?? -1, user?.id ?? -1))
+  
+  const owner = memberships.find(m => m.isOwner);
+  console.log(owner, users, memberships);
 
   const saveMembership = useSaveMembership();
 
@@ -47,28 +51,20 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
     }}>
       <div>
       <div style={{
-        marginTop: 5,
-        marginLeft: 5,
-        fontSize: 24,
-        fontWeight: 'bold',
         display: 'flex',
-        flexDirection: 'row',
         justifyContent: 'space-between',
+        marginLeft: -5,
+        marginRight: -5,
       }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-        }}>
-          { channel?.name } 
-        </div>
-        <IonButtons style={{
-        }}>
-          <IonButton onClick={handleMinimizeClick}>
+        <IonButtons>
+          <IonButton onClick={handleMinimizeClick} style={{
+          }}>
             <IonIcon icon={membership?.isSaved || membership?.isOwner ? star : starOutline } size="small" style={{
               color: membership?.isSaved || membership?.isOwner ? 'var(--ion-color-primary)' : null
             }}/>
           </IonButton>
+        </IonButtons>
+        <IonButtons>
           <IonButton onClick={handleMaximizeClick}>
             <IonIcon icon={stopOutline} size="small" />
           </IonButton>
@@ -76,6 +72,33 @@ const ChannelPopup: React.FC<ChannelPopupProps> = ({ router, authModal, streams,
             <IonIcon icon={closeOutline} size="small"/>
           </IonButton>
         </IonButtons>
+      </div>
+      <div style={{
+        marginTop: 2,
+        textAlign: 'left',
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: 'var(--ion-color-dark)'
+      }}>
+        { channel?.name } 
+      </div>
+      <div style={{
+        marginTop: 5,
+        display: owner?.userId ? 'flex' : 'none',
+        color: 'var(--ion-color-medium)',
+        fontSize: 14,
+      }}>
+        <IonAvatar style={{
+          width: 15,
+          height: 15,
+          marginTop: 2,
+          marginRight: 2,
+        }}>
+          <img src={`https://www.gravatar.com/avatar/${md5(users[owner?.userId ?? -1]?.email ?? '')}?d=retro`} />
+        </IonAvatar>
+        {
+          users[owner?.userId ?? -1]?.name
+        }
       </div>
       <div style={{
         marginTop: 10,

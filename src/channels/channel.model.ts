@@ -14,6 +14,9 @@ export class Channel {
   name: string;
 
   @Field()
+  url: string;
+
+  @Field()
   detail: string;
 
   @Field(() => Float)

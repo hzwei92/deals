@@ -12,14 +12,12 @@ const ChannelPopupRoam: React.FC<ChannelPopupRoamProps> = ({  }) => {
 
   return (
     <div>
-      <IonButtons>
-        <IonButton style={{
-          border: '1px solid',
-          borderRadius: 5,
-        }}>
-          EDIT
-        </IonButton>
-      </IonButtons>
+      <div>
+        SUPER
+      </div>
+      <div>
+        SUB
+      </div>
     </div>
   );
 };

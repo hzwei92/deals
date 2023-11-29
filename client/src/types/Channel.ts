@@ -5,6 +5,7 @@ import { User } from "./User";
 export type Channel = {
   id: number;
   name: string;
+  url: string;
   detail: string;
   lng: number;
   lat: number;
